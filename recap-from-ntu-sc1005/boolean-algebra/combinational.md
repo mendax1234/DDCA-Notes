@@ -1,14 +1,12 @@
-# Boolean Algebra
+# Combinational
 
-## Combinatoinal
-
-### Designing and Implementing Combinational Logic Circuit
+## Designing and Implementing Combinational Logic Circuit
 
 1. The function of a required logic circuit can be fully described by a truth table.
 2. To design the circuit, we obtain the **Boolean expression** from the truth table.
 3. The Boolean expression can then be implemented using a proper choice of logic gates.
 
-#### Forms of Boolean Expressions
+### Forms of Boolean Expressions
 
 There are two forms of Boolean Expressions:
 
@@ -40,7 +38,7 @@ Usually, we are interested in finding the **simplest standard form** for a combi
 3. etc
 {% endhint %}
 
-#### Obtain Boolean Expressions from truth table
+### Obtain Boolean Expressions from truth table
 
 {% stepper %}
 {% step %}

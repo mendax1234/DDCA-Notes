@@ -4,4 +4,7 @@
 
 ## Recap from NTU SC1005
 
-* [Boolean Algebra](recap-from-ntu-sc1005/boolean-algebra.md)
+* [Boolean Algebra](recap-from-ntu-sc1005/boolean-algebra/README.md)
+  * [Combinational](recap-from-ntu-sc1005/boolean-algebra/combinational.md)
+* [Digital Circuit](recap-from-ntu-sc1005/digital-circuit/README.md)
+  * [Combinational Circuit](recap-from-ntu-sc1005/digital-circuit/combinational-circuit.md)
