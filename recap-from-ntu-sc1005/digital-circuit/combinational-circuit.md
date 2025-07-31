@@ -92,18 +92,18 @@ A seven segment decoder is a basic circuit that maps a 4-bit binary input to a 7
 
 Here, we form the truth table for the 7-segment decoder.
 
-| Decimal | Input(wxyz) |  a  |  b  |  c  |  d  |  e  |  f  |  g  | abcdefg |
-| ------- | :---------: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-----: |
-| 0       |     0000    |  1  |  1  |  1  |  1  |  1  |  1  |  0  | 1111110 |
-| 1       |     0001    |  0  |  1  |  1  |  0  |  0  |  0  |  0  | 0110000 |
-| 2       |     0010    |  1  |  1  |  0  |  1  |  1  |  0  |  1  | 1101101 |
-| 3       |     0011    |  1  |  1  |  1  |  1  |  0  |  0  |  1  | 1111001 |
-| 4       |     0100    |  0  |  1  |  1  |  0  |  0  |  1  |  1  | 0110011 |
-| 5       |     0101    |  1  |  0  |  1  |  1  |  0  |  1  |  1  | 1011011 |
-| 6       |     0110    |  1  |  0  |  1  |  1  |  1  |  1  |  1  | 1011111 |
-| 7       |     0111    |  1  |  1  |  1  |  0  |  0  |  0  |  0  | 1110000 |
-| 8       |     1000    |  1  |  1  |  1  |  1  |  1  |  1  |  1  | 1111111 |
-| 9       |     1001    |  1  |  1  |  1  |  1  |  0  |  1  |  1  | 1111011 |
+| Decimal | Input (wxyz) |  a  |  b  |  c  |  d  |  e  |  f  |  g  | abcdefg |
+| ------- | :----------: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-----: |
+| 0       |     0000     |  1  |  1  |  1  |  1  |  1  |  1  |  0  | 1111110 |
+| 1       |     0001     |  0  |  1  |  1  |  0  |  0  |  0  |  0  | 0110000 |
+| 2       |     0010     |  1  |  1  |  0  |  1  |  1  |  0  |  1  | 1101101 |
+| 3       |     0011     |  1  |  1  |  1  |  1  |  0  |  0  |  1  | 1111001 |
+| 4       |     0100     |  0  |  1  |  1  |  0  |  0  |  1  |  1  | 0110011 |
+| 5       |     0101     |  1  |  0  |  1  |  1  |  0  |  1  |  1  | 1011011 |
+| 6       |     0110     |  1  |  0  |  1  |  1  |  1  |  1  |  1  | 1011111 |
+| 7       |     0111     |  1  |  1  |  1  |  0  |  0  |  0  |  0  | 1110000 |
+| 8       |     1000     |  1  |  1  |  1  |  1  |  1  |  1  |  1  | 1111111 |
+| 9       |     1001     |  1  |  1  |  1  |  1  |  0  |  1  |  1  | 1111011 |
 
 {% hint style="warning" %}
 Inputs **1010 to 1111** are invalid BCD and can be treated as "don't care" or produce blank/error display depending on the design.
@@ -143,8 +143,6 @@ In this 7-segment decoder example, we notice that each segment/output bit has it
 {% endstepper %}
 
 ## Multiplexer
-
-### Definition
 
 A multiplexer (MUX) is a device that **selects** **one of several input signals** and forwards it to a **single output line**. Thus, a multiplexer will have&#x20;
 
@@ -195,7 +193,7 @@ Timing diagram is a diagram that shows the behavior of a circuit with **progress
 
 The timing diagram for an AND gate is shown as follows,
 
-<figure><img src="../../.gitbook/assets/AND-gate-timing-diagram.jpg" alt="" width="375"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/AND-gate-timing-diagram.jpg" alt="" width="188"><figcaption></figcaption></figure>
 
 {% hint style="warning" %}
 #### Attention
