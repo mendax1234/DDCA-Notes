@@ -7,4 +7,5 @@
 * [Boolean Algebra](recap-from-ntu-sc1005/boolean-algebra/README.md)
   * [Combinational](recap-from-ntu-sc1005/boolean-algebra/combinational.md)
 * [Digital Circuit](recap-from-ntu-sc1005/digital-circuit/README.md)
+  * [Verilog Intro](recap-from-ntu-sc1005/digital-circuit/verilog-intro.md)
   * [Combinational Circuit](recap-from-ntu-sc1005/digital-circuit/combinational-circuit.md)
