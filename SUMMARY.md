@@ -9,3 +9,7 @@
 * [Digital Circuit](recap-from-ntu-sc1005/digital-circuit/README.md)
   * [Verilog Intro](recap-from-ntu-sc1005/digital-circuit/verilog-intro.md)
   * [Combinational Circuit](recap-from-ntu-sc1005/digital-circuit/combinational-circuit.md)
+
+## Textbook
+
+* [From Zero To One](textbook/from-zero-to-one.md)
