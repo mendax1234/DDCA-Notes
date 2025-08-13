@@ -12,4 +12,6 @@
 
 ## Textbook
 
-* [From Zero To One](textbook/from-zero-to-one.md)
+* [From Zero To One](textbook/from-zero-to-one/README.md)
+  * [Number Systems](textbook/from-zero-to-one/number-systems.md)
+  * [Logic Gates](textbook/from-zero-to-one/logic-gates.md)

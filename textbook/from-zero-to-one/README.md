@@ -23,7 +23,7 @@ In an electronic computer system, we can also find such abstraction. At the lowe
 
 ### Discipline
 
-_Discipline_ is the act of intentionally restricting yoru design choices so that you can work more productively at a higher level of abstraction.
+_Discipline_ is the act of intentionally restricting your design choices so that you can work more productively at a higher level of abstraction.
 
 In our context of this book, the **digital discipline** will be very important. Digital circuits use discrete voltages, whereas analog circuits use continuous voltages. Therefore, digital circuits are a subset of analog circuits and in some sense must be capable of less than the broader class of analog circuits. However, digital circuits are much simpler to design. By limiting ourselves to digital circuits, we can easily combine components into sophisticated systems that ultimately outperform those built from analog components in many applications.
 
@@ -38,6 +38,10 @@ In addition to abstraction and discipline, designers use the three "-y's" to man
 {% hint style="info" %}
 These principles apply to both software and hardware systems.
 {% endhint %}
+
+## The Digital Abstraction
+
+Digital Systems represent information with _discrete-valued variables_ — that is, variables with a finite number of distinct values.
 
 [^1]: "Function" means this module can be used to do what.
 

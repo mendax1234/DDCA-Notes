@@ -206,7 +206,7 @@ This is called a **continuous assignment**. As it is always permanently assigned
 
 To implement the following circuit using continuous assignment, we only need one line of code
 
-<figure><img src="../../.gitbook/assets/2a24157e5a11b4289864bbc6c6cbd984.jpg" alt="" width="455"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/verilog-example.jpg" alt="" width="455"><figcaption></figcaption></figure>
 
 And that is,
 
