@@ -21,6 +21,8 @@ This idea of abstraction has appeared in CS2030S! Like, [Data Abstraction: Type]
 
 In an electronic computer system, we can also find such abstraction. At the lowest level of abstraction is the **physics**, the motion of electrons. Our system is constructed from electronic _devices_ such as transistors. By abstracting to this device level, we can ignore the individual electrons.
 
+<figure><img src="../../.gitbook/assets/level-of-abstraction.png" alt="" width="173"><figcaption></figcaption></figure>
+
 ### Discipline
 
 _Discipline_ is the act of intentionally restricting your design choices so that you can work more productively at a higher level of abstraction.
@@ -32,7 +34,7 @@ In our context of this book, the **digital discipline** will be very important. 
 In addition to abstraction and discipline, designers use the three "-y's" to manage complexity: _hierarchy, modularity,_ and _regularity_.
 
 * _Hierarchy_ involves dividing a system into modules, then further subdividing each of these modules until the pieces are easy to understand.
-* _Modularity_ states that each module should have a well-defined function[^1] and interface[^2], so that they connect together easilty without unanticipated side effects.
+* _Modularity_ states that each module should have a well-defined function[^1] and interface[^2], so that they connect together easily without unanticipated side effects.
 * _Regularity_ seeks uniformity among the modules. Common modules are reused many times, reducing the number of distinct modules that must be designed.
 
 {% hint style="info" %}
