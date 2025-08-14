@@ -16,12 +16,66 @@ One of the characteristics that separates an engineer or computer scientist from
 The critical technique for managing complexity is _abstraction_: hiding details when they are not important. A system can be viewed from many different levels of abstraction.
 
 {% hint style="info" %}
-This idea of abstraction has appeared in CS2030S! Like, [Data Abstraction: Type](https://app.gitbook.com/s/vwztj22G2t5iduk4o9yh/lec-rec-lab-exes/lecture/lec-01-compiler-types-classes-objects#unit-2-variable-and-type-1 "mention"), [Abstraction Barrier](https://app.gitbook.com/s/vwztj22G2t5iduk4o9yh/lec-rec-lab-exes/lecture/lec-01-compiler-types-classes-objects#abstraction-barrier "mention") and [Functions as an Abstraction](https://app.gitbook.com/s/vwztj22G2t5iduk4o9yh/lec-rec-lab-exes/lecture/lec-01-compiler-types-classes-objects#functions-as-an-abstraction "mention").
+This idea of abstraction has appeared in CS2030S! For example, [Data Abstraction: Type](https://wenbo-notes.gitbook.io/cs2030s-notes/lec-rec-lab-exes/lecture/lec-01-compiler-types-classes-objects#unit-2-variable-and-type-1), [Abstraction Barrier](https://wenbo-notes.gitbook.io/cs2030s-notes/lec-rec-lab-exes/lecture/lec-01-compiler-types-classes-objects#abstraction-barrier), [Functions as an Abstraction](https://wenbo-notes.gitbook.io/cs2030s-notes/lec-rec-lab-exes/lecture/lec-01-compiler-types-classes-objects#functions-as-an-abstraction).
 {% endhint %}
 
-In an electronic computer system, we can also find such abstraction. At the lowest level of abstraction is the **physics**, the motion of electrons. Our system is constructed from electronic _devices_ such as transistors. By abstracting to this device level, we can ignore the individual electrons.
-
 <figure><img src="../../.gitbook/assets/level-of-abstraction.png" alt="" width="173"><figcaption></figcaption></figure>
+
+In an electronic computer system, we can also find such abstraction:
+
+{% stepper %}
+{% step %}
+**Physics**
+
+At the lowest level of abstraction is the **physics**, the motion of electrons. The behavior of electrons is described by quantum machanics and Maxwell's equations.
+{% endstep %}
+
+{% step %}
+**Devices**
+
+Our system is constructed from electronic _devices_ such as transistors. These devices have well-defined connection points called _terminals_ and can be modeled by the relationship between voltage and current as measured at each terminal. By abstracting to this **device** level, we can ignore the individual electrons.
+{% endstep %}
+
+{% step %}
+**Analog Circuits**
+
+The next level of abstraction is _analog circuits_, in which devices are assembled to create components such as amplifiers. Analog circuits input and output a continuous range of voltages.
+{% endstep %}
+
+{% step %}
+**Digital Circuits**
+
+_Digital circuits_ such as logic gates restrict the voltages to discrete ranges, which we will use to indicated 0 and 1. In logic design, we build more complex structures, such as adders or memories from digital circuits.
+{% endstep %}
+
+{% step %}
+**Micro-architecture**
+
+(See Architecture first). _Micro-architecture_ links the logic and architecture levels of abstraction. It involves combining logic elements to execute the instructions defined by the architecture/ISA.
+
+Shortly speaking, the micro-architecture is an **implementation of the ISA/architecture**. For example, the Intel Core i7, the Intel 80486, and the AMD Athlon all implement the x86 architecture with different microarchitectures.
+{% endstep %}
+
+{% step %}
+**Architecture (ISA)**
+
+The **architecture** level describes a computer from the programmer's perspective. In other words, what the programmer assumes hardware will satisfy. It is sometimes referred to as the ISA (**I**nstruction **S**et **A**rchitecture) also, which is an interface/contract between Software and Hardware.
+
+For example, the Intel x86 architecture used by microprocessors in most PCs is defined by **a set of instructions** and **registers** (memory for temporarily storing variables) that the programmer is allowed to use.
+{% endstep %}
+
+{% step %}
+**Operating System**
+
+Moving into the software realm, the operating system handles low-level details such as accessing a hard drive or managing memory.
+{% endstep %}
+
+{% step %}
+**Application Software**
+
+Finally, the application software uses these facilities provided by the operating system to solve a problem for the user.
+{% endstep %}
+{% endstepper %}
 
 ### Discipline
 
