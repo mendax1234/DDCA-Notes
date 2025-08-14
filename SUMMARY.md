@@ -21,3 +21,4 @@
 * [Combinational Logic Design](textbook/combinational-logic-design/README.md)
   * [Boolean Equations](textbook/combinational-logic-design/boolean-equations.md)
   * [Multilevel Combinational Logic](textbook/combinational-logic-design/multilevel-combinational-logic.md)
+  * [Timing](textbook/combinational-logic-design/timing.md)
