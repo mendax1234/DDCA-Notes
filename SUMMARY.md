@@ -17,3 +17,4 @@
   * [Logic Gates](textbook/from-zero-to-one/logic-gates.md)
   * [Beneath the Digital Abstraction](textbook/from-zero-to-one/beneath-the-digital-abstraction.md)
   * [CMOS Transistors](textbook/from-zero-to-one/cmos-transistors.md)
+  * [A Small Recap](textbook/from-zero-to-one/a-small-recap.md)
