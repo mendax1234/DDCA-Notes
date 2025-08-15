@@ -56,3 +56,27 @@ In the D latch, from the truth table, we can clearly see that its state variable
 {% hint style="info" %}
 We may notice that the D latch updates its state **continuously** while CLK = 1. We shall see later in this chapter that it is useful to update the state only at a specific instant in time.
 {% endhint %}
+
+## D Flip-Flop
+
+A D _flip-flop_ can be built from two back-to-back D latches controlled by complementary clocks, as shown in Figure 3.8 (a). The first latch, L1, is called the _master_. The second latch, L2, is called the _slave_. The node between them is named N1. A symbol for the D flip-flop is given in Figure 3.8 (b). When the $$\bar Q$$ output is not needed, the symbol is often condensed as in Figure 3.8 (c).
+
+<figure><img src="../../.gitbook/assets/d-flip-flop.png" alt="" width="223"><figcaption></figcaption></figure>
+
+To analyze the behavior of a D flip-flop, we can see the following example (ignoring the progagation delay 😂),
+
+<figure><img src="../../.gitbook/assets/image.png" alt="" width="563"><figcaption></figcaption></figure>
+
+To put it simply, a D flip-flop _**copies D to Q on the rising edge of the clock, and remembers its state at all other times until the next rising edge comes, it will update its state**_**.**
+
+{% hint style="danger" %}
+The sentence above is very very important! And beginner digital designer must remember it!
+{% endhint %}
+
+The rising edge of the clock is often just called the _clock edge_ for brevity. The D input specifies what the new state will be. The clock edge indicates when the state should be updated.
+
+A D flip-flop is also known as a _master-slave flip-flop_, an _edge-triggered flip-flop_, or a _positive edge-triggered flip-flop_. The triangle in the symbols denotes an edge-triggered clock input. The $$\bar Q$$ is often omitted when it is not needed.
+
+{% hint style="info" %}
+The term flip-flop or latch by itself usually refers to a **D flip-flop** or a **D latch**, respectively, because these are the types most commonly used in practice.
+{% endhint %}
