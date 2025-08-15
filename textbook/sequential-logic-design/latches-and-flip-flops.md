@@ -65,7 +65,7 @@ A D _flip-flop_ can be built from two back-to-back D latches controlled by compl
 
 To analyze the behavior of a D flip-flop, we can see the following example (ignoring the progagation delay 😂),
 
-<figure><img src="../../.gitbook/assets/image.png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/d-flip-flop-explanation.png" alt="" width="563"><figcaption></figcaption></figure>
 
 To put it simply, a D flip-flop _**copies D to Q on the rising edge of the clock, and remembers its state at all other times until the next rising edge comes, it will update its state**_**.**
 
@@ -77,6 +77,73 @@ The rising edge of the clock is often just called the _clock edge_ for brevity. 
 
 A D flip-flop is also known as a _master-slave flip-flop_, an _edge-triggered flip-flop_, or a _positive edge-triggered flip-flop_. The triangle in the symbols denotes an edge-triggered clock input. The $$\bar Q$$ is often omitted when it is not needed.
 
-{% hint style="info" %}
+{% hint style="success" %}
 The term flip-flop or latch by itself usually refers to a **D flip-flop** or a **D latch**, respectively, because these are the types most commonly used in practice.
 {% endhint %}
+
+### Enabled Flip-Flop
+
+An _enabled flip-flop_ adds another input called EN or ENABLE to determine whether data is loaded on the clock edge. When EN is TRUE, the enabled flip-flop behaves like an ordinary D flip-flop. When EN is FALSE, the enabled flip-flop ignores the clock and retains its state.
+
+{% hint style="success" %}
+Enabled flip-flops are useful when we wish to load a new value into a flip-flop only some of the time, rather than on every clock edge.
+{% endhint %}
+
+Figure 3.10 shows two ways to construct an enabled flip-flop from a D flip-flop and an extra logic.
+
+* In Figure 3.10 (a), a **multiplexer** chooses whether to pass the value at D , if EN is TRUE, or to recycle the old state from Q, if EN is FALSE. (EN acts as the select line for the multiplexer here).
+* In Figure 3.10 (b), the clock is _gated_ (with an AND gate), this is not recommended because the gate can delay the clock and cause timing errors!
+
+The symbol for an enabled flip-flop is given in Figure 3.10(c).
+
+<figure><img src="../../.gitbook/assets/enabled-flip-flop.png" alt=""><figcaption></figcaption></figure>
+
+### Resettable Flip-Flop
+
+A _resettable flip-flop_ adds another input called RESET. When RESET is FALSE, the resettable flip-flop behaves like an ordinary D flip-flop. When RESET is TRUE, the resettable flip-flop ignores D and resets the output to 0.
+
+{% hint style="success" %}
+Resettable flip-flops are useful when we want to force a known state (i.e., 0) into all the flip-flops in a system when we first turn it on.
+{% endhint %}
+
+Such resettable flip-flops maybe _synchronously_ or _asynchronously resettable_.
+
+* Synchronously resettable flip-flops reset themselves only on the rising edge of CLK.
+* Asynchronously resettable flip-flops reset themselves as soon as RESET becomes TRUE, independent of CLK.
+
+Figure 3.11 (a) shows how to construct a synchronously resettable flip-flop with **active low reset** from an ordinary D flip-flop and an AND gate. Figures 3.11 (b) and 3.11 (c) show symbols for the resettable flip-flop with **active high reset**.
+
+<figure><img src="../../.gitbook/assets/resettable-flip-flop.png" alt="" width="266"><figcaption></figcaption></figure>
+
+## Register
+
+An N-bit register is a bank of N flip-flops (referring to D flip-flops) that share a common CLK input, so that all bits of the register are updated at the same time.
+
+{% hint style="info" %}
+Registers are the key building block of most sequential circuits.
+{% endhint %}
+
+Figure 3.9 shows the schematic and symbol for a four-bit register with inputs $$D_{3:0}$$ and outputs $$Q_{3:0}$$. $$D_{3:0}$$ and $$Q_{3:0}$$ are both 4-bit buses.
+
+<figure><img src="../../.gitbook/assets/register.png" alt="" width="563"><figcaption></figcaption></figure>
+
+## Putting it all together
+
+Latches and flip-flops are the fundamental building blocks of sequential circuits. Remember that:
+
+1. A D latch is **level sensitive**, which means the the CLK is 1, the D latch will allow the input D to flow through the output Q.
+2. A D flip-flop is **edge-triggered**, which specifically means the D flip-flop copies D to Q on the **rising edge** of CLK.
+
+For latches and flip-flops, besides the above two times, at all other times, latches and flip-flops retian their old state.
+
+A register is a bank of several D flip-flops that share a common CLK signal.
+
+<details>
+
+<summary>Example: Flip-Flop and Latch Comparision</summary>
+
+Ben bitdiddle applies the D and CLK inputs as shown in Figure 3.14 to a D latch and a D flip-flop. Help him determine the output, Q, of each device.
+
+<figure><img src="../../.gitbook/assets/latch-flip-flop-comparison.png" alt=""><figcaption></figcaption></figure>
+
+</details>
