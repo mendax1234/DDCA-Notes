@@ -4,6 +4,10 @@
 
 There are two examples here on the book and they are very classic. And a question remained here, how do we use the rule we have learned later in this page to optimize the race condition example?
 
+I think the solution will be just adding register along the cyclic path, so that the register will store the state of the system. Because the problem is when CLK falls, Q may change to 0, thus making Q\_prev 0. But if we have a register, when CLK falls, the register retain the Q\_prev, which is 1. Problem solved! Awesome here!
+
+But the sentence on P121 "If the clock is sufficiently slow, ....", how slow it should be in this race condition problem? Slower than or bigger than the propagation delay?
+
 ## Synchronous Sequential Circuits
 
 The rules of _synchronous sequential circuit composition_ teach us that a circuit is a synchronous sequential circuit if it consists of interconnected circuit elements such that
