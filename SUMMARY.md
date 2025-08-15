@@ -24,3 +24,4 @@
   * [Timing](textbook/combinational-logic-design/timing.md)
 * [Sequential Logic Design](textbook/sequential-logic-design/README.md)
   * [Latches and Flip-Flops](textbook/sequential-logic-design/latches-and-flip-flops.md)
+  * [Synchronous Logic Design](textbook/sequential-logic-design/synchronous-logic-design.md)
