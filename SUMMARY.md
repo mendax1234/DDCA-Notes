@@ -22,3 +22,5 @@
   * [Boolean Equations](textbook/combinational-logic-design/boolean-equations.md)
   * [Multilevel Combinational Logic](textbook/combinational-logic-design/multilevel-combinational-logic.md)
   * [Timing](textbook/combinational-logic-design/timing.md)
+* [Sequential Logic Design](textbook/sequential-logic-design/README.md)
+  * [Latches and Flip-Flops](textbook/sequential-logic-design/latches-and-flip-flops.md)
