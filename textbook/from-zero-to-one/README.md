@@ -13,7 +13,7 @@ One of the characteristics that separates an engineer or computer scientist from
 
 ### Abstraction
 
-The critical technique for managing complexity is _abstraction_: hiding details when they are not important. A system can be viewed from many different levels of abstraction.
+The critical technique for managing complexity is _abstraction_: hiding details when they are not important. And a system can be viewed from many different levels of abstraction.
 
 {% hint style="info" %}
 This idea of abstraction has appeared in CS2030S! For example, [Data Abstraction: Type](https://wenbo-notes.gitbook.io/cs2030s-notes/lec-rec-lab-exes/lecture/lec-01-compiler-types-classes-objects#unit-2-variable-and-type-1), [Abstraction Barrier](https://wenbo-notes.gitbook.io/cs2030s-notes/lec-rec-lab-exes/lecture/lec-01-compiler-types-classes-objects#abstraction-barrier), [Functions as an Abstraction](https://wenbo-notes.gitbook.io/cs2030s-notes/lec-rec-lab-exes/lecture/lec-01-compiler-types-classes-objects#functions-as-an-abstraction).
@@ -27,7 +27,7 @@ In an electronic computer system, we can also find such abstraction:
 {% step %}
 **Physics**
 
-At the lowest level of abstraction is the **physics**, the motion of electrons. The behavior of electrons is described by quantum machanics and Maxwell's equations.
+At the lowest level of abstraction is the **physics**, which is about the motion of electrons. The behavior of electrons is described by quantum machanics and Maxwell's equations.
 {% endstep %}
 
 {% step %}
@@ -59,7 +59,7 @@ Shortly speaking, the micro-architecture is an **implementation of the ISA/archi
 {% step %}
 **Architecture (ISA)**
 
-The **architecture** level describes a computer from the programmer's perspective. In other words, what the programmer assumes hardware will satisfy. It is sometimes referred to as the ISA (**I**nstruction **S**et **A**rchitecture) also, which is an interface/contract between Software and Hardware.
+The **architecture** level describes a computer from the programmer's perspective. In other words, it's about what the programmer assumes the hardware will satisfy. It is sometimes referred to as the ISA (**I**nstruction **S**et **A**rchitecture) also, which is an interface/contract between Software and Hardware.
 
 For example, the Intel x86 architecture used by microprocessors in most PCs is defined by **a set of instructions** and **registers** (memory for temporarily storing variables) that the programmer is allowed to use.
 {% endstep %}
@@ -81,15 +81,15 @@ Finally, the application software uses these facilities provided by the operatin
 
 _Discipline_ is the act of intentionally restricting your design choices so that you can work more productively at a higher level of abstraction.
 
-In our context of this book, the **digital discipline** will be very important. Digital circuits use discrete voltages, whereas analog circuits use continuous voltages. Therefore, digital circuits are a subset of analog circuits and in some sense must be capable of less than the broader class of analog circuits. However, digital circuits are much simpler to design. By limiting ourselves to digital circuits, we can easily combine components into sophisticated systems that ultimately outperform those built from analog components in many applications.
+In our context of this book, the **digital discipline** will be very important. Digital circuits use discrete voltages, whereas analog circuits use continuous voltages. Therefore, digital circuits are a **subset** of analog circuits and in some sense must be capable of less than the broader class of analog circuits. However, digital circuits are much simpler to design. By limiting ourselves to digital circuits, we can easily combine components into sophisticated systems that ultimately outperform those built from analog components in many applications.
 
 ### The Three-Y's
 
 In addition to abstraction and discipline, designers use the three "-y's" to manage complexity: _hierarchy, modularity,_ and _regularity_.
 
-* _Hierarchy_ involves dividing a system into modules, then further subdividing each of these modules until the pieces are easy to understand.
+* _Hierarchy_ involves dividing a system into **modules**, then further subdividing each of these modules until the pieces are easy to understand.
 * _Modularity_ states that each module should have a well-defined function[^1] and interface[^2], so that they connect together easily without unanticipated side effects.
-* _Regularity_ seeks uniformity among the modules. Common modules are reused many times, reducing the number of distinct modules that must be designed.
+* _Regularity_ seeks uniformity among the modules. **Common modules** are reused many times, reducing the number of distinct modules that must be designed.
 
 {% hint style="info" %}
 These principles apply to both software and hardware systems.

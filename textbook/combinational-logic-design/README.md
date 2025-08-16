@@ -4,7 +4,7 @@
 
 ## Introduction
 
-In digital electronics, a _circuit_ is a network that processes discrete-valued variables. A circuit can be viewed as a black box, shown in Figure 2.1, with
+In digital electronics, a _circuit_ is a network that processes discrete-valued variables. And a circuit can be viewed as a black box, shown in Figure 2.1, with
 
 * one or more discrete-valued _input terminals_
 * one or more discrete-valued _output terminals_
@@ -30,7 +30,7 @@ Figure 2.2 illustrates a circuit with three elements, E1, E2 and E3, and six nod
 Digital circuits are classified as _combinational_ or _sequential._
 
 * A _combinational circuit_'s outputs depend **only** on the current values of the inputs; in other words, it combines the current input values to compute the output. For example, a logic gate is a combinational circuit.
-* A _sequential circuit's_ outputs depend on both current and previous values of the inputs; in other words, it depends on the input sequence.
+* A _sequential circuit's_ outputs depend on both current and previous values of the inputs (which you will see later, this is called the _current state_); in other words, it depends on the input sequence.
 
 A combinational circuit is _memoryless_, but a sequential circuit has _memory_.
 
@@ -42,13 +42,13 @@ This rule states that
 
 A circuit is combinational if it consists of interconnected circuit elements such that
 
-* Every circuit element is itself combinational.
-* Every node of the circuit is either designated as an input to the circuit or connects to exactly one output terminal of a circuit element.
-* The circuit contains no cyclic paths: every path through the circuit visits each circuit node at most once.
+* Every circuit element is itself **combinational**.
+* Every node of the circuit is either designated as **an input** to the circuit or connects to **exactly one output** terminal of a circuit element.
+* The circuit contains **no cyclic paths**: every path through the circuit visits each circuit node at most once.
 
 ## Sum up
 
-Large circuits such as microprocessors can be very complicated, so we use the principles from [from-zero-to-one](../from-zero-to-one/ "mention") to manage the complexity. Viewing a circuit as a black box with a well-defined interface and function is an application of abstraction and modularity. Building the circuit out of smaller circuit elements is an application of hierarchy. The rules of combinational composition are an application of discipline.
+Large circuits such as microprocessors can be very complicated, so we use the principles from the [last chapter](../from-zero-to-one/) to manage the complexity. Viewing a circuit as a black box with a well-defined interface and function is an application of **abstraction** and **modularity**. Building the circuit out of smaller circuit elements is an application of **hierarchy**. The rules of combinational composition are an application of discipline.
 
-* The function specification of a combinational circuit expresses the output values in terms of the current input values. And it is usually expressed as a truth table or a Boolean equation.
-* The timing specification of a combinational circuit consists of lower and upper bounds on the delay from input to output.
+* The _function specification_ of a combinational circuit expresses the output values in terms of the current input values. And it is usually expressed as a truth table or a Boolean equation.
+* The _timing specification_ of a combinational circuit consists of lower and upper bounds on the delay from input to output.

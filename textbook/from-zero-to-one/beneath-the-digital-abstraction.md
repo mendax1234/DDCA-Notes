@@ -14,12 +14,12 @@ Basically, there are four logic levels. They are $$V_\text{OH}, V_\text{OL}, V_\
 
 <figure><img src="../../.gitbook/assets/logic-leves-noise-margin.png" alt="" width="563"><figcaption></figcaption></figure>
 
-If, for some reason such as noise of faulty components, the receiver's input should fall in the _forbidden zone_ between $$V_\text{IL}$$ and $$V_\text{IH}$$, the behavior of the gate is unpredictable. So, for two logic gates to be connected safely, the rule of thumb will be
+If, for some reason such as noise of faulty components, the receiver's input should fall in the _forbidden zone_ between $$V_\text{IL}$$ and $$V_\text{IH}$$, the behavior of the gate is **unpredictable**. So, for two logic gates to be connected safely, the rule of thumb will be
 
 > $$V_\text{OH}>V_\text{IH}$$ and $$V_\text{OL}<V_\text{IL}$$
 
 {% hint style="info" %}
-Note that the **driver** and the **receiver** are two logic gates, which may come from one logic family or not. But each logic gate will have its own 4 logic levels.
+Note that the **driver** and the **receiver** are two logic gates, which may or may not come from one logic family. But each logic gate will have its own 4 logic levels.
 {% endhint %}
 
 ## Noise Margins
@@ -35,6 +35,6 @@ $$
 
 To avoid inputs falling into the forbidden zone, digital logic gates are designed to conform to the _static discipline_. The static discipline requires that, given logically valid inputs, every circuit element will produce logically valid outputs.
 
-The choice of $$V_\text{DD}$$ and logic levels is arbitrary, but all gates that communicate must have compatible logic levels. (This means must follow the rule of thumb above) Therefore, gates are grouped into _logic families_ such that all gates in a logic family obey the static discipline when used with other gates in the family. Logic gates in the same logic family snap together like Legos in that they use consistent power supply voltages and logic levels.
+The choice of $$V_\text{DD}$$ and logic levels is arbitrary, but all gates that communicate must have compatible logic levels. (This means that they must follow the rule of thumb above) Therefore, gates are grouped into _logic families_ such that all gates in a logic family obey the static discipline when used with other gates in the family. Logic gates in the same logic family snap together like Legos in that they use consistent power supply voltages and logic levels.
 
 <figure><img src="../../.gitbook/assets/logic-levels-examples.png" alt="" width="563"><figcaption></figcaption></figure>

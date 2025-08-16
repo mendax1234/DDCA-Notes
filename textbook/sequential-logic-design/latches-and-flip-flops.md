@@ -4,13 +4,13 @@
 
 The fundamental building block of memory is a _bistable_ element, an element with two stable states. Figure 3.1 (a) shows a simple bistable element consisting of a pair of inverters connected in a loop. Figure 3.1 (b) shows the same circuit redrawn to emphasize the symmetry.
 
-<figure><img src="../../.gitbook/assets/cross-coupled-inverter-pair.png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/cross-coupled-inverter-pair.png" alt=""><figcaption></figcaption></figure>
 
 The inverters are _cross-coupled_, meaning that the input of I1 is the output of I2 and vice versa. The circuit has no inputs, but it does have two outputs, $$Q$$ and $$\bar Q$$.
 
 Analyzing this circuit is different from analyzing a combinational circuit because it is cyclic: $$Q$$ depends on $$\bar Q$$ and $$\bar Q$$ depends on $$Q$$. So, we just need to consider two cases: $$Q$$ is 0 or $$Q$$ is 1.
 
-And we may find out that this circuit is **stable** under these two cases. Thus, we can say this cross-coupled inverter has two **stable** states, and because of this, it is **bistable**.
+And we may find out that this circuit is **stable** under these two cases (By saying the circuit is stable, we mean that under each of the two cases above, $$Q$$ and $$\bar Q$$ don't conflict). Thus, we can say this cross-coupled inverter has two **stable** states, and because of this, it is **bistable**.
 
 {% hint style="info" %}
 #### Notes
@@ -34,10 +34,10 @@ To analyze this circuit, we can build a truth table by considering the four case
 <figure><img src="../../.gitbook/assets/sr-latch-truth-table.png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
-Note that in Case IV, when S and R are both 0, there are only two subcases which $$Q$$ can be either 0 or 1. Thus, we find that the future $$Q$$ will still remain the same.
+Note that in Case IV, when S and R are both 0, there are only two subcases which the current $$Q$$ can be either 0 or 1. Thus, we find that the future $$Q$$ will still remain the same.
 {% endhint %}
 
-The SR latch is represented by the symbol in Figure 3.6. Using the symbol is an application of abstraction and modularity.
+The SR latch is represented by the symbol in Figure 3.6. Using the symbol is an application of **abstraction** and **modularity**.
 
 <figure><img src="../../.gitbook/assets/sr-latch-symbol.png" alt=""><figcaption></figcaption></figure>
 
@@ -45,13 +45,16 @@ Like the cross-coupled inverters, the SR latch is a bistable element with one bi
 
 ## D Latch
 
-The SR Latch is awkward because it behaves strangely when both S and R are simultaneously asserted. Moreover, the S and R inputs **conflate** the issues of _what_ and _when_. And designing circuits becomes easier when these questions of what and when are **separated**. The D latch in Figure 3.7 (a) solves these problems. It has two inputs. The data input, D, controls what the next state should be. The _clock_ input, CLK, controls when the state should change.
+The SR Latch is awkward because it behaves strangely when both S and R are simultaneously asserted. Moreover, the S and R inputs **conflate** the issues of _what_ and _when_. And designing circuits becomes easier when these questions of what and when are **separated**. The D latch in Figure 3.7 (a) solves these problems. It has two inputs:
+
+1. The _data_ input, D, controls what the next state should be.
+2. The _clock_ input, CLK, controls when the state should change.
 
 <figure><img src="../../.gitbook/assets/D-latch.png" alt=""><figcaption></figcaption></figure>
 
 By analyzing this circuit, we see that the clock controls when data flows through the latch. When CLK = 1, the latch is _transparent_. The data at D flows through to Q as if the latch were just a **buffer** (from the point of comparing output $$Q$$ and input D). When CLK = 0, the latch is _opaque_. It blocks the new data from flowing through to Q, and Q retains the old value. Hence, the D latch is sometimes called a _transparent latch_ or _level-sensitive_ latch. The D latch symbol is given in Figure 3.7 (c).
 
-In the D latch, from the truth table, we can clearly see that its state variable is still $$Q$$.
+In the D latch, from the truth table, we can clearly see that its state variable is still $$Q$$. And the D latch is actually built upon the SR latch!
 
 {% hint style="info" %}
 We may notice that the D latch updates its state **continuously** while CLK = 1. We shall see later in this chapter that it is useful to update the state only at a specific instant in time.
@@ -63,11 +66,11 @@ A D _flip-flop_ can be built from two back-to-back D latches controlled by compl
 
 <figure><img src="../../.gitbook/assets/d-flip-flop.png" alt="" width="223"><figcaption></figcaption></figure>
 
-To analyze the behavior of a D flip-flop, we can see the following example (ignoring the progagation delay 😂),
+To analyze the behavior of a D flip-flop, we can see the following example (ignoring the delay between the gates 😂),
 
 <figure><img src="../../.gitbook/assets/d-flip-flop-explanation.png" alt="" width="563"><figcaption></figcaption></figure>
 
-To put it simply, a D flip-flop _**copies D to Q on the rising edge of the clock, and remembers its state at all other times until the next rising edge comes, it will update its state**_**.**
+To put it simply, a D flip-flop _**copies D to Q on the rising edge of the clock, and remembers its state at all other times until the next rising edge comes, then it will update its state**_**.**
 
 {% hint style="danger" %}
 The sentence above is very very important! And beginner digital designer must remember it!
@@ -78,7 +81,7 @@ The rising edge of the clock is often just called the _clock edge_ for brevity. 
 A D flip-flop is also known as a _master-slave flip-flop_, an _edge-triggered flip-flop_, or a _positive edge-triggered flip-flop_. The triangle in the symbols denotes an edge-triggered clock input. The $$\bar Q$$ is often omitted when it is not needed.
 
 {% hint style="success" %}
-The term flip-flop or latch by itself usually refers to a **D flip-flop** or a **D latch**, respectively, because these are the types most commonly used in practice.
+The term flip-flop or latch by itself usually refers to a **D flip-flop** or a **D latch**, respectively, because these are the types most commonly used in practice. We will use this convention through this book.
 {% endhint %}
 
 ### Enabled Flip-Flop
@@ -91,7 +94,7 @@ Enabled flip-flops are useful when we wish to load a new value into a flip-flop 
 
 Figure 3.10 shows two ways to construct an enabled flip-flop from a D flip-flop and an extra logic.
 
-* In Figure 3.10 (a), a **multiplexer** chooses whether to pass the value at D , if EN is TRUE, or to recycle the old state from Q, if EN is FALSE. (EN acts as the select line for the multiplexer here).
+* In Figure 3.10 (a), a **multiplexer** chooses whether to pass the value at D , if EN is TRUE, or to recycle the old state from Q, if EN is FALSE. (The EN here acts as the select line for the multiplexer).
 * In Figure 3.10 (b), the clock is _gated_ (with an AND gate), this is not recommended because the gate can delay the clock and cause timing errors!
 
 The symbol for an enabled flip-flop is given in Figure 3.10(c).
@@ -131,10 +134,10 @@ Figure 3.9 shows the schematic and symbol for a four-bit register with inputs $$
 
 Latches and flip-flops are the fundamental building blocks of sequential circuits. Remember that:
 
-1. A D latch is **level sensitive**, which means the the CLK is 1, the D latch will allow the input D to flow through the output Q.
-2. A D flip-flop is **edge-triggered**, which specifically means the D flip-flop copies D to Q on the **rising edge** of CLK.
+1. A D latch is **level sensitive**, which means when the CLK is 1, the D latch will copy the input D to the output Q **continuously**.
+2. A D flip-flop is **edge-triggered**, which specifically means the D flip-flop copies D to Q **once** on the **rising edge** of CLK.
 
-For latches and flip-flops, besides the above two times, at all other times, latches and flip-flops retian their old state.
+For latches and flip-flops, besides the above two times, at all other times, latches and flip-flops retain their old state.
 
 A register is a bank of several D flip-flops that share a common CLK signal.
 

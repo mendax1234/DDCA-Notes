@@ -41,15 +41,15 @@ nMOS transistors need a p-type substrate, and pMOS transistors need an n-type su
 
 In summary, CMOS processes give us two types of electrically controlled switches, as shown in Figure 1.31. The voltage at the gate (g) regulates the flow of current between the sources (s) and drain (d). nMOS transistors are OFF when the gate is 0 and ON when the gate is 1. pMOS are just the opposite: ON when the gate is 0 and OFF when the gate is 1.
 
-<figure><img src="../../.gitbook/assets/nMOS-pMOS-summary.png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/nMOS-pMOS-summary.png" alt=""><figcaption></figcaption></figure>
 
 ## CMOS Logic Gates
 
-We can easily use CMOS Transistors to build any inverting logic gate (e.g., NOR, NAND, etc). Figure 1.34 shows the general form to do so.
+We can easily use CMOS transistors to build any inverting logic gate (e.g., NOR, NAND, etc). Figure 1.34 shows the general way to do so.
 
 <figure><img src="../../.gitbook/assets/general-form-CMOS-inverting-gate.png" alt="" width="289"><figcaption></figcaption></figure>
 
-The slash (/) across the input wire indicates that the gate may receive multiple inputs.
+The slash (`/`) across the input wire indicates that the gate may receive multiple inputs.
 
 ### Pull-up and Pull-down
 
@@ -57,11 +57,7 @@ nMOS transistors are good at passing 0's, so a pull-down network of nMOS transis
 
 If both pull-up and pull-down networks were ON simultaneously, a _short circuit_ would exist between $$V_{\text{DD}}$$ and GND. On the other hand, if both of these networks are OFF simultaneously, the output would be connected to neither $$V_{\text{DD}}$$ or GND, and we say that the output _floats_.
 
-So, in a properly functioning logic gate, one of the networks should be ON and the other OFF at any given time, so that the output is pulled HIGH or LOW but not shorted or floating. This can be guaranteed by the following rule
-
-### Rule of Conduction Complements
-
-This rule states that
+So, in a properly functioning logic gate, one of the networks should be ON and the other OFF at any given time, so that the output is pulled HIGH or LOW but not shorted or floating. This can be guaranteed by the **rule of conduction complements**, which states that
 
 > When nMOS transistors are in series, the pMOS transistors must be in parallel. When nMOS transistors are in parallel, the pMOS transistors must be in series.
 
@@ -73,7 +69,7 @@ To build a two-input NOR Gate using CMOS transistors, we can follow the steps be
 {% step %}
 **Describe the behavior**
 
-For a two-input NOR Gate, it is known that when either one of your inputs is 1, the output will be 0.
+For a two-input NOR Gate, it is known that when either one of the inputs is 1, the output will be 0.
 {% endstep %}
 
 {% step %}
@@ -96,13 +92,16 @@ Note the two keywords in our behavior,
 
 <summary>How about using CMOS to create non-inverting gate?</summary>
 
-To do so, we can simly add another NOT gate after the inverting logic gate. 😂
+To do so, we can simply add another NOT gate after the inverting logic gate. 😂
 
 </details>
 
 ## Power Consumption
 
-_Power consumption_ is the amount of energy used per unit time. Digital systems draw both _dynamic_ and _static_ power. Dynamic power is the power used to charge capacitance as signals change between 0 and 1. Static power is the power used even when signals do not change overheat if it draws too much power.
+_Power consumption_ is the amount of energy used per unit time. Digital systems draw both _dynamic_ and _static_ power.
+
+* _Dynamic power_ is the power used to charge capacitance as signals change between 0 and 1.
+* _Static power_ is the power used even when signals do not change overheat if it draws too much power.
 
 > Logic gates and the wires that connect them have capacitance.
 
