@@ -327,24 +327,24 @@ In short, there are two methods to set the Overflow Flag in ALU
     ```
     Examples (2-bit signed 2's complement binary numbers):
 
-        11
-       +01
-       ===
-        00
+     11
+    +01
+    ===
+     00
 
-       - carry in is 1
-       - carry out is 1
-       - 1 XOR 1 = NO OVERFLOW
+    - carry in is 1
+    - carry out is 1
+    - 1 XOR 1 = NO OVERFLOW
 
 
-        01
-       +01
-       ===
-        10
+     01
+    +01
+    ===
+     10
 
-       - carry in is 1
-       - carry out is 0
-       - 1 XOR 0 = OVERFLOW!
+    - carry in is 1
+    - carry out is 0
+    - 1 XOR 0 = OVERFLOW!
     ```
 
 </details>
