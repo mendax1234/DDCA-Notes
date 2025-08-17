@@ -25,3 +25,5 @@
 * [Sequential Logic Design](textbook/sequential-logic-design/README.md)
   * [Latches and Flip-Flops](textbook/sequential-logic-design/latches-and-flip-flops.md)
   * [Synchronous Logic Design](textbook/sequential-logic-design/synchronous-logic-design.md)
+  * [Finite State Machines](textbook/sequential-logic-design/finite-state-machines.md)
+  * [Parallelism](textbook/sequential-logic-design/parallelism.md)
