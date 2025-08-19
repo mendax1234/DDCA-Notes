@@ -20,6 +20,7 @@
   * [A Small Recap](textbook/from-zero-to-one/a-small-recap.md)
 * [Combinational Logic Design](textbook/combinational-logic-design/README.md)
   * [Boolean Equations](textbook/combinational-logic-design/boolean-equations.md)
+  * [Boolean Algebra](textbook/combinational-logic-design/boolean-algebra.md)
   * [Multilevel Combinational Logic](textbook/combinational-logic-design/multilevel-combinational-logic.md)
   * [Timing](textbook/combinational-logic-design/timing.md)
 * [Sequential Logic Design](textbook/sequential-logic-design/README.md)

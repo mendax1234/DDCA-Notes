@@ -14,7 +14,11 @@ In this section, our purpose is to write a Boolean equation for any logic functi
 e.g., $$A\bar B\bar C$$ is a minterm, $$A+\bar B+C$$ is a maxterm for a function of the three variables A, B, C.
 
 {% hint style="info" %}
-There exists **one and only one** input value such that given minterm = 1 / maxterm = 0. This property ensures that when writing the boolean equation from a truth table:
+There is one **very important** property regarding minterm and maxterm. It states that
+
+> There exists **one and only one** input value such that given minterm = 1 / maxterm = 0.
+
+This property ensures that when writing the boolean equation from a truth table, we can **only** do the followings:
 
 1. For Sum of Product: We sum each of the minterms of which the output is TRUE.
 2. For Product of Sum: We multiply each of the maxterms of which the output is FALSE.
