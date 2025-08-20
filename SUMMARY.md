@@ -30,3 +30,5 @@
   * [Parallelism](textbook/sequential-logic-design/parallelism.md)
 * [Hardware Description Languages](textbook/hardware-description-languages/README.md)
   * [Combinational Logic](textbook/hardware-description-languages/combinational-logic.md)
+  * [Structural Modeling](textbook/hardware-description-languages/structural-modeling.md)
+  * [Sequential Logic](textbook/hardware-description-languages/sequential-logic.md)

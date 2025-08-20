@@ -1,6 +1,6 @@
 # Combinational Logic
 
-This section describes how to write **behavioral** models of combinational logic with HDLs.
+Recall that we are disciplining ourselves to design synchronous sequential circuits, which consist of combinational logic and registers. The outputs of combinational logic depend only on the current inputs. This section describes how to write **behavioral** models of combinational logic with HDLs.
 
 ## Bitwise Operators
 
