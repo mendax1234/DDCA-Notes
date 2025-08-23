@@ -34,3 +34,7 @@
   * [Structural Modeling](textbook/hardware-description-languages/structural-modeling.md)
   * [Sequential Logic](textbook/hardware-description-languages/sequential-logic.md)
   * [More Combinational Logic](textbook/hardware-description-languages/more-combinational-logic.md)
+  * [Finite State Machine](textbook/hardware-description-languages/finite-state-machine.md)
+  * [Data Types](textbook/hardware-description-languages/data-types.md)
+  * [Parameterized Modules](textbook/hardware-description-languages/parameterized-modules.md)
+  * [Testbench](textbook/hardware-description-languages/testbench.md)

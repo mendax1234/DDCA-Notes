@@ -5,7 +5,7 @@
 HDLs support _blocking_ and _nonblocking assignments_ in an `always` statement.
 
 * A group of blocking statements are evaluated in the order in which they appear in the code, just as one would expect in a standard programming language.
-* A gourp of nonblocking assignments are evaluated **concurrently**; all of the statements are evaluated  before any of the signals on the left hand sides are updated.
+* A gourp of nonblocking assignments are evaluated **concurrently**; all of the statements are evaluated before any of the signals on the left hand sides are updated.
 
 {% hint style="info" %}
 In a SystemVerilog `always` statement, `=` indicates a blocking assignment, and `<=` indicates a nonblocking assignment (also called a concurrent assignment).
@@ -31,7 +31,7 @@ endmodule
 ```
 {% endcode %}
 
-{% hint style="info" %}
+{% hint style="success" %}
 #### Code Explanation
 
 1. For reasons that will be discussed later, in SystemVerilog `always` statement, it is best to use **blocking assignments** for combinational logic and **nonblocking assignments** for sequential logic.
