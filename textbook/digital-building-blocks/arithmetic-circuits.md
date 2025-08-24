@@ -188,4 +188,64 @@ endmodule
 ```
 {% endcode %}
 
+## Shifters and Rotators
+
+_Shifters_ and _rotators_ move bits and multiply or divide by powers of 2. There are several kinds of commonly used shifters:
+
+{% stepper %}
+{% step %}
+**Logical shifter**
+
+It shifts the number to the left (LSL) or right (LSR) and fills empty spots with 0's.
+
+Ex. 11001 LSR 2 = 00110; 11001 LSL 2 = 00100;
+{% endstep %}
+
+{% step %}
+**Arithmetic shifter**
+
+It is the same as logical shifter, but on right shifts fills the most significant bits with a copy of the old most significant bit (msb). This is useful for multiplying and dividing signed numbers. Arithmetic shift left (ASL) is the same as logical shift left (LSL) because we will fill the empty spots at right with 0, this doesn't matter much.
+
+Ex. 11001 ASR 2 = 11110; 11001 ASL 2 = 00100;
+{% endstep %}
+
+{% step %}
+**Rotator**
+
+It rotates number in circle such that empty spots are filled with bits shifted off the other end.
+
+Ex. 11001 ROR 2 = 01110; 11001 ROL 2 = 00111;
+{% endstep %}
+{% endstepper %}
+
+A N-bit shifter can be built from N N:1 multiplexers. This input is shifted by 0 to N-1 bits, depending on the value of the $$\log_2N$$-bit select lines. Figure 5.16 shows the symbol and hardware of 4-bit shifters. The operators `<<`, `>>`, and `>>>` typically indicate shift left, logical shift right, and arithmetic shift right, respectively.
+
+<figure><img src="../../.gitbook/assets/4-bit-shifters.png" alt=""><figcaption></figcaption></figure>
+
+## Multiplication
+
+In the [previous part](https://wenbo-notes.gitbook.io/ddca-notes/textbook/from-zero-to-one/number-systems#multiplication), we have seen that multiplication is nothing but shift then add, by shift, we form the _partial products_.
+
+In general, a NxN multiplier multiplies two N-bit numbers and produces a 2N-bit result. Multiplication of 1-bit binary numbers is equivalent to the AND operation, so AND gates are used to form the partial products.
+
+Figure 5.18 shows the symbol, function, and implementation of a 4x4 multiplier.
+
+<figure><img src="../../.gitbook/assets/4x4-multiplier.png" alt=""><figcaption></figcaption></figure>
+
+The HDL for a multiplier is in HDL Example 5.4. As with adders, the synthesis tools may pick the most appropriate design given the timing constraints.
+
+{% code title="Example 5.4 Multiplie" lineNumbers="true" %}
+```verilog
+module multiplier #(parameter N = 8)
+                   (input  logic [N-1:0]    a, b,
+                    output logic [2*N-1:0] y);
+  assign y = a * b;
+endmodule
+```
+{% endcode %}
+
+## Division
+
+FYI part first.
+
 [^1]: This means, when there is a carry in, the column will always produce a carry out, which **propagates** the carry in it receives.
