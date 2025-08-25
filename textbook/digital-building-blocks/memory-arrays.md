@@ -63,8 +63,49 @@ _Dynamic RAM (DRAM)_ stores a bit as the presence of absence of charge on a capa
 
 <figure><img src="../../.gitbook/assets/DRAM-bit-cell.png" alt="" width="270"><figcaption></figcaption></figure>
 
-As shown in Figure 5.45 (a), when the capacitor is charged to $$V_{\text{DD}}$$, the stored bit is 1; when it is discharged to GND (Figure 5.45 (b)), the stored bit is 0. The capacitor node is _dynamic_ because it is not actively drive HIGH or LOW by a transistor tied to $$V_{\text{DD}}$$ or GND. Instead, it is tied to a transistor tied to a bitline, which is "dynamic".
+As shown in Figure 5.45 (a), when the capacitor is charged to $$V_{\text{DD}}$$, the stored bit is 1; when it is discharged to GND (Figure 5.45 (b)), the stored bit is 0. The capacitor node is _dynamic_ because it is not actively drive HIGH or LOW by a transistor tied to $$V_{\text{DD}}$$ or GND. Instead, it uses a **capacitor** to store the bit.
 
 <figure><img src="../../.gitbook/assets/dram-stored-value.png" alt=""><figcaption></figcaption></figure>
 
 Upon a read, data values are transferred from the capacitor to the bitline. Upon a write, data values are transferred from the bitline to the capacitor. Reading destroys the bit value stored on the capacitor, so the data word must be restored (rewritten) after each read. Even when DRAM is not read, the contents must be refreshed (read and rewritten) every few milliseconds, because the charge on the capacitor gradually leaks away.
+
+## Static Random Access Memory (SRAM)
+
+_Static RAM (SRAM)_ is _static_ because stored bits do not need to be refreshed. Figure 5.46 shows an SRAM bit cell. The data bit is stored on cross-coupled inverters like the one we have discussed [before](https://wenbo-notes.gitbook.io/ddca-notes/textbook/sequential-logic-design/latches-and-flip-flops#bistable-element).
+
+<figure><img src="../../.gitbook/assets/sram-bit-cell.png" alt="" width="269"><figcaption></figcaption></figure>
+
+Each cell has two outputs, $$\text{bitline}$$ and $$\overline {\text{bitline}}$$. When the wordline is asserted, both nMOS transistors turn on, and data values are transferred to or from bitlines. Unlike DRAM, if noise degrades the value of the stored bit, the cross-coupled inverters restore the value.
+
+## Area and Delay
+
+Flip-flops, SRAM, and DRAMs are all volatile memories, but each has different area and delay characteristics. Table 5.4 shows a comparison of these three types of volatile memory.
+
+<figure><img src="../../.gitbook/assets/memory-comparison.png" alt="" width="501"><figcaption></figcaption></figure>
+
+* **Flip-flop:** The data bit stored in **flip-flop** is available immediately at its output. But flip-flops take at least 20 transistors to build.
+* **DRAM vs. SRAM:**
+  * DRAM latency is longer than that of SRAM because its bitline is not actively driven by a transistor, but by a capacitor. DRAM must wait for charge to move (relatively) slowly from the capacitor to the bitline.
+  * DRAM also fundamentally has lower throughput[^1] than SRAM, because it must refresh data periodically and after a read.
+  * DRAM technologies such as _synchronous DRAM (SDRAM)_ and _double data rate (DDR)_ SDRAM have been developed to overcome this problem. SDRAM uses a clock to pipeline memory accesses. DDR SDRAM, sometimes called simply DDR, uses both the rising and falling edges of the clock to access data, thus doubling the throughput for a given clock speed.
+
+{% hint style="info" %}
+#### Notes
+
+1. Generally, the more transistors a device has, the more area, power, and cost it requires.
+2. Memory latency and throughput also depend on memory size; larger memories tend to be slower than smaller ones if all else is the same.
+{% endhint %}
+
+## Register Files
+
+Digital systems often use a number of registers to store temporary variables. (we've learned in ARM Assembly!) This group of registers, called a _register file_, is usually built as a small, multiported SRAM array, because it is more [**compact**](#user-content-fn-2)[^2] than an array of flip-flops.
+
+Figure 5.47 shows a 32-register x 32-bit three-ported register file built from a three-ported memory similar to that of Figure 5.43.
+
+<figure><img src="../../.gitbook/assets/32x32-register-file.png" alt="" width="253"><figcaption></figcaption></figure>
+
+The register file has two read ports (A1/RD1 and A2/RD2) and one write port (A3/WD3). The 5-bit addresses, A1, A2, and A3, can each access all $$2^5=32$$ registers. So, two registers can be read and one register can be written simultaneously.
+
+[^1]: Memory throughput is the rate at which data can be read from or written to a computer's memory (RAM) in a given amount of time, typically measured in bytes per second.
+
+[^2]: As we have seen above, SRAM uses less transistors to build than flip-flops.
