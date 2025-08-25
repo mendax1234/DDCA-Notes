@@ -40,3 +40,5 @@
   * [Testbench](textbook/hardware-description-languages/testbench.md)
 * [Digital Building Blocks](textbook/digital-building-blocks/README.md)
   * [Arithmetic Circuits](textbook/digital-building-blocks/arithmetic-circuits.md)
+  * [Sequential Building Blocks](textbook/digital-building-blocks/sequential-building-blocks.md)
+  * [Memory Arrays](textbook/digital-building-blocks/memory-arrays.md)
