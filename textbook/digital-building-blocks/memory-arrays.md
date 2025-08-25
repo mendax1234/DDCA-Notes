@@ -104,7 +104,7 @@ Figure 5.47 shows a 32-register x 32-bit three-ported register file built from a
 
 <figure><img src="../../.gitbook/assets/32x32-register-file.png" alt="" width="253"><figcaption></figcaption></figure>
 
-The register file has two read ports (A1/RD1 and A2/RD2) and one write port (A3/WD3). The 5-bit addresses, A1, A2, and A3, can each access all $$2^5=32$$ registers. So, two registers can be read and one register can be written simultaneously.
+The register file has two read ports (A1/RD1 and A2/RD2) and one write port (A3/WD3). The 5-bit addresses, A1, A2, and A3, can each access all $$2^5=32$$ registers (a.k.a. 32 memory addresses with each memory address connecting to a register made up of 32 bit cells, a.k.a. a 32-bit register). So, two registers can be read and one register can be written simultaneously.
 
 [^1]: Memory throughput is the rate at which data can be read from or written to a computer's memory (RAM) in a given amount of time, typically measured in bytes per second.
 
