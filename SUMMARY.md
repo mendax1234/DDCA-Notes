@@ -43,3 +43,5 @@
   * [Sequential Building Blocks](textbook/digital-building-blocks/sequential-building-blocks.md)
   * [Memory Arrays](textbook/digital-building-blocks/memory-arrays.md)
   * [Logic Arrays](textbook/digital-building-blocks/logic-arrays.md)
+* [Architecture](textbook/architecture/README.md)
+  * [Assembly Language](textbook/architecture/assembly-language.md)
