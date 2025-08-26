@@ -159,19 +159,19 @@ So far, we have shown examples of Moore machines, in which the output depends on
 2. When labelling the arcs for Mealy machines, we can use the trandition `A/Y`, where `A` is the value of the input that causes the transition, and `Y` is the corresponding output.&#x20;
 {% endhint %}
 
-> The example on H\&H Page 132-133 is awesome!
+> **TODO:** The example on H\&H Page 132-133 is awesome!
 
 ## Factoring State Machines
 
 Designing complex FSMs is often easier if they can be broken down into multiple interacting simpler state machines such that the output of some machines is the input of others. This application of hierarchy and modularity is called _factoring_ of state machines.
 
-> The exmaple on H\&H page 135-136 is awesome!
+> **TODO:** The exmaple on H\&H page 135-136 is awesome!
 
 ## Deriving an FSM from a Schematic
 
 It follows nearly the reverse process of [FSM Design](finite-state-machines.md#fsm-design-example).
 
-> The example on H\&H page 137-140 is worth reading if you want to know more about it.
+> **TODO:** The example on H\&H page 137-140 is worth reading if you want to know more about it.
 
 ## FSM Review
 

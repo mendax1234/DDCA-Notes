@@ -36,5 +36,5 @@ The LEs are surrounded by _input/output elements (IOEs)_ for interfacing with th
 The designer configures an FPGA by first creating a schematic or HDL description of the design. The design is then synthesized onto the FPGA. The synthesis tool determines how the LUTs, multiplexers, and routing channels should be configured to perform the specified functions. This configuration information is then downloaded to the FPGA.
 
 {% hint style="info" %}
-If have time, go back to review Example 5.6 on H\&H 2nd edtion, page 277 to know how each LE works in FPGA.
+**TODO**: If have time, go back to review Example 5.6 on H\&H 2nd edtion, page 277 to know how each LE works in FPGA.
 {% endhint %}

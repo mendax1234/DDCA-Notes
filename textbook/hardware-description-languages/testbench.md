@@ -47,7 +47,7 @@ endmodule
 ```
 {% endcode %}
 
-{% hint style="info" %}
+{% hint style="success" %}
 #### Code Explanation
 
 1. The `initial` statement executes the statements in its body at the start of simulation.
