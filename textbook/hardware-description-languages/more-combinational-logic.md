@@ -73,6 +73,10 @@ endmodule
 2. In SystemVerilog, `case` statement must appear inside `always` statements.
 {% endhint %}
 
+This HDL code will synthesize into a [ROM](../digital-building-blocks/memory-arrays.md#memory-hdl) containing the 7 outputs for each of the&#x20;16 possible inputs. This utilises the property of [logic using memory arrays](../digital-building-blocks/memory-arrays.md#logic-using-memory-arrays).
+
+<figure><img src="../../.gitbook/assets/sevense-synthesized-circuit.png" alt=""><figcaption></figcaption></figure>
+
 A `case` statement implies combinational logic if all possible input combinations are defined; otherwise it implies sequential logic, because the output will keep its old value in the undefined cases.
 
 ## If statements

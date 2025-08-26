@@ -106,6 +106,107 @@ Figure 5.47 shows a 32-register x 32-bit three-ported register file built from a
 
 The register file has two read ports (A1/RD1 and A2/RD2) and one write port (A3/WD3). The 5-bit addresses, A1, A2, and A3, can each access all $$2^5=32$$ registers (a.k.a. 32 memory addresses with each memory address connecting to a register made up of 32 bit cells, a.k.a. a 32-bit register). So, two registers can be read and one register can be written simultaneously.
 
+## Read Only Memory
+
+_Read Only Memory (ROM)_ stores a bit as the presence or absence of a transistor. Figure 5.48 shows a simple ROM bit cell.
+
+<figure><img src="../../.gitbook/assets/rom-bit-cell.png" alt="" width="278"><figcaption></figcaption></figure>
+
+* To read the cell, the bitline is weakly pulled HIGH. Then the wordline is turned ON.
+* (No write for ROM): During manufacturing, if the transistor is present, it pulls the bitline LOW. If it is absent, the bitline remains HIGH.
+
+{% hint style="info" %}
+The contents of the ROM bit cell  in Figure 5.48 are specified during manufacturing by the presence or absence of a transistor in each bit cell.
+{% endhint %}
+
+### Programmable ROM
+
+A _programmable ROM (PROM)_ places a transistor in every bit but provides a way to connect or disconnect the transistor to the ground.
+
+Figure 5.51 shows the bit cell for a _fuse-programmable ROM_. The user programs the ROM by applying a high voltage to selectively blow fuses. If the fuse is present, the transistor is connected to GND and the cell holds 0. If the fuse is destroyed, the transistor is disconnected from ground and the cell holds a 1. This is also called a **one-time programmable ROM**, because the fuse cannot be repaired once it is blown.
+
+<figure><img src="../../.gitbook/assets/fuse-programmable-rom-bit-cell.png" alt="" width="277"><figcaption></figcaption></figure>
+
+### Reprogrammble ROM
+
+_Reprogrammable ROMs_ provides a reversible mechanism for connecting or disconnecting the transistor to GND.
+
+{% stepper %}
+{% step %}
+**Erasable PROMs (EPROMs)**
+
+The EPROMs replace the nMOS transistor and fuse with a _floating-gate transistor_. The floating gate is not physically attached to any other wires. When suitable high voltages are applied, electrons tunnel through an insulator onto the floating gate, turning on the transistor and connecting the bitline to the wordline (decoder output). When the EPROM is exposed to intense ultraviolet (UV) light for about half an hour, the electrons are knocked off the floating gate, turning the transistor off. These actions are called _programming_ and _erasing_, respectively.
+{% endstep %}
+
+{% step %}
+**Electrically erasable PROMs (EEPROMs) and Flash memory**
+
+EEPROMs and Flash memory use similar principles but include circuitry on the chip for erasing as well as programming, so no UV light is necessary.
+
+* EEPROM bit cells are individually erasable.
+* Flash memory erases larger blocks of bits and is cheaper because fewer erasing circuits are needed.
+{% endstep %}
+{% endstepper %}
+
+{% hint style="info" %}
+In summary, modern ROMs are not really **read only**; they can be programmed (written) as well. The difference between RAM and ROM is that ROMs take a longer time to write but are **nonvolatile**.
+{% endhint %}
+
+## Logic Using Memory Arrays
+
+Although they are used primarily for data storage, memory arrays can also perform combinational logic functions. For example, memory arrays used to perform logic are called _loopup tables (LUTs)_. Figure 5.52 shows a 4-word x 1-bit memory array used as a lookup table to perform the function Y=AB.
+
+<figure><img src="../../.gitbook/assets/memory-array-as-lut.png" alt="" width="488"><figcaption></figcaption></figure>
+
+Using memory to perform logic, the user can look up the output value for a given input combination (address). Each address corresponds to a row in the truth table, and each data bit corresponds to an output value.
+
+{% hint style="info" %}
+Usually, we use ROM as a lookup table (LUT).
+{% endhint %}
+
+## Memory HDL
+
+HDL Example 5.7 describes a $$2^N$$-word x M-bit RAM. The RAM has a synchronous enabled write. In other words, writes occur on the rising edge of the clock if the write enable `we` is asserted. Read occur immediately. When power is first applied, the contents of the RAM are unpredictable.
+
+{% code title="Example 5.7 RAM" lineNumbers="true" %}
+```verilog
+module ram #(parameter N = 6, M = 32)
+            (input  logic         clk,
+             input  logic         we,
+             input  logic [N-1:0] adr,
+             input  logic [M-1:0] din,
+             output logic [M-1:0] dout);
+  logic [M-1:0] mem [2**N-1:0];
+  
+  always_ff @(posedge clk)
+    if (we) mem[adr] <= din;
+  
+  assign dout = mem[adr];
+endmodule
+```
+{% endcode %}
+
+This code will be synthesized into the following RAM circuit.
+
+<figure><img src="../../.gitbook/assets/synthesized-ram.png" alt="" width="534"><figcaption></figcaption></figure>
+
+HDL Example 5.8 describes a 4-word x 3-bit ROM. The contents of the ROM are specified in the HDL `case` statement. A ROM as small as this one may be synthesized into logic gates rather than an array. Note that the [seven-segment decoder](https://wenbo-notes.gitbook.io/ddca-notes/textbook/hardware-description-languages/more-combinational-logic#case-statements) example synthesizes into a ROM.
+
+{% code title="Example 5.8 ROM" lineNumbers="true" %}
+```verilog
+module rom(input  logic [1:0] adr,
+           output logic [2:0] dout);
+  always_comb
+    case (adr)
+      2'b00: dout <= 3'b011;
+      2'b01: dout <= 3'b110;
+      2'b10: dout <= 3'b100;
+      2'b11: dout <= 3'b010;
+    endcase
+endmodule
+```
+{% endcode %}
+
 [^1]: Memory throughput is the rate at which data can be read from or written to a computer's memory (RAM) in a given amount of time, typically measured in bytes per second.
 
 [^2]: As we have seen above, SRAM uses less transistors to build than flip-flops.

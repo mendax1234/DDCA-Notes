@@ -42,3 +42,4 @@
   * [Arithmetic Circuits](textbook/digital-building-blocks/arithmetic-circuits.md)
   * [Sequential Building Blocks](textbook/digital-building-blocks/sequential-building-blocks.md)
   * [Memory Arrays](textbook/digital-building-blocks/memory-arrays.md)
+  * [Logic Arrays](textbook/digital-building-blocks/logic-arrays.md)
