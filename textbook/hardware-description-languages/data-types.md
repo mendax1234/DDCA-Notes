@@ -12,7 +12,7 @@ Hence, a `reg` signal might be the output of a flip-flop, a latch, or combinatio
 
 > Input and output ports default to the `wire` type unless their type is explicitly defined as `reg`.
 
-For example, the following code shows how a flip-flop is defined in Verilog
+For example, the following code shows how a flip-flop is defined in Verilog.
 
 {% code lineNumbers="true" %}
 ```verilog

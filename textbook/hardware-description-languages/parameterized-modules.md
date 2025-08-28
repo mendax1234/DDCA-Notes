@@ -4,6 +4,8 @@ So far all of our modules have had fixed-width inputs and outputs. For example, 
 
 HDL Example 4.34 declares a parameterized 2:1 multiplexer with a default width of 8, then uses it to create 12-bit 4:1 multiplexers.
 
+{% tabs %}
+{% tab title="SystemVerilog" %}
 {% code title="Example 4.34 Parameterized N-Bit 2:1 Multiplexer" lineNumbers="true" %}
 ```verilog
 module mux2
@@ -31,3 +33,29 @@ endmodule
 
 1. A 12-bit 4:1 multiplexer, `mux4_12`, would need to override the default width using `#()` before the instance name.
 {% endhint %}
+{% endtab %}
+
+{% tab title="Verilog" %}
+{% code title="Example 4.34 Parameterized N-Bit 2:1 Multiplexer" lineNumbers="true" %}
+```verilog
+module mux2
+  #(parameter width = 8)
+  (input  [width-1:0] d0, d1,
+   input              s,
+   output [width-1:0] y);
+  assign y = s ? d1 : d0;
+endmodule
+
+module mux4_12(input  [11:0] d0, d1, d2, d3,
+               input  [1:0]  s,
+               output [11:0] y);
+  wire [11:0] low, hi;
+  
+  mux2 #(12) lowmux(d0, d1, s[0], low);
+  mux2 #(12) himux(d2, d3, s[0], hi);
+  mux2 #(12) outmux(low, hi, s[1], y);
+endmodule
+```
+{% endcode %}
+{% endtab %}
+{% endtabs %}

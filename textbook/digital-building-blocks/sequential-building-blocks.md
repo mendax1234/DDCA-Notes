@@ -10,6 +10,8 @@ An N-bit _binary counter_, shown in Figure 5.30, is a sequential arithmetic circ
 
 Figure 5.31 shows an N-bit counter composed of an adder and a resettable register. On each cycle, the counter adds 1 to the value stored in the register. HDL Example 5.5 describes a binary counter with asynchronous reset.
 
+{% tabs %}
+{% tab title="SystemVerilog" %}
 {% code title="Example 5.5 Counter" lineNumbers="true" %}
 ```verilog
 module counter #(parameter N = 8)
@@ -22,6 +24,23 @@ module counter #(parameter N = 8)
 endmodule
 ```
 {% endcode %}
+{% endtab %}
+
+{% tab title="Verilog" %}
+{% code title="Example 5.5 Counter" lineNumbers="true" %}
+```verilog
+module counter #(parameter N = 8)
+                (input        clk,
+                 input        reset,
+                 output reg [N-1:0] q);
+  always @(posedge clk or posedge reset)
+    if (reset) q <= 0;
+    else       q <= q + 1;
+endmodule
+```
+{% endcode %}
+{% endtab %}
+{% endtabs %}
 
 ## Shift Registers
 
@@ -39,6 +58,8 @@ A related circuit is called a _parallel-to-serial_ converter that loads N bits i
 
 HDL Example 5.6 describes such a shift register.
 
+{% tabs %}
+{% tab title="SystemVerilog" %}
 {% code title="Example 5.6 Shift Register with Parallel Load" lineNumbers="true" %}
 ```verilog
 module shiftreg #(parameter N = 8)
@@ -57,3 +78,26 @@ module shiftreg #(parameter N = 8)
 endmodule
 ```
 {% endcode %}
+{% endtab %}
+
+{% tab title="Verilog" %}
+{% code title="Example 5.6 Shift Register with Parallel Load" lineNumbers="true" %}
+```verilog
+module shiftreg #(parameter N = 8)
+                 (input        clk,
+                  input        reset, load,
+                  input        sin,
+                  input  [N-1:0] d,
+                  output reg [N-1:0] q,
+                  output       sout);
+  always @(posedge clk or posedge reset)
+    if (reset)      q <= 0;
+    else if (load)  q <= d;
+    else            q <= {q[N-2:0], sin};
+  
+  assign sout = q[N-1];
+endmodule
+```
+{% endcode %}
+{% endtab %}
+{% endtabs %}

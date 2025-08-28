@@ -59,17 +59,35 @@ Figure 5.6 (a) shows a 32-bit carry-lookahead adder composed of eight 4-bit bloc
 
 HDLs provide the `+` operation to specify a CPA. HDL Example 5.1 describes a CPA with carries in and out
 
+{% tabs %}
+{% tab title="SystemVerilog" %}
 {% code title="Example 5.1 Adder" lineNumbers="true" %}
 ```verilog
 module adder #(parameter N = 8)
-  (input  logic [N-1:0] a, b,
-   input  logic         cin,
-   output logic [N-1:0] s,
-   output logic         cout);
+              (input  logic [N-1:0] a, b,
+               input  logic         cin,
+               output logic [N-1:0] s,
+               output logic         cout);
   assign {cout, s} = a + b + cin;
 endmodule
 ```
 {% endcode %}
+{% endtab %}
+
+{% tab title="Verilog" %}
+{% code title="Example 5.1 Adder" lineNumbers="true" %}
+```verilog
+module adder #(parameter N = 8)
+              (input  [N-1:0] a, b,
+               input          cin,
+               output [N-1:0] s,
+               output         cout);
+  assign {cout, s} = a + b + cin;
+endmodule
+```
+{% endcode %}
+{% endtab %}
+{% endtabs %}
 
 ## Subtraction
 
@@ -86,6 +104,8 @@ Thus, subtraction is performed with a single CPA by adding $$A+\bar B$$ with $$C
 
 <figure><img src="../../.gitbook/assets/n-bit-subtractor.png" alt=""><figcaption></figcaption></figure>
 
+{% tabs %}
+{% tab title="SystemVerilog" %}
 {% code title="Example 5.2 Subtractor" lineNumbers="true" %}
 ```verilog
 module subtractor #(parameter N = 8)
@@ -95,6 +115,20 @@ module subtractor #(parameter N = 8)
 endmodule
 ```
 {% endcode %}
+{% endtab %}
+
+{% tab title="Verilog" %}
+{% code title="Example 5.2 Subtractor" lineNumbers="true" %}
+```verilog
+module subtractor #(parameter N = 8)
+                   (input  [N-1:0] a, b,
+                    output [N-1:0] y);
+  assign y = a - b;
+endmodule
+```
+{% endcode %}
+{% endtab %}
+{% endtabs %}
 
 ## Comparators
 
@@ -123,6 +157,8 @@ Magnitude comparison is usually done by computing `A-B` and looking at the sign 
 
 HDL Example 5.3 shows how to ues various comparison operations.
 
+{% tabs %}
+{% tab title="SystemVerilog" %}
 {% code title="Example 5.3 Comparators" lineNumbers="true" %}
 ```verilog
 module comparator #(parameter N = 8)
@@ -137,6 +173,27 @@ module comparator #(parameter N = 8)
 endmodule
 ```
 {% endcode %}
+{% endtab %}
+
+{% tab title="Verilog" %}
+{% code title="Example 5.3 Comparators" lineNumbers="true" %}
+```verilog
+module comparators #(parameter N = 8)
+                    (input  [N-1:0] a, b,
+                     output         eq, neq,
+                     output         lt, lte,
+                     output         gt, gte);
+  assign eq  = (a == b);
+  assign neq = (a != b);
+  assign lt  = (a < b);
+  assign lte = (a <= b);
+  assign gt  = (a > b);
+  assign gte = (a >= b);
+endmodule
+```
+{% endcode %}
+{% endtab %}
+{% endtabs %}
 
 ## ALU
 
@@ -167,6 +224,8 @@ Some ALUs produce extra outputs, called _flags_, that indicate information about
 
 The HDL for an N-bit ALU is shown as follows
 
+{% tabs %}
+{% tab title="SystemVerilog" %}
 {% code lineNumbers="true" %}
 ```verilog
 module alu32(input  logic [31:0] A, B,
@@ -187,6 +246,12 @@ module alu32(input  logic [31:0] A, B,
 endmodule
 ```
 {% endcode %}
+{% endtab %}
+
+{% tab title="Verilog" %}
+Wait for adding LOL.
+{% endtab %}
+{% endtabs %}
 
 ## Shifters and Rotators
 
@@ -234,7 +299,9 @@ Figure 5.18 shows the symbol, function, and implementation of a 4x4 multiplier.
 
 The HDL for a multiplier is in HDL Example 5.4. As with adders, the synthesis tools may pick the most appropriate design given the timing constraints.
 
-{% code title="Example 5.4 Multiplie" lineNumbers="true" %}
+{% tabs %}
+{% tab title="SystemVerilog" %}
+{% code title="Example 5.4 Multiplier" lineNumbers="true" %}
 ```verilog
 module multiplier #(parameter N = 8)
                    (input  logic [N-1:0]    a, b,
@@ -243,6 +310,20 @@ module multiplier #(parameter N = 8)
 endmodule
 ```
 {% endcode %}
+{% endtab %}
+
+{% tab title="Verilog" %}
+{% code title="Example 5.4 Multiplier" lineNumbers="true" %}
+```verilog
+module multiplier #(parameter N = 8)
+                   (input  [N-1:0]    a, b,
+                    output [2*N-1:0] y);
+  assign y = a * b;
+endmodule
+```
+{% endcode %}
+{% endtab %}
+{% endtabs %}
 
 ## Division
 

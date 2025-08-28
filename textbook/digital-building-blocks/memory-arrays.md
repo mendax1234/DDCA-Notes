@@ -168,6 +168,8 @@ Usually, we use ROM as a lookup table (LUT).
 
 HDL Example 5.7 describes a $$2^N$$-word x M-bit RAM. The RAM has a synchronous enabled write. In other words, writes occur on the rising edge of the clock if the write enable `we` is asserted. Read occur immediately. When power is first applied, the contents of the RAM are unpredictable.
 
+{% tabs %}
+{% tab title="SystemVerilog" %}
 {% code title="Example 5.7 RAM" lineNumbers="true" %}
 ```verilog
 module ram #(parameter N = 6, M = 32)
@@ -185,6 +187,28 @@ module ram #(parameter N = 6, M = 32)
 endmodule
 ```
 {% endcode %}
+{% endtab %}
+
+{% tab title="Verilog" %}
+{% code title="Example 5.7 RAM" lineNumbers="true" %}
+```verilog
+module ram #(parameter N = 6, M = 32)
+            (input        clk,
+             input        we,
+             input  [N-1:0] adr,
+             input  [M-1:0] din,
+             output [M-1:0] dout);
+  reg [M-1:0] mem [2**N-1:0];
+  
+  always @(posedge clk)
+    if (we) mem[adr] <= din;
+  
+  assign dout = mem[adr];
+endmodule
+```
+{% endcode %}
+{% endtab %}
+{% endtabs %}
 
 This code will be synthesized into the following RAM circuit.
 
@@ -192,6 +216,8 @@ This code will be synthesized into the following RAM circuit.
 
 HDL Example 5.8 describes a 4-word x 3-bit ROM. The contents of the ROM are specified in the HDL `case` statement. A ROM as small as this one may be synthesized into logic gates rather than an array. Note that the [seven-segment decoder](https://wenbo-notes.gitbook.io/ddca-notes/textbook/hardware-description-languages/more-combinational-logic#case-statements) example synthesizes into a ROM.
 
+{% tabs %}
+{% tab title="SystemVerilog" %}
 {% code title="Example 5.8 ROM" lineNumbers="true" %}
 ```verilog
 module rom(input  logic [1:0] adr,
@@ -206,6 +232,25 @@ module rom(input  logic [1:0] adr,
 endmodule
 ```
 {% endcode %}
+{% endtab %}
+
+{% tab title="Verilog" %}
+{% code title="Example 5.8 ROM" lineNumbers="true" %}
+```verilog
+module rom(input  [1:0] adr,
+           output reg [2:0] dout);
+  always @(adr)
+    case (adr)
+      2'b00: dout <= 3'b011;
+      2'b01: dout <= 3'b110;
+      2'b10: dout <= 3'b100;
+      2'b11: dout <= 3'b010;
+    endcase
+endmodule
+```
+{% endcode %}
+{% endtab %}
+{% endtabs %}
 
 [^1]: Memory throughput is the rate at which data can be read from or written to a computer's memory (RAM) in a given amount of time, typically measured in bytes per second.
 

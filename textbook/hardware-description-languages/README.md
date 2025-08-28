@@ -2,7 +2,7 @@
 
 Thus far, we have focused on designing combinational and sequential digital circuits at the schematic level. The process of finding an efficient set of logic gates to perform a given function is labor intensive and error prone, requiring manual simplification of truth tables or Boolean equations and manual translation of finite state machines (FSMs) into gates.
 
-In 1990s, designers discovered they were far more productive if they worked at a higher level of **abstraction**, _specifying_ just the logical function and allowing a _computer-aided design_ (CAD) tool to produce the optimized gates. The specifications are generally given in a _hardware description language_ (HDL). The two leading hardware description languages are _SystemVerilog_ and _VHDL_.
+In 1990s, designers discovered they were far more productive that if they worked at a higher level of **abstraction**, _specifying_ just the logical function and allowing a _computer-aided design_ (CAD) tool to produce the optimized gates. The specifications are generally given in a _hardware description language_ (HDL). The two leading hardware description languages are _SystemVerilog/Verilog_ and _VHDL_.
 
 ## Modules
 
@@ -15,6 +15,8 @@ The two general styles for describing module functionality are _behavioral_ and 
 
 Example 4.1 illustrate **behavioral** descriptions of a module that computes the Boolean function from $$y=\bar a\bar b\bar c+a\bar b\bar c+a\bar bc$$.
 
+{% tabs %}
+{% tab title="SystemVerilog" %}
 {% code title="Example 4.1 Combinational Logic" lineNumbers="true" %}
 ```verilog
 module sillyfunction(input  logic a, b, c,
@@ -33,6 +35,21 @@ endmodule
 2. `logic` signals such as the inputs and outputs are Boolean vairables (0 or 1)
 3. The `logic` type was introduced in SystemVerilog. It supersedes the `reg` type, which was a perennial source of confusion in Verilog. `logic` should be used everywhere except on signals [with multiple drivers](#user-content-fn-1)[^1]. Signals with multiple drivers are called `nets` and will explained later.
 {% endhint %}
+{% endtab %}
+
+{% tab title="Verilog" %}
+{% code title="Example 4.1 Combinational Logic" lineNumbers="true" %}
+```verilog
+module sillyfunction(input  a, b, c,
+                     output y);
+  assign y = ~a & ~b & ~c |
+              a & ~b & ~c |
+              a & ~b &  c;
+endmodule
+```
+{% endcode %}
+{% endtab %}
+{% endtabs %}
 
 A module, as you might expect, is a good application of modularity. It has a well defined interface, consisting of its inputs and outputs, and it performs a specific function. The particular way in which it is coded is unimportant to others that might use the module, as long as it performs its function.
 
