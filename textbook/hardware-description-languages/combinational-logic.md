@@ -11,15 +11,16 @@ _Bitwise_ Operators act on **single-bit** signals or on **multi-bit** busses. Fo
 {% code title="Example 4.3 Logic Gates" lineNumbers="true" %}
 ```verilog
 module gates(input  logic [3:0] a, b,
-             output logic [3:0] y1, y2,
-                                y3, y4, y5);
+             output logic [3:0] y1, y2, y3
+                                y4, y5, y6);
     /* five different two-input logic
        gates acting on 4-bit busses */
     assign y1 = a & b;    // AND
     assign y2 = a | b;    // OR
     assign y3 = a ^ b;    // XOR
-    assign y4 = ~(a & b); // NAND
-    assign y5 = ~(a | b); // NOR
+    assign y4 = ~(a ^ b); // XNOR
+    assign y5 = ~(a & b); // NAND
+    assign y6 = ~(a | b); // NOR
 endmodule
 ```
 {% endcode %}
@@ -29,15 +30,16 @@ endmodule
 {% code title="Example 4.3 Logic Gates" lineNumbers="true" %}
 ```verilog
 module gates(input  [3:0] a, b,
-             output [3:0] y1, y2,
-                          y3, y4, y5);
+             output [3:0] y1, y2, y3
+                          y4, y5, y6);
   /* Five different two-input logic
      gates acting on 4 bit busses */
   assign y1 = a & b;    // AND
   assign y2 = a | b;    // OR
   assign y3 = a ^ b;    // XOR
-  assign y4 = ~(a & b); // NAND
-  assign y5 = ~(a | b); // NOR
+  assign y4 = ~(a ^ b); // XNOR
+  assign y5 = ~(a & b); // NAND
+  assign y6 = ~(a | b); // NOR
 endmodule
 ```
 {% endcode %}
