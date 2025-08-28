@@ -249,7 +249,7 @@ endmodule
 {% endtab %}
 
 {% tab title="Verilog" %}
-Wait for adding LOL.
+> **TODO:** Wait for adding LOL.
 {% endtab %}
 {% endtabs %}
 
@@ -327,6 +327,6 @@ endmodule
 
 ## Division
 
-FYI part first.
+> **TODO:** FYI part first.
 
 [^1]: This means, when there is a carry in, the column will always produce a carry out, which **propagates** the carry in it receives.

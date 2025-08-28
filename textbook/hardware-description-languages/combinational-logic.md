@@ -275,7 +275,7 @@ The following table shows numbers are written in SystemVerilog/Verilog.
 
 HDLs use `z` to indicate a floating value, `z` is particularly useful for describing a tristate buffer, whose output floats when the enable is 0. Similarly, HDLs use `x` to indicate an invalid logic level.
 
-> Read through tristate buffer if have time.
+> **TODO:** Read through tristate buffer if have time.
 
 {% hint style="warning" %}
 Seeing `x` (SystemVerilog/Verilog) or `u` (VHDL) values in simulation is almost always an indication of a bug or bad coding practice.
