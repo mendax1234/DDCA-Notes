@@ -47,3 +47,8 @@
 * [Architecture](textbook/architecture/README.md)
   * [Assembly Language](textbook/architecture/assembly-language.md)
   * [Programming](textbook/architecture/programming.md)
+
+## Lab
+
+* [Preparation - CS2100DE](lab/preparation-cs2100de/README.md)
+  * [Lab 01](lab/preparation-cs2100de/lab-01.md)
