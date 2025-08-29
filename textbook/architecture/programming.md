@@ -148,7 +148,47 @@ target:
 {% hint style="success" %}
 #### Code Explanation
 
-1. After the \`h
+1. After the `j` instruction executes, this program unconditionally continues executing the `add` instruction at the label `target`. All of the instructions between the jump and the label are skipped.
 {% endhint %}
+
+## Conditional Statements
+
+This section shows how to translate the high-level constructs (`if/else`, and `switch/case`) into RISC-V assembly language.
+
+### If Statements
+
+Code Example 6.15 shows how to translate an if statement into RISC-V assembly code.
+
+{% tabs %}
+{% tab title="High-Level Code" %}
+{% code title="Example 6.15 If Statement" lineNumbers="true" %}
+```c
+if (apples == oranges)
+    f = g + h;
+apples = oranges - h;
+```
+{% endcode %}
+{% endtab %}
+
+{% tab title="RISC-V Assembly Code" %}
+{% code title="Example 6.15 If Statement" lineNumbers="true" %}
+```armasm
+# s0 = apples, s1 = oranges
+# s2 = f, s3 = g, s4 = h
+    bne s0, s1, L1   # skip if (apples != oranges)
+    add s2, s3, s4   # f = g + h
+L1: sub s0, s1, s4   # apples = oranges - h
+```
+{% endcode %}
+{% endtab %}
+{% endtabs %}
+
+{% hint style="success" %}
+#### Code Explanation
+
+1. The assembly code for the if statement tests the opposite condition of the one in the high-level code.
+{% endhint %}
+
+
 
 [^1]: Sign-extended logical immediates are somewhat unusual. Many other architectures, such as MIPS and ARM, zero-extended the immediate for logical operations.
