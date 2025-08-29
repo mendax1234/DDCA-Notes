@@ -189,6 +189,111 @@ L1: sub s0, s1, s4   # apples = oranges - h
 1. The assembly code for the if statement tests the opposite condition of the one in the high-level code.
 {% endhint %}
 
+### If/else Statements
 
+Code Example 6.16 shows an example `if/else` statement.
+
+{% tabs %}
+{% tab title="High-Level Code" %}
+{% code title="Example 6.16 If/else Statement" lineNumbers="true" %}
+```c
+if (apples == oranges)
+    f = g + h;
+else
+    apples = oranges - h;
+```
+{% endcode %}
+{% endtab %}
+
+{% tab title="RISC-V Assembly Code" %}
+{% code title="Example 6.16 If/else Statement" lineNumbers="true" %}
+```armasm
+# s0 = apples, s1 = oranges
+# s2 = f, s3 = g, s4 = h
+    bne s0, s1, L1   # skip if (apples != oranges)
+    add s2, s3, s4   # f = g + h
+    j L2
+L1: sub s0, s1, s4   # apples = oranges - h
+L2:
+```
+{% endcode %}
+{% endtab %}
+{% endtabs %}
+
+{% hint style="success" %}
+#### Code Explanation
+
+1. The assembly code tests for (`apples ≠ oranges`). If that opposite condition is TRUE, `bne` skips the if block and executes the else block. Otherwise, the if block executes and finishes with a jump (`j`) past the else block.
+{% endhint %}
+
+### Switch/case Statements
+
+A case statement is equivalent to a series of nested if/else statements. Code Example 6.17 shows two high-level code snippets with the same functionality: they calculate whether to dispense $20, $50, or $100 from an ATM depending on the button pressed.
+
+{% tabs %}
+{% tab title="High-Level Code" %}
+{% code title="Example 6.17 Switch/case Statement" lineNumbers="true" %}
+```c
+switch (button) {
+    case 1: 
+        amt = 20; 
+        break;
+    case 2: 
+        amt = 50; 
+        break;
+    case 3: 
+        amt = 100; 
+        break;
+    default: 
+        amt = 0;
+}
+
+// equivalent function using
+// if/else statements
+if (button == 1) {
+    amt = 20;
+} else if (button == 2) {
+    amt = 50;
+} else if (button == 3) {
+    amt = 100;
+} else {
+    amt = 0;
+}
+```
+{% endcode %}
+{% endtab %}
+
+{% tab title="RISC-V Assembly Code" %}
+{% code title="Example 6.17 Switch/case Statement" lineNumbers="true" %}
+```armasm
+# s0 = button, s1 = amt
+case1:
+    addi t0, zero, 1    # t0 = 1
+    bne s0, t0, case2   # button == 1?
+    addi s1, zero, 20   # if yes, amt = 20
+    j done              # break out of case
+case2:
+    addi t0, zero, 2    # t0 = 2
+    bne s0, t0, case3   # button == 2?
+    addi s1, zero, 50   # if yes, amt = 50
+    j done              # break out of case
+case3:
+    addi t0, zero, 3    # t0 = 3
+    bne s0, t0, default # button == 3?
+    addi s1, zero, 100  # if yes, amt = 100
+    j done              # break out of case
+default:
+    add s1, zero, zero  # amt = 0
+done:
+```
+{% endcode %}
+{% endtab %}
+{% endtabs %}
+
+{% hint style="success" %}
+#### Code Explanation
+
+1. The RISC-V assembly implementation is the nearly the same as the high-level code snippet.
+{% endhint %}
 
 [^1]: Sign-extended logical immediates are somewhat unusual. Many other architectures, such as MIPS and ARM, zero-extended the immediate for logical operations.
