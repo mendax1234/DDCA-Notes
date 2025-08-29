@@ -28,7 +28,7 @@ add a, b, c
 {% endtab %}
 {% endtabs %}
 
-{% hint style="info" %}
+{% hint style="success" %}
 #### Code Explanation
 
 1. The first part of the assembly instruction, `add`, is called the _mnemonic_ and indicates what operation to perform.
@@ -80,7 +80,7 @@ sub a, t, d # a = t - d
 {% endtab %}
 {% endtabs %}
 
-{% hint style="info" %}
+{% hint style="success" %}
 #### Code Explanation
 
 1. In RISC-V assembly language, only single-line comments are used. They begin with a hash symbol (`#`) and continue until the end of the line.
@@ -191,8 +191,8 @@ b = a - 12
 {% code title="Example 6.6 Immediate Operands" %}
 ```armasm
 # s0 = a, s1 = b
-  add s0, s0, 4    # a = a + 4
-  add s1, s0, -12  # b = a - 12
+  addi s0, s0, 4    # a = a + 4
+  addi s1, s0, -12  # b = a - 12
 ```
 {% endcode %}
 {% endtab %}

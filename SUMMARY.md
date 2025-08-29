@@ -46,3 +46,4 @@
   * [Logic Arrays](textbook/digital-building-blocks/logic-arrays.md)
 * [Architecture](textbook/architecture/README.md)
   * [Assembly Language](textbook/architecture/assembly-language.md)
+  * [Programming](textbook/architecture/programming.md)

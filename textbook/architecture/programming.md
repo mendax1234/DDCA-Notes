@@ -1,0 +1,154 @@
+# Programming
+
+In this section, we begin by discussing program flow and instructions that support high-level languages like C. Then, we explore how to translate the high-level constructs into RISC-V assembly code.
+
+## Program Flow
+
+Like data, instructions are stored in memory. Each instruction is 32 bits (4 bytes) long, as we will discuss later, so consecutive instruction addresses increase by four. For example, in the code snippet below, the `addi` instruction is located in memory at address `0x538` and the next instruction, `lw`, is at address `0x53C`.
+
+<figure><img src="../../.gitbook/assets/risc-v-memory-instruction-example.png" alt=""><figcaption></figcaption></figure>
+
+### Program Counter
+
+The _program counter —_ also called the PC — keeps track of the current instruction. The PC holds the memory address of the current instruction and increments by four after each instruction completes so that the processor can read or _fetch_ the next instruction from memory. For example, when `addi` instruction is executing, PC is `0x538`. After `addi` instruction completes, PC increments by four to `0x53C` and the processor fetches the `lw` instruction at that address.
+
+## Logical, Shift, and Multiply Instructions
+
+The RISC-V architecture defines a variety of logical and arithmetic instructions. We introduce these instructions briefly here because they are necessary to implement higher-level constructs.
+
+### Logical Instructions
+
+RISC-V _logical operations_ include `and`, `or` and `xor`. These each operate bitwise on two source registers and write the result to a destination register, as shown in Figure 6.2. Immediate versions of these logical operations, `andi`, `ori`, and `xori`, use one source register and a 12-bit sign-extended immediate.
+
+<figure><img src="../../.gitbook/assets/risc-v-logical-operations.png" alt=""><figcaption></figcaption></figure>
+
+* The `and` instruction is useful for _clearing_ or _masking_ bits. (e.g., forcing bits to 0). See more from [NUS CG2111A Notes](https://wenbo-notes.gitbook.io/cg2111a-notes/studio/studio-1-gpio-programming#clear-certain-bits).
+* The `or` instruction is useful for _set_ bits in a register (e.g., for bit to be 1). See more from [NUS CG2111A Notes](https://wenbo-notes.gitbook.io/cg2111a-notes/studio/studio-1-gpio-programming#set-certain-bits).
+* A logical NOT operation can be performed with `xori s8, s1, -1`. Remember that -1 (0xFFF) is sign-extended[^1] to 0xFFFFFFFF (all 1's). XOR with all 1's inverts all the bits, so `s8` will get the one's complement of `s1`.
+
+### Shift Instructions
+
+_Shift instructions_ shift the value in a register left or right, dropping bits off the end. RISC-V shift operations are
+
+1. `sll`: shift left logical
+2. `slr`: shift right logical
+3. `sra`: shift right arithmetic
+
+{% hint style="info" %}
+The difference and example of the above three operations can be seen from the [previous notes](https://wenbo-notes.gitbook.io/ddca-notes/textbook/digital-building-blocks/arithmetic-circuits#shifters-and-rotators).
+{% endhint %}
+
+These shifts specify the shift amount in the second source register. Immediate versions of each instruction are also available (`slli`, `srli`, and `srai`), where the amount to shift is specified by a 5-bit unsigned immediate.
+
+Figure 6.3 shows the assembly code and resulting register values for `slli`, `srli`, and `srai` when shifting by an immediate value. `s5` is shifted by the immediate amount, and the result is placed in the destination register.
+
+<figure><img src="../../.gitbook/assets/risc-v-shift-instrucitons-example.png" alt=""><figcaption></figcaption></figure>
+
+As discussed in the [previous notes,](https://wenbo-notes.gitbook.io/ddca-notes/textbook/digital-building-blocks/arithmetic-circuits#shifters-and-rotators)&#x20;
+
+* shifting a value by N is equivalent to multiplying it by $$2^N$$
+* shifting a value right by N is equivalent to dividing it by $$2^N$$
+  * **arithmetic right shifts** divide two's complement numbers, while
+  * **logical right shifts** divide unsigned numbers
+
+### Multiply Instructions
+
+As we have seen in [previous notes](https://wenbo-notes.gitbook.io/ddca-notes/textbook/digital-building-blocks/arithmetic-circuits#multiplication), multiplying two N-bit numbers produces a 2N-bit product. The RISC-V architecture provides various _multiply instructions_ that result in 32- or 64-bit products. These instructions are not part of RVI321 but are included in teh RVM (RISC-V multiply/divide) extension.
+
+* The _multiply instruction_ (`mul`) multiplies two 32-bit numbers and produces a 32-bit product. `mul s1, s2, s3` multiplies the values in `s2` and `s3` and places the **least significant** 32 bits of the product in `s1`; the **most significant** 32 bits of the product are discarded.
+* Three versions of the "multiply high" operation exist: `mulh`, `mulhsu`, and `mulhu`. These instructions put the high 32 bits of the multiplication result in the destination register.
+  * `mulh` (multiply high signed signed) treats both operands as signed.
+  * `mulhsu` (multiply high signed unsigned) treats the first operand as signed and the second as unsigned.
+  * `mulhu` (multiply high unsigned unsigned) treats both operands as unsigned.
+
+Using a series of two instructions — one of the "multiply high" instructions followed by the `mul` instruction — will place the entire 64-bit result of the 32-bit multiplication in the two registers designated by the user. For example, the following code multiplies 32-bit signed numbers in `s3` and `s5` and places the 64-bit product in `t1` and `t2`. That is `{t1, t2} = s3 x s5`.
+
+{% code lineNumbers="true" %}
+```armasm
+mulh t1, s3, s5;
+mul  t2, s3, s5;
+```
+{% endcode %}
+
+## Branching
+
+_Branch instructions_ modify the flow of the program so that the processor can fetch instructions that are not in sequential order in memory. They modify the PC to skip over sections of code or to repeat previous code.
+
+* _Conditional branch_ instructions perform a test and branch only if the test is TRUE.
+* _Unconditional branch_ instructions, called _jumps_, always branch.
+
+### Conditional Branches
+
+The RISC-V instruction set has six conditional branch instructions, eahc of which take two source registers and a label indicating where to go.
+
+1. `beq` (_branch if equal_) branches when the values in the two source registers are equal.
+2. `bne` (_branch if not equal_) branches when they are unequal.
+3. `blt` (_branch if less than_) branches when the value in the **first** source register is **less than** the value in the **second**.
+4. `bge` (_branch if greater than or equal to_) branches when the **first** is greater than or equal to the **second**.
+   1. `blt` and `bge` treat the operands as signed numbers, while
+   2. `bltu` and `bgeu` treat the operands as unsigned (the fifth and sixth conditional branch instructions in RISC-V)
+
+Code Example 6.12 illustrates the use of `beq`. When the program reaches the branch if equal instruction (`beq`), the value in `s0` is equal to the value in `s1`, so the branch is taken. Thus, the next instruction executed is the `add` instruction just after the label called `target`. The `addi` and `sub` instructions between the branch and the label are not executed.
+
+{% code title="Example 6.12 Conditional Branching Using beq" lineNumbers="true" %}
+```armasm
+ addi s0, zero, 4   # s0 = 0 + 4 = 4
+ addi s1, zero, 1   # s1 = 0 + 1 = 1
+ slli s1, s1, 2     # s1 = 1 << 2 = 4
+ beq s0, s1, target # s0 == s1, so branch is taken
+ addi s1, s1, 1     # not executed
+ sub s1, s1, s0     # not executed
+target:
+ add s1, s1, s0     # s1 = 4 + 4 = 8
+```
+{% endcode %}
+
+{% hint style="success" %}
+#### Code Explanation
+
+1. Assembly code uses _labels_ to indicate instruction locations in the program. A label refers to the instruction just after the label. When the assembly code is translated into machine code, these labels correspond to instruction addresses (as will be discussed later).
+2. RISC-V assembly labels are followed by a colon (`:`).
+3. Most programmers indent their instructions but not the labels to help make labels stand out.
+{% endhint %}
+
+In Code Example 6.13, the branch is not taken because `s0` is equal to `s1`, and the code continues to execute directly after the `bne` (branch if not equal) instruction. **All** instructions in this code snippet are executed. (Including the instruction under `target`)
+
+{% code title="Example 6.13 Conditional Branch Using bne" lineNumbers="true" %}
+```armasm
+ addi s0, zero, 4   # s0 = 0 + 4 = 4
+ addi s1, zero, 1   # s1 = 0 + 1 = 1
+ slli s1, s1, 2     # s1 = 1 << 2 = 4
+ bne s0, s1, target # s0 != s1? No (4==4), branch not taken
+ addi s1, s1, 1     # s1 = 4 + 1 = 5
+ sub s1, s1, s0     # s1 = 5 - 4 = 1
+target:
+ add s1, s1, s0     # s1 = 1 + 4 = 5
+```
+{% endcode %}
+
+### Unconditional Branches
+
+A program can jump — that is, unconditionally branch — using one of three instructions:
+
+1. _jump_ (`j`): jumps directly to the instruction at specified label. See Code Example 6.14
+2. _jump and link_ (`jal`): will be discussed later in function calls.
+3. _jump register_ (`jr`): will be discussed later in function calls.
+
+{% code title="Example 6.14 Unconditional Branching Using j" lineNumbers="true" %}
+```armasm
+ j target          # jump to target
+ srai s1, s1, 2    # not executed
+ addi s1, s1, 1    # not executed
+ sub s1, s1, s0    # not executed
+target:
+ add s1, s1, s0    # s1 = s1 + s0
+```
+{% endcode %}
+
+{% hint style="success" %}
+#### Code Explanation
+
+1. After the \`h
+{% endhint %}
+
+[^1]: Sign-extended logical immediates are somewhat unusual. Many other architectures, such as MIPS and ARM, zero-extended the immediate for logical operations.
