@@ -20,7 +20,11 @@ Vectors are used to group related signals using one name to make it more conveni
 In Verilog, vector is just a group of wires.
 {% endhint %}
 
-For example, for the circuit as follows, its verilog code will be
+#### Examples
+
+{% stepper %}
+{% step %}
+**Vector Basic**
 
 <figure><img src="../../.gitbook/assets/verilog-vector-example.png" alt=""><figcaption></figcaption></figure>
 
@@ -44,3 +48,99 @@ module top_module(
 endmodule
 ```
 {% endcode %}
+{% endstep %}
+
+{% step %}
+**Part Select: Endianness Swap**
+
+The part-select operator can be used to access a portion of a vector:
+
+```
+w[3:0]      // Only the lower 4 bits of w
+x[1]        // The lowest bit of x
+x[1:1]      // ...also the lowest bit of x
+z[-1:-2]    // Two lowest bits of z
+b[3:0]      // Illegal. Vector part-select must match the direction of the declaration.
+b[0:3]      // The *upper* 4 bits of b.
+assign w[3:0] = b[0:3];    // Assign upper 4 bits of b to lower 4 bits of w. w[3]=b[0], w[2]=b[1], etc.
+```
+
+***
+
+Example 1: A 32-bit vector can be viewed as containing 4 bytes (bits \[31:24], \[23:16], etc.). Build a circuit that will reverse the _byte_ ordering of the 4-byte word.
+
+```
+AaaaaaaaBbbbbbbbCcccccccDddddddd => DdddddddCcccccccBbbbbbbbAaaaaaaa
+```
+
+Part-select can be used on both the left side and right side of an assignment. Thus, the Verilog code should look as follows,
+
+{% code lineNumbers="true" %}
+```verilog
+module top_module (
+	input [31:0] in,
+	output [31:0] out
+);
+
+	assign out[31:24] = in[ 7: 0];	
+	assign out[23:16] = in[15: 8];	
+	assign out[15: 8] = in[23:16];	
+	assign out[ 7: 0] = in[31:24];	
+	
+endmodule
+```
+{% endcode %}
+
+***
+
+Example 2: Given an 8-bit input vector \[7:0], reverse its bit ordering.
+
+{% code lineNumbers="true" %}
+```verilog
+module top_module (
+	input [7:0] in,
+	output [7:0] out
+);
+	
+	assign {out[0],out[1],out[2],out[3],out[4],out[5],out[6],out[7]} = in;
+endmodule
+```
+{% endcode %}
+
+{% hint style="success" %}
+#### Code Explanation
+
+1. For now, we don't use a for-loop for this. Leave it for the future.
+{% endhint %}
+{% endstep %}
+
+{% step %}
+**Bitwise and Logical Operators in Verilog**
+
+The table [here](https://wenbo-notes.gitbook.io/ddca-notes/recap-from-ntu-sc1005/digital-circuit/verilog-intro#verilog-assignment-operators) summarises the bitwise and logical operators in verilog well.
+{% endstep %}
+
+{% step %}
+**Concatenating Vectors**
+
+The technique used here has been introduced in this [chapter](https://wenbo-notes.gitbook.io/ddca-notes/textbook/hardware-description-languages/combinational-logic#bit-swizzling). The concatenating can be done both in the L.H.S and R.H.S of the continuous assignment statements.
+
+***
+
+Example: Given several input vectors, concatenate them together then split them up into several output vectors. There are six 5-bit input vectors: a, b, c, d, e, and f, for a total of 30 bits of input. There are four 8-bit output vectors: w, x, y, and z, for 32 bits of output. The output should be a concatenation of the input vectors followed by two 1 bits:
+
+<figure><img src="../../.gitbook/assets/vector-concatenation-example.png" alt="" width="563"><figcaption></figcaption></figure>
+
+{% code lineNumbers="true" %}
+```verilog
+module top_module (
+    input [4:0] a, b, c, d, e, f,
+    output [7:0] w, x, y, z );//
+
+    // assign { ... } = { ... };
+    assign {w, x, y, z} = {a, b, c, d, e, f, 2'b11};
+endmodule
+```
+{% endcode %}
+{% endstep %}
+{% endstepper %}
