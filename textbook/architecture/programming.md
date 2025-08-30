@@ -296,4 +296,136 @@ done:
 1. The RISC-V assembly implementation is the nearly the same as the high-level code snippet.
 {% endhint %}
 
+## Getting Loopy
+
+### While Loops
+
+The while loop in Code Example 6.18 determines the value of `x` such that $$2^x=128$$. It executes seven times, until `pow=128`.
+
+{% tabs %}
+{% tab title="High-Level Code" %}
+{% code title="Example 6.18 While Loop" lineNumbers="true" %}
+```c
+// Determines the power of x such that 2^x = 128
+int pow = 1;
+int x = 0;
+
+while (pow != 128) {
+    pow = pow * 2;
+    x = x + 1;
+}
+```
+{% endcode %}
+{% endtab %}
+
+{% tab title="RISC-V Assembly Code" %}
+{% code title="Example 6.18 While Loop" lineNumbers="true" %}
+```armasm
+# s0 = pow, s1 = x
+    addi s0, zero, 1      # pow = 1
+    add s1, zero, zero    # x = 0
+    addi t0, zero, 128    # t0 = 128
+while:
+    beq s0, t0, done      # pow = 128?
+    slli s0, s0, 1        # pow = pow * 2
+    addi s1, s1, 1        # x = x + 1
+    j while               # repeat loop
+done:
+```
+{% endcode %}
+{% endtab %}
+{% endtabs %}
+
+{% hint style="success" %}
+#### Code Explanation
+
+1. Like [if/else statements](programming.md#if-else-statements), the assembly code for while loops tests the opposite condition of the one in the high-level code.
+{% endhint %}
+
+### Do-while Loops
+
+Code Example 6.19 illustrates such a loop.
+
+{% tabs %}
+{% tab title="High-Level Code" %}
+{% code title="Example 6.19 Do/While Loop" lineNumbers="true" %}
+```c
+// Determines the power of x such that 2^x = 128
+int pow = 1;
+int x = 0;
+
+do {
+    pow = pow * 2;
+    x = x + 1;
+} while (pow != 128);
+```
+{% endcode %}
+{% endtab %}
+
+{% tab title="RISC-V Assembly Code" %}
+{% code title="Example 6.19 Do/While Loop" lineNumbers="true" %}
+```armasm
+# s0 = pow, s1 = x
+    addi s0, zero, 1      # pow = 1
+    add  s1, zero, zero   # x = 0
+    addi t0, zero, 128    # t0 = 128
+while:
+    slli s0, s0, 1        # pow = pow * 2
+    addi s1, s1, 1        # x = x + 1
+    bne  s0, t0, while    # pow != 128?
+done:
+```
+{% endcode %}
+{% endtab %}
+{% endtabs %}
+
+{% hint style="success" %}
+#### Code Explanation
+
+1. Unlike the [previous example](programming.md#while-loops), the branch checks the same condition as in the high-level code.
+{% endhint %}
+
+### For Loops
+
+Code Example 6.20 adds the numbers from 0 to 9.
+
+{% tabs %}
+{% tab title="High-Level Code" %}
+{% code title="Example 6.20 For Loop" lineNumbers="true" %}
+```c
+// Add the numbers from 0 to 9
+int sum = 0;
+int i;
+
+for (i = 0; i < 10; i = i + 1) {
+    sum = sum + i;
+}
+```
+{% endcode %}
+{% endtab %}
+
+{% tab title="RISC-V Assembly Code" %}
+{% code title="Example 6.20 For Loop" lineNumbers="true" %}
+```armasm
+# s0 = i, s1 = sum
+    addi s1, zero, 0      # sum = 0
+    addi s0, zero, 0      # i = 0
+    addi t0, zero, 10     # t0 = 10
+for:
+    bge  s0, t0, done     # i >= 10?
+    add  s1, s1, s0       # sum = sum + i
+    addi s0, s0, 1        # i = i + 1
+    j    for              # repeat loop
+done:
+```
+{% endcode %}
+{% endtab %}
+{% endtabs %}
+
+{% hint style="success" %}
+#### Code Explanation
+
+1. The for loop in the high-level code checks the `<` condition to continue, so the assembly code checks the opposite condition, ≥, to exit the loop.
+{% endhint %}
+
 [^1]: Sign-extended logical immediates are somewhat unusual. Many other architectures, such as MIPS and ARM, zero-extended the immediate for logical operations.
