@@ -428,4 +428,349 @@ done:
 1. The for loop in the high-level code checks the `<` condition to continue, so the assembly code checks the opposite condition, ≥, to exit the loop.
 {% endhint %}
 
+## Arrays
+
+Figure 6.4 shows a 200-element array of **integer** scores stored in memory. Each consecutive element address increases by 4, the number of bytes in an integer.
+
+<figure><img src="../../.gitbook/assets/risc-v-memory-example.png" alt="" width="308"><figcaption></figcaption></figure>
+
+Code Example 6.21 is a grade inflation algorithm that adds 10 points to each of the scores. The code for initializing the `scores` array is not shown.
+
+{% tabs %}
+{% tab title="High-Level Code" %}
+{% code title="Example 6.21 Using a for loop to access an array" lineNumbers="true" %}
+```c
+int i;
+int scores[200];
+
+for (i = 0; i < 200; i += 1) {
+    scores[i] = scores[i] + 10;
+}
+```
+{% endcode %}
+{% endtab %}
+
+{% tab title="RISC-V Assembly Code" %}
+{% code title="Example 6.21 Using a for loop to access an array" lineNumbers="true" %}
+```armasm
+# s0 = scores base address, s1 = i
+
+    addi s1, zero, 0   # i = 0
+    addi t2, zero, 200 # t2 = 200
+
+for:
+    bge  s1, t2, done  # if i >= 200 then done
+    slli t0, s1, 2     # t0 = i * 4
+    add  t0, t0, s0    # address of scores[i]
+    lw   t1, 0(t0)     # t1 = scores[i]
+    addi t1, t1, 10    # t1 = scores[i] + 10
+    sw   t1, 0(t0)     # scores[i] = t1
+    addi s1, s1, 1     # i = i + 1
+    j    for           # repeat
+done:
+```
+{% endcode %}
+{% endtab %}
+{% endtabs %}
+
+{% hint style="success" %}
+#### Code Explanation
+
+1. Assume that `s0` is initially `0x174300A0`, the base address of the array.
+2. The index into the array is a variable (`i`) that increments by 1 for each array element, so we multiply it by 4 before adding it to the base address.
+{% endhint %}
+
+### Bytes and Characters
+
+In RISC-V assembly, the _load_ byte (`lb`), _load byte unsigned_ (`lbu`), and _store byte_ (`sb`) instructions access individual bytes in memory.
+
+* `lb` sign-extends the byte to fill the entire 32-bit register
+* `lbu` zero-extends the byte to fill the entire 32-bit register
+* `sb` stores the **least significant byte** of the 32-bit register into the specified byte address in memory.
+
+All these three instructions are illustrated in Figure 6.5, with the base address, `s4`, being `0xD0`.
+
+<figure><img src="../../.gitbook/assets/risc-v-byte.png" alt=""><figcaption></figcaption></figure>
+
+{% hint style="success" %}
+#### Code Explanation
+
+1. `lbu s1, 2(s4)` loads the byte at memory address `0xD2` into the least significant byte of `s1` and fills the remaining register bits with 0.
+2. `lb s2, 3(s4)` loads the byte at memory address `0xD3` into the least significant byte of `s2`and sign-extends the byte into the upper 24 bits of the register.
+3. `sb s3, 1(s4)` stores the least significant byte of `s3` (0x9B) into memroy byte address at 0xD1; it replaces `0x42` with `0x9B`. The more significant bytes of `s3` are ignored.
+{% endhint %}
+
+In C, the null character (0x00) signifies the end of a string. For example, Figure 6.6 shows the string "Hello!" (`0x48 65 6C 6C 6F 21 00`) stored in memory.
+
+<figure><img src="../../.gitbook/assets/risc-v-string-storation-example.png" alt="" width="284"><figcaption></figcaption></figure>
+
+## Function Calls
+
+When a function calles another, the calling function, the _caller_, and the called function, the _callee_, must agree on where to put the arguments and the return value. In RISC-V programs,
+
+* the caller conventionally places up to eight arguments in registers `a0` to `a7` before making the function call,
+* the callee places the return value in register `a0` before finishing.
+
+By following this convention, both functions know where to find the arguments and return value, even if the caller and callee were written by different people.
+
+{% hint style="info" %}
+The caller stores the return address in the _return address register_ `ra` at the same time it jumps to the callee using the jump and link instruction (`jal`). Specifically, the callee must leave the _saved registers_ (`s0-s11`), the return address (`ra`), and the _stack_, a portion of memory used for temporary variables, unmodified.
+{% endhint %}
+
+### Function Calls and Returns
+
+RISC-V uses the _jump and link_ instruction (`jal`) to call a function and _jump register_ instruction (`jr`) to return from a function. Code Example 6.22 shows the `main` function calling the `simple` function. `main` is the caller and `simple` is the callee.
+
+{% tabs %}
+{% tab title="High-Level Code" %}
+{% code title="Example 6.22 simple function call" lineNumbers="true" %}
+```c
+int main() {
+    simple();
+    // ...
+}
+
+// void mains the function
+// returns no value
+void simple() {
+    return;
+}
+```
+{% endcode %}
+{% endtab %}
+
+{% tab title="RISC-V Assembly Code" %}
+{% code title="Example 6.22 simple function call" lineNumbers="true" %}
+```armasm
+0x00000300 main:   jal simple  # call function
+0x00000304 ...
+...        ...
+
+0x0000051c simple: jr ra       # return
+```
+{% endcode %}
+{% endtab %}
+{% endtabs %}
+
+{% hint style="success" %}
+#### Code Explanation
+
+1. The instruction `jal simple` performs two tasks:
+   1. it jumps to the target instruction located at `simple` (0x0000051C)
+   2. it stores the _return address_, the address of the instruction **after** `jal` (in this case, 0x00000304) in the return address register (`ra`).
+{% endhint %}
+
+### Input Arguments and Return Values
+
+As we have seen earlier, by RISC-V convention, functions use `a0` to `a7` for input arguments and `a0` for the return value. In Code Example 6.23, the function `diffofsums` is called with four arguments and returns on result. `result` is a local variable, which we choose to keep in `s3`. (Saving and restoring registers will be discussed soon).
+
+{% tabs %}
+{% tab title="High-Level Code" %}
+{% code title="Example 6.23 Function calls with arguments and return values" lineNumbers="true" %}
+```c
+int main() {
+    int y;
+    // ...
+    y = diffofsums(2, 3, 4, 5);
+    // ...
+}
+
+int diffofsums(int f, int g, int h, int i) {
+    int result;
+    result = (f + g) - (h + i);
+    return result;
+}
+```
+{% endcode %}
+{% endtab %}
+
+{% tab title="RISC-V Assembly Code" %}
+{% code title="Example 6.23 Function calls with arguments and return values" lineNumbers="true" %}
+```armasm
+# s7 = y
+main:
+    ...
+    addi a0, zero, 2   # argument 0 = 2
+    addi a1, zero, 3   # argument 1 = 3
+    addi a2, zero, 4   # argument 2 = 4
+    addi a3, zero, 5   # argument 3 = 5
+    jal  diffofsums    # call function
+    add  s7, a0, zero  # y = returned value
+    ...
+# s3 = result
+diffofsums:
+    add t0, a0, a1     # t0 = f+g
+    add t1, a2, a3     # t1 = h+i
+    sub s3, t0, t1     # result = (f+g)−(h+i)
+    add a0, s3, zero   # put return value in a0
+    jr  ra             # return to caller
+```
+{% endcode %}
+{% endtab %}
+{% endtabs %}
+
+{% hint style="success" %}
+#### Code Explanation
+
+1. According to RISC-V convention, the calling function, `main`, places the function arguments from left to right into the input registers, `a0` to `a7`, before calling the function. The called function, `diffofsums`, stores the return value in the return register, `a0`.
+2. When a function with more than eight arguments is called, the additional input arguments are placed on the stack, which we discuss next.
+{% endhint %}
+
+### The Stack
+
+The stack (We have learned this idea of stack in [NUS CS1010](https://wenbo-notes.gitbook.io/cs1010-notes/lec-tut-lab-exes/lecture/lec-06-call-stacks-arrays#stack-frame)!) is memory that is used as scratch space — that is, to save **temporary information** within a function. Each function may allocate stack space to store local variables and to use as scratch space, but the function must deallocate it before returning.
+
+{% hint style="warning" %}
+The RISC-V stack grows down in memory. That is, the stack expands to lower memory addresses when a program needs more scratch space.
+{% endhint %}
+
+#### Stack Pointer
+
+The stack pointer, `sp` ([register `x2`](https://wenbo-notes.gitbook.io/ddca-notes/textbook/architecture/assembly-language#the-register-set)), is an ordinary RISC-V register that, by convention, _points_ to the _top of the stack._ `sp` starts at a high memory address and decrements to expand as needed. Figure 6.7(b) shows the stack expanding to allow two more data words of temporary storage. To do so, `sp` decrements by 8 to become `0xBEFFFAE0`.
+
+<figure><img src="../../.gitbook/assets/risc-v-stack.png" alt=""><figcaption></figcaption></figure>
+
+One of the important uses of the stack is to **save and restore registers** that are used by a function. Recall that a function should calculate a return value but have no other unintended side effects. In particular, a function should not modify any registers besides `a0`, the one containing the return value.
+
+The `diffofsums` function in Code Example 6.23 violates thsi rule because it modifies `t0`, `t1`, and `s3`. If `main` had been using these registers before the call to `diffofsums`, their contents would have been corrupted by the function call.
+
+To solve this problem, a function saves registers on the stack before it modifies them and then restores them from the stack before it returns. Specifically, it performs the following steps:
+
+1. Makes space on the stack to store the values of one or more registers
+2. Stores the values of the registers on the stack
+3. Executes the function using the registers
+4. Restores the original values of the registers from the stack
+5. Deallocates space on the stack
+
+Code Example 6.24 shows an improved version of `diffofsums` that saves and restores `t0`, `t1`, and `s3`.
+
+{% tabs %}
+{% tab title="High-Level Code" %}
+{% code title="Example 6.24 Function that saves registers on the stack" lineNumbers="true" %}
+```c
+int main() {
+    int y;
+    // ...
+    y = diffofsums(2, 3, 4, 5);
+    // ...
+}
+
+int diffofsums(int f, int g, int h, int i) {
+    int result;
+    result = (f + g) - (h + i);
+    return result;
+}
+```
+{% endcode %}
+{% endtab %}
+
+{% tab title="RISC-V Assembly Code" %}
+{% code title="Example 6.24 Function that saves registers on the stack" lineNumbers="true" %}
+```armasm
+# s3 = result
+diffofsums:
+    addi sp, sp, −12   # make space on stack to
+                       # store three registers
+    sw   s3, 8(sp)     # save s3 on stack
+    sw   t0, 4(sp)     # save t0 on stack
+    sw   t1, 0(sp)     # save t1 on stack
+    add  t0, a0, a1    # t0 = f + g
+    add  t1, a2, a3    # t1 = h + i
+    sub  s3, t0, t1    # result = (f + g) − (h + i)
+    add  a0, s3, zero  # put return value in a0
+    lw   s3, 8(sp)     # restore s3 from stack
+    lw   t0, 4(sp)     # restore t0 from stack
+    lw   t1, 0(sp)     # restore t1 from stack
+    addi sp, sp, 12    # deallocate stack space
+    jr   ra            # return to caller
+```
+{% endcode %}
+{% endtab %}
+{% endtabs %}
+
+Figure 6.8 shows the stack before, during, and after a call to the `diffofsums` function from Code Example 6.24.
+
+<figure><img src="../../.gitbook/assets/risc-v-stack-frame-example.png" alt=""><figcaption></figcaption></figure>
+
+{% hint style="success" %}
+#### Code Explanation
+
+1. The stack starts at `0xBEF0F0FC`. `diffofsums` makes room for three words on the stack by decrementing the stack pointer `sp` by 12.
+2. It then stores the current values held in `t0`, `t1`, and `s3` in the newly allocated space. It executes the rest of the function, changing the values in these three registers.
+3. At the end of the function, `diffofsums` restores the values of these registers from the stack, deallocates its stack space, and returns.
+4. When the function returns, `a0` holds the result, but there are no other side effects: `t0`, `t1`, `s3`, and `sp` have the same values as they did before the function call.
+{% endhint %}
+
+The stack space that a function allocates for itself is called its _stack frame_. `diffofsums`'s stack frame is three words deep. The principle of modularity tells us that each function should access only its own stack frame, not the frames belonging to other functions.
+
+{% hint style="warning" %}
+Saving a register value on the stack is called _pushing_ a register onto the stack. Restoring the register value from the stack is called _popping_ a register off of the stack.
+{% endhint %}
+
+### Preserved Registers
+
+Code Example 6.24 assumes that all of the used registers (`t0`, `t1`, and `s3`) must be saved and restored. If the calling function does not use those registers, the effort to save and restore them is wasted. To avoid this waste, RISC-V divides registers into _preserved_ and _nonpreserved_ categories.
+
+{% hint style="info" %}
+Preserved registers must contain the same values at the beginning and end of a called function because the caller expects preserved register values to be the same after the call.
+{% endhint %}
+
+As we have seen from the [RISC-V registers set](https://wenbo-notes.gitbook.io/ddca-notes/textbook/architecture/assembly-language#the-register-set) before,
+
+* The preserved registers are `s0` to `s11` (hence their name, _saved_), `sp` and `ra`.
+* The nonpreserved registers, also called _scratch_ registers, are `t0` to `t6` (hence their name, _temporary_) and `a0` to `a7`, the argument registers.
+
+{% hint style="danger" %}
+A function can change the nonpreserved registers freely (no need to save and restore) but must save and restore any of the preserved registers that is uses.
+{% endhint %}
+
+Code Example 6.25 shwos a further improved version of `diffofsums` that saves only `s3` on the stack, `t0` and `t1` are nonpreserved registers, so they need not be saved.
+
+{% tabs %}
+{% tab title="High-Level Code" %}
+{% code title="Example 6.25 Function that saves preserved registers on the stack" lineNumbers="true" %}
+```c
+int main() {
+    int y;
+    // ...
+    y = diffofsums(2, 3, 4, 5);
+    // ...
+}
+
+int diffofsums(int f, int g, int h, int i) {
+    int result;
+    result = (f + g) - (h + i);
+    return result;
+}
+```
+{% endcode %}
+{% endtab %}
+
+{% tab title="RISC-V Assembly Code" %}
+{% code title="Example 6.25 Function that saves preserved registers on the stack" lineNumbers="true" %}
+```armasm
+# s3 = result
+diffofsums:
+    addi sp, sp, −4    # make space on stack to store one register
+    sw   s3, 0(sp)     # save s3 on stack
+    add  t0, a0, a1    # t0 = f + g
+    add  t1, a2, a3    # t1 = h + i
+    sub  s3, t0, t1    # result = (f + g) − (h + i)
+    add  a0, s3, zero  # put return value in a0
+    lw   s3, 0(sp)     # restore s3 from stack
+    addi sp, sp, 4     # deallocate stack space
+    jr   ra            # return to caller
+```
+{% endcode %}
+{% endtab %}
+{% endtabs %}
+
+Because a callee function may freely change any nonpreserved registers, the caller must save any nonpreserved registers containing essential information before making a function call and then restore these regsiters afterward. For these reasons, preserved registers are also called _callee-saved_ and nonpreserved registers are called _caller-saved_.
+
+Table 6.3 summarizes which registers are preserved.
+
+<figure><img src="../../.gitbook/assets/risc-v-preserved-nonpreserved-registers.png" alt=""><figcaption></figcaption></figure>
+
+The stack above the stack pointer is **automatically preserved**, as long as the callee does not write to memory addresses above `sp`.
+
 [^1]: Sign-extended logical immediates are somewhat unusual. Many other architectures, such as MIPS and ARM, zero-extended the immediate for logical operations.
