@@ -66,7 +66,7 @@ All RTL code is written in an HDL, but not all HDL code is RTL code. In the [pre
 
 ### Writing a testbench
 
-In this section, there is one line of error code that needs us to debug. The error code lies in **line 44** of `Adder.sv`. Basically, just change of the index from `2` to `3`.
+In this section, there is one line of error code that needs us to debug. The error code lies in **line 44** of `Adder.sv`. Basically, just change the index at the R.H.S from `2` to `3`.
 
 {% code lineNumbers="true" %}
 ```verilog
@@ -82,7 +82,7 @@ assign carry[4] = in_a[3] & in_b[3] | (in_a[3] ^ in_b[3]) & carry[3];
 
 ### Setting up constraints
 
-In our constraint file — `Nexys-4-Master.xdc`, we will also need to use `led[8:0]` in this project. Thus, we also need to uncomment the **line 64-91**.
+As we will also need to use `led[8:0]` in this project, we should uncomment the **line 64-91 i**n our constraint file — `Nexys-4-Master.xdc`.
 
 ### Generate the bitstream
 
