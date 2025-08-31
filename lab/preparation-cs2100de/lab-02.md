@@ -142,4 +142,11 @@ In Verilog, the signal that is **assigned** inside an `initial begin end` statem
 
 ## The fruits of our labour
 
+Now, we should modify our constraints file to enable the corresponding inputs on our FPGA. The changes we need to make in this lab is to uncomment
+
+1. Line 12 to Line 33 (for `sw[6:0]`)
+2. Line 135 to Line 185 (for `seg[6:0]` and `an[7:0]`)
+
+And yeah, we after we program our FPGA, we can enjoy the fruits of our labour or maybe go back to step 1 and start debugging if there is some strange behaviour.
+
 {% embed url="https://youtu.be/Yg5snXXx138" %}
