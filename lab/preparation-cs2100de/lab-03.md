@@ -144,7 +144,9 @@ We may have seen from [lab-02.md](lab-02.md "mention") that the seven-segment di
 
 Once again, before we make everything, make sure we are aware of what each module does, and the inputs and outputs of each module. And most importantly, bare in the heart of this FPGA design flow!
 
-Here, we will use the `SevenSegDecoder.sv` we have implemented in Lab 02 and the `Counter.sv` we have implemented in activity 1 in this lab. Besides that, we still need to design our own `Top.sv` and a `SlowCounter.sv` (to acheieve the persistence of vision mentioned above)
+#### RTL Code
+
+Here, we will use the [`SevenSegDecoder.sv`](https://wenbo-notes.gitbook.io/ddca-notes/lab/preparation-cs2100de/lab-02#writing-the-module) we have implemented in Lab 02 and the [`Counter.sv`](https://wenbo-notes.gitbook.io/ddca-notes/lab/preparation-cs2100de/lab-03#customized-speed-counter) we have implemented in activity 1 in this lab. Besides that, we still need to design our own `Top.sv` and a `SlowCounter.sv` (to acheieve the persistence of vision mentioned above)
 
 {% tabs %}
 {% tab title="Top.sv" %}
@@ -269,6 +271,10 @@ endmodule
 {% endhint %}
 {% endtab %}
 {% endtabs %}
+
+#### Constraints
+
+In our constraints file, remember to enable the `clk`, which is from Line 6-10! This is very important and easy to forget as it is our first time to enable `clk` on our Nexys 4 FPGA! Not doing so will cause failure to generate the bitstream file!
 
 ## The fruits of our labour
 
