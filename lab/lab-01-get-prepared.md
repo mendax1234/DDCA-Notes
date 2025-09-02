@@ -10,9 +10,7 @@
 
 ### Task Instruction
 
-The goal of this task is to understand the RISC-V Assembly Language. Thus, I will put some effort to explain this program below.&#x20;
-
-{% @github-files/github-code-block url="https://github.com/NUS-CG3207/labs/blob/main/docs/code_templates/Asst_01/DIP_to_LED.asm" visible="true" %}
+The goal of this task is to understand the RISC-V Assembly Language. Thus, I will put some effort to explain this [program public on the GitHub](https://github.com/NUS-CG3207/labs/blob/main/docs/code_templates/Asst_01/DIP_to_LED.asm).&#x20;
 
 #### Overall Structure
 
@@ -161,3 +159,49 @@ In this task, we mainly just need to demonstrate as the following images shows,
 <figure><img src="../.gitbook/assets/cg3207-lab01-task1-demo.png" alt=""><figcaption></figcaption></figure>
 
 As we change the input at the DIP switches, after running the assembly code, the output at LEDs should be mirrored.
+
+### Optional Task
+
+#### Helloworld without subroutines
+
+The RISC-V [assembly code about HelloWorld](https://github.com/NUS-CG3207/labs/blob/main/docs/code_templates/Asst_01/HelloWorld.asm) is public on the GitHub. The overall behaivor is
+
+* It waits for the user to press the **`A` key** followed by **Enter** (`\r` or `\n`) on the console.
+  * It echoes every input character to the console, LEDs, and seven-segment display while waiting.
+* Once the correct input is received, it prints **“Welcome to CG3207..”** to the [UART](https://wenbo-notes.gitbook.io/cg2111a-notes/studio/studio-9-serial-communication#u-s-art-communication) (console) character by character.
+
+{% hint style="success" %}
+- The LED and seven-segment display here are just used as “hardware echo” that mirrors what you typed.
+- We met UART again, feel free to go back to [NUS CG2111A Notes](https://wenbo-notes.gitbook.io/cg2111a-notes/studio/studio-9-serial-communication#u-s-art-communication) on reviewing how UART works! Here this UART serial communication is setup between our **RISC-V processor** and our **PC's console** (on RARS).
+{% endhint %}
+
+And I will do the explanation section by section,
+
+{% stepper %}
+{% step %}
+**Line 17-50 (Setup)**
+
+This is the setup work. Nothing special.
+{% endstep %}
+
+{% step %}
+**Line 52-78 (Read** `A` **and** <kbd>Enter</kbd>**)**
+
+This section is also pretty straight-forward. But in Line 75-78, the trick to implement `if A or B` needs our attention,
+
+{% code overflow="wrap" lineNumbers="true" %}
+```armasm
+li t1, '\r'
+beq t0, t1, ACCEPT_CRorLF # if t0 == '\r', go to ACCEPT_CRorLF
+li t1, '\n'
+bne t0, t1, WAIT_A	  # if t0 != ('\r' or '\n'), not the correct pattern. try all over again.
+```
+{% endcode %}
+{% endstep %}
+
+{% step %}
+**Line 79-96 (Print "Helloworld")**
+
+1. `a0` stores the address of of the word (4 bytes) to be printed. And within each word, one byte is printed a time. After a word has been printed, `a0` is incremented by 4 to print the next word. (As we've seen in the previous task, the `string1` is 24 bytes — 6 words long)
+{% endstep %}
+{% endstepper %}
