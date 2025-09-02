@@ -142,7 +142,7 @@ We may have seen from [lab-02.md](lab-02.md "mention") that the seven-segment di
 
 ### Putting everything together
 
-Once again, before we make everything, make sure we are aware of what each module does, and the inputs and outputs of each module. And most importantly, bare in the heart of this FPGA design flow!
+Once again, before we make everything, make sure we are aware of what each module does, and the inputs and outputs of each module. And most importantly, bare in the golden rule about [RTL Coding Steps](../fpga-design-tips.md#rtl-coding-steps)!
 
 #### RTL Code
 

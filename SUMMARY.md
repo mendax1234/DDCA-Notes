@@ -50,6 +50,7 @@
 
 ## Lab
 
+* [FPGA Design Tips](lab/fpga-design-tips.md)
 * [Preparation - CS2100DE](lab/preparation-cs2100de/README.md)
   * [Lab 01](lab/preparation-cs2100de/lab-01.md)
   * [Lab 02](lab/preparation-cs2100de/lab-02.md)
