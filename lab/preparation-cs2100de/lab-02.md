@@ -16,6 +16,17 @@ To drive a segment led to light up, we need to both set its anode and cathode to
 
 ## Driving the seven-segment display
 
+### Design Specification
+
+This is very important as it tells us what our `sevensegdecoder` module does! As we have seen from the [lab manual](https://nus-cs2100de.github.io/labs/manuals/02/lab_02/#design-specification), the design specification is as follows,
+
+* **Inputs**: `sw[6:0]`
+  * `sw[3:0]` will be used to enter a 4-bit binary number. This hexadecimal digit (4-bit binary number) is what we will display on the specific digit of the 7-segment display.
+  * `sw[6:4]` will be used to enter a 3-bit binary number .The number entered will specify which digit of the seven-segment display(s) will be used to display the hex digit.
+* **Outputs**: `seg[6:0]` and `an[7:0]`
+  * `seg[6:0]` is used to control the number to be displayed on the digit of the seven-segment display.
+  * `an[7:0]` is used to control which digit of the seven-segment display will be enabled to display.
+
 ### Deriving the logic needed
 
 {% stepper %}
@@ -70,32 +81,32 @@ To drive a segment led to light up, we need to both set its anode and cathode to
 
 The code for `an` and `seg` is as follows,
 
-{% code lineNumbers="true" %}
+{% code title="SevenSegDecoder.sv" lineNumbers="true" %}
 ```verilog
 // Structural code for anodes here:
 assign an = ~(8'b00000001 << sw[6:4]);
 
 // Code for segments here:
 always @(*) begin
-    case (sw[3:0])
-        4'b0000: seg = 7'b1000000; // 0
-        4'b0001: seg = 7'b1111001; // 1
-        4'b0010: seg = 7'b0100100; // 2
-        4'b0011: seg = 7'b0110000; // 3
-        4'b0100: seg = 7'b0011001; // 4
-        4'b0101: seg = 7'b0010010; // 5
-        4'b0110: seg = 7'b0000010; // 6
-        4'b0111: seg = 7'b1111000; // 7
-        4'b1000: seg = 7'b0000000; // 8
-        4'b1001: seg = 7'b0010000; // 9
-        4'b1010: seg = 7'b0001000; // A
-        4'b1011: seg = 7'b0000011; // b
-        4'b1100: seg = 7'b1000110; // C
-        4'b1101: seg = 7'b0100001; // d
-        4'b1110: seg = 7'b0000110; // E
-        4'b1111: seg = 7'b0001110; // F
-        default: seg = 7'b1111111; // blank
-    endcase
+  case (sw[3:0])
+    4'b0000: seg = 7'b1000000;  // 0
+    4'b0001: seg = 7'b1111001;  // 1
+    4'b0010: seg = 7'b0100100;  // 2
+    4'b0011: seg = 7'b0110000;  // 3
+    4'b0100: seg = 7'b0011001;  // 4
+    4'b0101: seg = 7'b0010010;  // 5
+    4'b0110: seg = 7'b0000010;  // 6
+    4'b0111: seg = 7'b1111000;  // 7
+    4'b1000: seg = 7'b0000000;  // 8
+    4'b1001: seg = 7'b0010000;  // 9
+    4'b1010: seg = 7'b0001000;  // A
+    4'b1011: seg = 7'b0000011;  // b
+    4'b1100: seg = 7'b1000110;  // C
+    4'b1101: seg = 7'b0100001;  // d
+    4'b1110: seg = 7'b0000110;  // E
+    4'b1111: seg = 7'b0001110;  // F
+    default: seg = 7'b1111111;  // blank
+  endcase
 end
 ```
 {% endcode %}
@@ -112,26 +123,26 @@ As the `seg` signal (vector) is **assigned** in an `always` statement, it **must
 
 Here, the Lab sheet specifies that we should use loop. So, the testbench using loops is as follows,
 
-{% code lineNumbers="true" %}
+{% code title="SevenSegDecoder_sim.sv" lineNumbers="true" %}
 ```verilog
-module SevenSegDecoder_sim(
-    input reg [6:0] sw,
-    output [7:0] an,
-    output reg [6:0] seg
-    );
-    
-    SevenSegDecoder uut (
-        .sw(sw),
-        .an(an),
-        .seg(seg)
-    );
-    
-    initial begin
-        for (int i = 0; i < 128; i++) begin
-            sw = i; //apply input
-            #10;
-        end
+module SevenSegDecoder_sim ();
+
+  logic [6:0] sw;
+  logic [7:0] an;
+  logic [6:0] seg;
+
+  SevenSegDecoder uut (
+      .sw (sw),
+      .an (an),
+      .seg(seg)
+  );
+
+  initial begin
+    for (int i = 0; i < 128; i++) begin
+      sw = i;  //apply input
+      #10;
     end
+  end
 endmodule
 ```
 {% endcode %}
