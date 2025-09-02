@@ -56,3 +56,4 @@
   * [Lab 02](lab/preparation-cs2100de/lab-02.md)
   * [Lab 03](lab/preparation-cs2100de/lab-03.md)
   * [Lab 04](lab/preparation-cs2100de/lab-04.md)
+* [Lab 01 - Get prepared](lab/lab-01-get-prepared.md)
