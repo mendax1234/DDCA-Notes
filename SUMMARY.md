@@ -55,3 +55,4 @@
   * [Lab 01](lab/preparation-cs2100de/lab-01.md)
   * [Lab 02](lab/preparation-cs2100de/lab-02.md)
   * [Lab 03](lab/preparation-cs2100de/lab-03.md)
+  * [Lab 04](lab/preparation-cs2100de/lab-04.md)
