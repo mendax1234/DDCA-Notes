@@ -293,7 +293,7 @@ done:
 {% hint style="success" %}
 #### Code Explanation
 
-1. The RISC-V assembly implementation is the nearly the same as the high-level code snippet.
+1. The RISC-V assembly implementation is nearly the same as the high-level code snippet.
 {% endhint %}
 
 ## Getting Loopy
@@ -497,7 +497,7 @@ All these three instructions are illustrated in Figure 6.5, with the base addres
 
 1. `lbu s1, 2(s4)` loads the byte at memory address `0xD2` into the least significant byte of `s1` and fills the remaining register bits with 0.
 2. `lb s2, 3(s4)` loads the byte at memory address `0xD3` into the least significant byte of `s2`and sign-extends the byte into the upper 24 bits of the register.
-3. `sb s3, 1(s4)` stores the least significant byte of `s3` (0x9B) into memroy byte address at 0xD1; it replaces `0x42` with `0x9B`. The more significant bytes of `s3` are ignored.
+3. `sb s3, 1(s4)` stores the least significant byte of `s3` (0x9B) into memory byte address at 0xD1; it replaces `0x42` with `0x9B`. The more significant bytes of `s3` are ignored.
 {% endhint %}
 
 In C, the null character (0x00) signifies the end of a string. For example, Figure 6.6 shows the string "Hello!" (`0x48 65 6C 6C 6F 21 00`) stored in memory.
@@ -506,7 +506,7 @@ In C, the null character (0x00) signifies the end of a string. For example, Figu
 
 ## Function Calls
 
-When a function calles another, the calling function, the _caller_, and the called function, the _callee_, must agree on where to put the arguments and the return value. In RISC-V programs,
+When a function calls another, the calling function, the _caller_, and the called function, the _callee_, must agree on where to put the arguments and the return value. In RISC-V programs,
 
 * the caller conventionally places up to eight arguments in registers `a0` to `a7` before making the function call,
 * the callee places the return value in register `a0` before finishing.
@@ -562,7 +562,7 @@ void simple() {
 
 ### Input Arguments and Return Values
 
-As we have seen earlier, by RISC-V convention, functions use `a0` to `a7` for input arguments and `a0` for the return value. In Code Example 6.23, the function `diffofsums` is called with four arguments and returns on result. `result` is a local variable, which we choose to keep in `s3`. (Saving and restoring registers will be discussed soon).
+As we have seen earlier, by RISC-V convention, functions use `a0` to `a7` for input arguments and `a0` for the return value. In Code Example 6.23, the function `diffofsums` is called with four arguments and returns one result. `result` is a local variable, which we choose to keep in `s3`. (Saving and restoring registers will be discussed soon.)
 
 {% tabs %}
 {% tab title="High-Level Code" %}
@@ -632,7 +632,7 @@ The stack pointer, `sp` ([register `x2`](https://wenbo-notes.gitbook.io/ddca-not
 
 One of the important uses of the stack is to **save and restore registers** that are used by a function. Recall that a function should calculate a return value but have no other unintended side effects. In particular, a function should not modify any registers besides `a0`, the one containing the return value.
 
-The `diffofsums` function in Code Example 6.23 violates thsi rule because it modifies `t0`, `t1`, and `s3`. If `main` had been using these registers before the call to `diffofsums`, their contents would have been corrupted by the function call.
+thisThe `diffofsums` function in Code Example 6.23 violates thsi rule because it modifies `t0`, `t1`, and `s3`. If `main` had been using these registers before the call to `diffofsums`, their contents would have been corrupted by the function call.
 
 To solve this problem, a function saves registers on the stack before it modifies them and then restores them from the stack before it returns. Specifically, it performs the following steps:
 
@@ -765,7 +765,7 @@ diffofsums:
 {% endtab %}
 {% endtabs %}
 
-Because a callee function may freely change any nonpreserved registers, the caller must save any nonpreserved registers containing essential information before making a function call and then restore these regsiters afterward. For these reasons, preserved registers are also called _callee-saved_ and nonpreserved registers are called _caller-saved_.
+Because a callee function may freely change any nonpreserved registers, the caller must save any nonpreserved registers containing essential information before making a function call and then restore these registers afterward. For these reasons, preserved registers are also called _callee-saved_ and nonpreserved registers are called _caller-saved_.
 
 Table 6.3 summarizes which registers are preserved.
 

@@ -205,3 +205,9 @@ bne t0, t1, WAIT_A	  # if t0 != ('\r' or '\n'), not the correct pattern. try all
 1. `a0` stores the address of of the word (4 bytes) to be printed. And within each word, one byte is printed a time. After a word has been printed, `a0` is incremented by 4 to print the next word. (As we've seen in the previous task, the `string1` is 24 bytes — 6 words long)
 {% endstep %}
 {% endstepper %}
+
+## The fruits of our labour
+
+{% embed url="https://youtu.be/5n7rySEmE8o" %}
+
+An interesting phenomenon I find out is that after the instruction memory, the last line will blink several times and then it still prints the instructions memory.
