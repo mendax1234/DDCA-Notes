@@ -149,6 +149,12 @@ This is the data memory,
       * Stack grows **downwards** (toward lower addresses).
       * `sp` (stack pointer) should be initialized to this address.
       * Each push → decrement `sp`, each pop → increment `sp`.
+
+***
+
+In RISC-V, the word is stored in low-endianness. So, below is how the String in Line 72 is stored,
+
+<figure><img src="../.gitbook/assets/cg3207-lab01-task1-data-memory.png" alt=""><figcaption></figcaption></figure>
 {% endstep %}
 {% endstepper %}
 
@@ -158,7 +164,10 @@ In this task, we mainly just need to demonstrate as the following images shows,
 
 <figure><img src="../.gitbook/assets/cg3207-lab01-task1-demo.png" alt=""><figcaption></figcaption></figure>
 
-As we change the input at the DIP switches, after running the assembly code, the output at LEDs should be mirrored.
+1. Run the code step by step till Line 48
+2. Change the input at the DIP switches, run Line 48 and 49, the output at LEDs (`0xffff0060`) should be mirrored.
+3. This loop is infinite, so showing this mirror once suffices.
+4. Wait for the problems proposed by the TA.
 
 ### Optional Task
 
@@ -168,7 +177,7 @@ The RISC-V [assembly code about HelloWorld](https://github.com/NUS-CG3207/labs/b
 
 * It waits for the user to press the **`A` key** followed by **Enter** (`\r` or `\n`) on the console.
   * It echoes every input character to the console, LEDs, and seven-segment display while waiting.
-* Once the correct input is received, it prints **“Welcome to CG3207..”** to the [UART](https://wenbo-notes.gitbook.io/cg2111a-notes/studio/studio-9-serial-communication#u-s-art-communication) (console) character by character.
+* Once the correct input is received, it prints **“Welcome to CG3207..”** to the console using [UART](https://wenbo-notes.gitbook.io/cg2111a-notes/studio/studio-9-serial-communication#u-s-art-communication) character by character.
 
 {% hint style="success" %}
 - The LED and seven-segment display here are just used as “hardware echo” that mirrors what you typed.
@@ -205,6 +214,20 @@ bne t0, t1, WAIT_A	  # if t0 != ('\r' or '\n'), not the correct pattern. try all
 1. `a0` stores the address of of the word (4 bytes) to be printed. And within each word, one byte is printed a time. After a word has been printed, `a0` is incremented by 4 to print the next word. (As we've seen in the previous task, the `string1` is 24 bytes — 6 words long)
 {% endstep %}
 {% endstepper %}
+
+## Task 2: Basic HDL Simulation
+
+1. In the `initial` statement, no matter in RTL code or testbench, the L.H.S signal must be `reg`.
+
+### Simulation
+
+Here, we basically need to simulate all the combinations of the inputs, which are
+
+1. Both `btnC` and `btnU` are **not pressed**.
+2. `btnU` is pressed but `btnC` is not pressed.
+3. `btnC` is pressed but `btnU` is not pressed.
+
+And include the graph of part of our waveform into the document.
 
 ## The fruits of our labour
 
