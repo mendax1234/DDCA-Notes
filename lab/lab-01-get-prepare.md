@@ -1,4 +1,4 @@
-# Lab 01 - Get prepared
+# Lab 01 - Get prepare
 
 ## Introduction
 
@@ -165,7 +165,7 @@ In this task, we mainly just need to demonstrate as the following images shows,
 <figure><img src="../.gitbook/assets/cg3207-lab01-task1-demo.png" alt=""><figcaption></figcaption></figure>
 
 1. Run the code step by step till Line 48
-2. Change the input at the DIP switches, run Line 48 and 49, the output at LEDs (`0xffff0060`) should be mirrored.
+2. Change the input at the DIP switches (`0xffff0064`), then run Line 48 and 49, the output at LEDs (`0xffff0060`) should be mirrored.
 3. This loop is infinite, so showing this mirror once suffices.
 4. Wait for the problems proposed by the TA.
 
@@ -219,7 +219,61 @@ bne t0, t1, WAIT_A	  # if t0 != ('\r' or '\n'), not the correct pattern. try all
 
 1. In the `initial` statement, no matter in RTL code or testbench, the L.H.S signal must be `reg`.
 
-### Simulation
+### RTL Design
+
+#### Clock Enable
+
+The `Clock_Enable` block has three states,
+
+1. 1Hz mode: Pull up the `enable` to HIGH for 1 clock cycle (10ns for Nexys 4) every 1 second.
+2. 4Hz mode: Pull up the `enable` to HIGH for 1 clock cycle every 0.25 second.
+3. Pause mode: Pull down the `enable` to LOW until pause mode is exited.
+
+In our simulation, the enable behaves like below
+
+<figure><img src="../.gitbook/assets/cg3207-lab01-task2-clock-enable.png" alt=""><figcaption></figcaption></figure>
+
+The time `enable` is low is controlled by the corresponding `threshold` for each of the three modes above. We can think of `enable` as a **slower** clock signal.&#x20;
+
+{% hint style="info" %}
+The image uses the `1Hz` mode and change the `threshold` to 8 for simluation. Normally should be `100_000_000` for real world.
+{% endhint %}
+
+#### Get Mem
+
+This block is straight as we only need to implement two things
+
+1. the combinational logic part for the `data` fed to the seven-segment display and leds; and the `upper_lower` signal fed to the leds
+2. the sequential logic part for the `counter` which is basically the `addr`.
+
+<details>
+
+<summary>Why it is a 9-bit counter/address here?</summary>
+
+Let's anaylze from the bottom to the up:
+
+1. As we only have 16 Leds on Nexys, each instruction is 32-bit long. Thus, we need to show the upper and lower half-word on the leds, this is for each instruction. Thus, we need **1 bit** for this, and this must be the LSB of our counter/address. (`addr[0]`)
+2. As for our IROM and DMEM, each of them is 128-word long, thus we need another **7 bits** to track the address. (`addr[7:1]`)
+3. As we display IROM first, then DMEM. We need another **1 bit** to do this "switching" (`addr[8]`)
+
+Thus, in total, the counter/address should be **9 bits** long in this module. This also means that to display all of the content from IROM and DMEM, we need $$2^9=512$$ "rounds[^1]". (This is useful in our simulation)
+
+</details>
+
+#### Top
+
+This module has nothing special, we just instantiate the two modules we have designed
+
+1. the `Clock_Enable` module
+2. the `Get_Mem` module
+
+And the one module that is provided,
+
+1. the `Seven_seg` module
+
+In the `Top` module, we also need to implement a **multiplxer** to choose the 16 bit data to be shown on the led.
+
+### Behavorial Simulation
 
 Here, we basically need to simulate all the combinations of the inputs, which are
 
@@ -227,10 +281,34 @@ Here, we basically need to simulate all the combinations of the inputs, which ar
 2. `btnU` is pressed but `btnC` is not pressed.
 3. `btnC` is pressed but `btnU` is not pressed.
 
-And include the graph of part of our waveform into the document.
+From the [explanation above](lab-01-get-prepare.md#why-it-is-a-9-bit-counter-address-here), we know that we need 512 rounds to display all the data from IROM an DMEM. Under each of the three modes above, the clock cycles for each round is different, and it is determined by the corresponding `threshold` value in each mode, thus
+
+1. Under 1Hz mode, we need  $$512\times\text{threshold\_1Hz}$$  clock cycles in total, this will be the terminating `i` value in our for loop.
+2. Similarly, under 4Hz mode, we need $$512\times\text{threshold\_4Hz}$$  clock cycles.
+
+And the total timing is also not difficult to calcualte. Let's say we delay 10ns at each round. So, under 1 Hz mode, the total time taken will be $$10\times512\times\text{threshold\_1Hz}$$.
+
+{% hint style="warning" %}
+#### Notes
+
+1. The `initial` statement **will not** be ignored in the behavorial simulation, but **will** be ignored in the real run, or synthesis.
+2. Remember to change the `threshold` values back to normal after simulation. (For observing the results quickly, we have changed them to some really small number during the simulation)
+{% endhint %}
 
 ## The fruits of our labour
 
 {% embed url="https://youtu.be/5n7rySEmE8o" %}
 
+<details>
+
+<summary>Why the actual behavior of seven-seg display and leds is different from the behavorial simulation?</summary>
+
 An interesting phenomenon I find out is that after the instruction memory, the last line will blink several times and then it still prints the instructions memory.
+
+***
+
+This is solved by Dr. Rajesh and TA Neil in this [disscussion](https://github.com/NUS-CG3207/labs/discussions/41). The main reasons is that the synthesis tool will likely optimise the storage to a combinational circuit (4-input, 32-output) instead of a ROM as the utilisation is very low. That means repeating pattern modulo 16 composed of 13 valid and 3 garbage words.
+
+</details>
+
+[^1]: Why not directly clock cycles here? It is because we have slowed down the system clock on our `Get_Mem` module by using an `enable` signal instead. Thus, the real clock cycle will be "rounds" x "threshold"
