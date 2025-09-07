@@ -50,11 +50,16 @@
 
 ## Lab
 
-* [FPGA Design Tips](lab/fpga-design-tips.md)
-* [RISC-V Resources](lab/risc-v-resources.md)
 * [Preparation - CS2100DE](lab/preparation-cs2100de/README.md)
   * [Lab 01](lab/preparation-cs2100de/lab-01.md)
   * [Lab 02](lab/preparation-cs2100de/lab-02.md)
   * [Lab 03](lab/preparation-cs2100de/lab-03.md)
   * [Lab 04](lab/preparation-cs2100de/lab-04.md)
-* [Lab 01 - Get prepare](lab/lab-01-get-prepare.md)
+* [Lab 01 - Get prepared](lab/lab-01-get-prepared.md)
+* [Resources](lab/resources/README.md)
+  * [FPGA Design Tips](lab/resources/fpga-design-tips.md)
+  * [RISC-V Resources](lab/resources/risc-v-resources.md)
+
+## Lec
+
+* [Lec 01- History, Technology, Performance](lec/lec-01-history-technology-performance.md)

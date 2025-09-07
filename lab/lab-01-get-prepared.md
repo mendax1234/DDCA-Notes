@@ -1,4 +1,4 @@
-# Lab 01 - Get prepare
+# Lab 01 - Get prepared
 
 ## Introduction
 
@@ -281,7 +281,7 @@ Here, we basically need to simulate all the combinations of the inputs, which ar
 2. `btnU` is pressed but `btnC` is not pressed.
 3. `btnC` is pressed but `btnU` is not pressed.
 
-From the [explanation above](lab-01-get-prepare.md#why-it-is-a-9-bit-counter-address-here), we know that we need 512 rounds to display all the data from IROM an DMEM. Under each of the three modes above, the clock cycles for each round is different, and it is determined by the corresponding `threshold` value in each mode, thus
+From the [explanation above](lab-01-get-prepared.md#why-it-is-a-9-bit-counter-address-here), we know that we need 512 rounds to display all the data from IROM an DMEM. Under each of the three modes above, the clock cycles for each round is different, and it is determined by the corresponding `threshold` value in each mode, thus
 
 1. Under 1Hz mode, we need  $$512\times\text{threshold\_1Hz}$$  clock cycles in total, this will be the terminating `i` value in our for loop.
 2. Similarly, under 4Hz mode, we need $$512\times\text{threshold\_4Hz}$$  clock cycles.

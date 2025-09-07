@@ -59,7 +59,7 @@ Shortly speaking, the micro-architecture is an **implementation of the ISA/archi
 {% step %}
 **Architecture (ISA)**
 
-The **architecture** level describes a computer from the programmer's perspective. In other words, it's about what the programmer assumes the hardware will satisfy. It is sometimes referred to as the ISA (**I**nstruction **S**et **A**rchitecture) also, which is an interface/contract between Software and Hardware.
+The **architecture** level describes a computer from the programmer's perspective. In other words, it's about what the programmer assumes the hardware will satisfy. It is sometimes referred to as the ISA (**I**nstruction **S**et **A**rchitecture) also, which is an interface/contract between Software and Hardware. This abstract interface between the hardware and the lowest level software encompasses all the information necessary to write a machine language program, including instructions, registers, memory access I/O, ...
 
 For example, the Intel x86 architecture used by microprocessors in most PCs is defined by **a set of instructions** and **registers** (memory for temporarily storing variables) that the programmer is allowed to use.
 {% endstep %}
