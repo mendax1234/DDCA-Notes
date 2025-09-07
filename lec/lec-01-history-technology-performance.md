@@ -179,6 +179,184 @@ This can **maximizes** [**yield**](#user-content-fn-6)[^6], so instead of throwi
 
 ## Performance
 
+### Throughput vs. Response Time
+
+* Response time (execution time) – the time between the  &#x20;start and the completion of a task.
+* Throughput – the total amount of work done in a given  &#x20;time.
+
+Will need different performance metrics as well as a&#x20;different set of applications to benchmark personal\
+mobile devices, embedded and desktop computers, which are more focused on response time, versus\
+servers, which are more focused on throughput.
+
+### Relative Performance
+
+We define performance to be
+
+$$
+\text{Performance}=\frac{1}{\text{Execution Time}}
+$$
+
+"X is $$n$$ time faster than Y" is equivalent to
+
+$$
+\frac{\text{Performance}_{\text{x}}}{\text{Performance}_{\text{y}}} = \frac{\text{Execution time}_{\text{y}}}{\text{Execution time}_{\text{x}}} = n
+$$
+
+Example: time taken to run a program
+
+* 10s on A, 15s on B
+* $${\text{Execution time}_{\text{B}}}\div{\text{Execution time}_{\text{A}}}=15\div10=1.5$$
+* So A is 1.5 times fater than B
+
+### CPU Clocking
+
+* **Clock period / Clock cycle time / Cycle time (**$$T_c$$**):** the **duration of a clock cycle**. It is the **reciprocal** of clock frequency (rate). e.g., 250ps = 0.25ns = $$250\times10^{-12}$$s.
+* **Clock frequency (rate)**: **cycles per second**. e.g., 4.0GHz = 4000MHz = $$4.0\times10^9$$Hz.
+* **Clock cycles**: the **total** number of clock cycles needed to finish a task.
+* **CPU Time:** the actual time taken by the CPU to execute a program.
+
+Example
+
+* Designing Computer B
+  * Aim for 6s CPU to,e
+  * Can do faster clock, but causes 1.2 x clock cycles
+* How fast must Computer B clock be?
+
+$$
+\begin{align*}
+\text{Clock Rate}_{\text{B}} &= \frac{\text{Clock Cycles}_{\text{B}}}{\text{CPU Time}_{\text{B}}} = \frac{1.2 \times \text{Clock Cycles}_{\text{A}}}{6\text{s}} \\
+\text{Clock Cycles}_{\text{A}} &= \text{CPU Time}_{\text{A}} \times \text{Clock Rate}_{\text{A}} \\
+&= 10\text{s} \times 2\text{GHz} = 20 \times 10^9 \\
+\text{Clock Rate}_{\text{B}} &= \frac{1.2 \times 20 \times 10^9}{6\text{s}} = \frac{24 \times 10^9}{6\text{s}} = 4\text{GHz}
+\end{align*}
+$$
+
+### Instruction Count (IC) and CPI
+
+$$
+\begin{align*}
+\text{Clock Cycles} &= \text{Instruction Count} \times \text{CPI} \\
+ &= \text{CPU Time} \times \text{Clock Rate} \\
+&= \frac{\text{CPU Time}}{\text{Clock Cycle Time}} \\
+\text{CPU Time} &= \text{Instruction Count} \times \text{CPI} \times \text{Clock Cycle Time} \\
+ &= \frac{\text{Instruction Count} \times \text{CPI}}{\text{Clock Rate}}
+\end{align*}
+$$
+
+* **Instruction Count (IC)** : the **total** number of instructions that a CPU must execute to complete a given program or task.
+  * It is determined by **program, ISA** and **compiler**.
+* **Cycles per Instruction (CPI):** As its name suggested.
+  * It is determined by **CPU hardware**.
+
+{% hint style="info" %}
+If different instructions have different CPI. Average CPI affected by instruction mix.
+{% endhint %}
+
+#### Example
+
+1. CISC-> lower IC, higher CPI. RISC->higher IC, lower CPI.
+
+### CPI in more detail
+
+If different instruction classes take different numbers of cycles
+
+$$
+\text{Clock Cycles} = \sum_{i=1}^{n} (\text{CPI}_i \times \text{Instruction Count}_i)
+$$
+
+Weighted average CPI
+
+$$
+\text{CPI} = \frac{\text{Clock Cycles}}{\text{Instruction Count}} = \sum_{i=1}^{n}~(\text{CPI}_i\times\frac{\text{Instruction Count}_i}{\text{Instruction Count}})
+$$
+
+An CPI Example:
+
+* Computer A: Cycle Time = 250ps, CPI = 2.0
+* Computer B: Cycle Time = 500ps, CPI = 1.2
+* Same ISA, compiler -> Same IC
+* Which is faster, and by how much?
+
+$$
+\begin{align*}
+\text{CPU Time}_{\text{A}} &= \text{Instruction Count} \times \text{CPI}_{\text{A}} \times \text{Cycle Time}_{\text{A}} \\
+&= I \times 2.0 \times 250\text{ps} = I \times 500\text{ps} \\
+\text{CPU Time}_{\text{B}} &= \text{Instruction Count} \times \text{CPI}_{\text{B}} \times \text{Cycle Time}_{\text{B}} \\
+&= I \times 1.2 \times 500\text{ps} = I \times 600\text{ps} \\
+\frac{\text{CPU Time}_{\text{B}}}{\text{CPU Time}_{\text{A}}} &= \frac{I \times 600\text{ps}}{I \times 500\text{ps}} = 1.2
+\end{align*}
+$$
+
+### Performance Summary
+
+Performance depends on
+
+* Algorithm: affects IC, possibly CPI
+* Programming language: affects IC, CPI
+* Compiler: affects IC, CPI
+* Instruction Set Architecture (ISA): affects IC, CPI, Cycle Time ($$T_c$$)
+
+### Amdahl's law
+
+Amdahl’s Law describes the **limits of performance improvement** when you only improve part of a system. It says,
+
+> If only part of the execution time can be improved, the overall speedup is limited by the fraction of time that part takes.
+
+Its formula form is,
+
+$$
+\text{T}_{\text{improved}} = \frac{\text{T}_{\text{affected}}}{\text{improvement factor}} + \text{T}_{\text{unaffected}}
+$$
+
+or it can be written as,
+
+$$
+S=\frac{1}{(1-f)+\frac{f}{k}}
+$$
+
+, where $$S$$ is the overall system speed up, $$f$$ is the fraction of work performed by the faster component, and $$k$$ is the speedup of the new component (same component as $$f$$).
+
+For example, imagine you optimize **disk I/O** in a program:
+
+* Program runtime: 50 seconds
+* Disk I/O: 10 seconds (20%)
+* Computation: 40 seconds (80%)
+
+If you make disk I/O **10× faster**, then:
+
+$$
+T_{\text{new}}=\frac{10}{10}+40=41~\text{seconds}
+$$
+
+So, the speed up is,
+
+$$
+\frac{50}{41}\approx1.22
+$$
+
+Or using the second formula, we can get
+
+$$
+S=\frac{1}{(1-0.2)+\frac{0.2}{10}}=\frac{50}{41}\approx1.22
+$$
+
+Even though disk I/O became **10× faster**, the overall program only got **22% faster**, because disk I/O was only a small part of the total time.
+
+{% hint style="success" %}
+From the Amdahl's law, we can deduce a very useful idea — "Make the **common case fast**". As the common case takes larger portion of time, improving it can improve the speed of the whole system significantly.
+{% endhint %}
+
+### Eight Great Ideas
+
+* Design for [Moore's Law](lec-01-history-technology-performance.md#moores-law).
+* Use **abstraction** to simplify the design.
+* Make the **common case fast**.
+* Performance via **parallelism**.
+* Performance via **pipelining**.
+* Performance via **prediction**: prediction depends on the history
+* **Hierarchy** of memories: Cache, main memory, disk.
+* **Dependability** via redundancy: One transistor broken should not affect the whole system.
+
 [^1]: words are instructions.
 
 [^2]: vocabulary is the instruction set.
