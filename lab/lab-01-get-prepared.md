@@ -321,8 +321,8 @@ task check_mode;
       @(posedge uut.enable);  // sync with DUT update
 
       // compute expected LED value
-      if (addr < 128) expected_led = (upper_lower_tb == 0) ? IROM[addr][15:0] : IROM[addr][31:16];
-      else expected_led = (upper_lower_tb == 0) ? DMEM[addr-128][15:0] : DMEM[addr-128][31:16];
+      if (addr < 128) expected_led = (upper_lower_tb == 0) ? IROM[addr][31:16] : IROM[addr][15:0];
+      else expected_led = (upper_lower_tb == 0) ? DMEM[addr-128][31:16] : DMEM[addr-128][15:0];
 
       // compare against DUT
       if (uut.led !== expected_led) begin
@@ -419,6 +419,8 @@ end
 ## The fruits of our labour
 
 {% embed url="https://youtu.be/5n7rySEmE8o" %}
+
+The video is out-dated and is for reference only as the lower-half and upper-half displaying sequence is flipped. As our design specification, should display upper-half first, then lower-half.
 
 <details>
 
