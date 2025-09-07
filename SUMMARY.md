@@ -4,7 +4,7 @@
 
 ## Lec
 
-* [Lec 01- History, Technology, Performance](lec/lec-01-history-technology-performance.md)
+* [Lec 01 - History, Technology, Performance](lec/lec-01-history-technology-performance.md)
 
 ## Lab
 
