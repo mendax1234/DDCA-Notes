@@ -1,8 +1,6 @@
-# More Verilog
+# Verilog LifeSaver
 
-As we have a glimpse of how SystemVerilog/Verilog looks like by looking at how they are constructed by using the digital building blocks, like combinational logic, registers, etc. Now, we shall also introduce the programming side of this Verilog.
-
-> Most content are from [HDLBits](https://hdlbits.01xz.net/wiki/Main_Page)!
+As we have a glimpse of how [SystemVerilog/Verilog](../../textbook/hardware-description-languages/) looks like by looking at how they are constructed by using the digital building blocks, like combinational logic, registers, etc. Now, we shall also introduce the programming side of this Verilog.
 
 ## Wire
 
@@ -16,8 +14,8 @@ The ports on a module also have a direction (usually input or output). An input 
 
 Vectors are used to group related signals using one name to make it more convenient to manipulate. For example, `wire [7:0] w;` declares an 8-bit vector named `w` that is functionally equivalent to having 8 separate wires.
 
-{% hint style="info" %}
-In Verilog, vector is just a group of wires.
+{% hint style="success" %}
+In Verilog, **vector** is just a **group of wires**.
 {% endhint %}
 
 #### Classic Examples
@@ -26,7 +24,7 @@ In Verilog, vector is just a group of wires.
 {% step %}
 **Vector Basic**
 
-<figure><img src="../../.gitbook/assets/verilog-vector-example.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/verilog-vector-example.png" alt="" width="563"><figcaption></figcaption></figure>
 
 {% code lineNumbers="true" %}
 ```verilog
@@ -81,7 +79,7 @@ endmodule
 
 Example 2: Given an 8-bit input vector \[7:0], reverse its bit ordering.
 
-{% code lineNumbers="true" %}
+{% code overflow="wrap" lineNumbers="true" %}
 ```verilog
 module top_module (
 	input [7:0] in,
@@ -151,7 +149,7 @@ module add16 ( input[15:0] a, input[15:0] b, input cin, output[15:0] sum, output
 
 Build the adder-subtractor below.
 
-<figure><img src="../../.gitbook/assets/adder-subtractor-example.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/adder-subtractor-example.png" alt="" width="563"><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 #### Hint
@@ -190,7 +188,13 @@ endmodule
 
 ## Procedures
 
-### `always` block - Combinational
+Procedures include `always`, `initial`, `task`, and `function` blocks. Procedures allow sequential statements (which cannot be used outside of a procedure) to be used to describe the behaviour of a circuit.
+
+{% hint style="success" %}
+`initial`, `task`, and `function` are usually useful in [testbench](../../textbook/hardware-description-languages/testbench.md).
+{% endhint %}
+
+### Combinational `always` block&#x20;
 
 Since digital circuits are composed of logic gates connected with wires, any circuit can be expressed as some **combination of modules** and `assign` statements. However, sometimes this is not the most convenient way to describe the circuit. _Procedures_ (of which `always` blocks are one example) provide an alternative syntax for describing circuits.
 
@@ -205,13 +209,13 @@ Combinational `always` blocks are **equivalent** to `assign` statements, thus th
 
 <summary><code>reg</code> vs. <code>wire</code></summary>
 
-As we have seen the rule of thumb explained [here](data-types.md#reg-and-wire-rule-of-thumb), we have further explanation below
+As we have seen the rule of thumb explained [here](../../textbook/hardware-description-languages/data-types.md#reg-and-wire-rule-of-thumb), we have further explanation below
 
 > The **left-hand-side** of an [**continuous assign statement**](https://wenbo-notes.gitbook.io/ddca-notes/textbook/hardware-description-languages/combinational-logic#continuous-assignment-statement) must be a _net_ type (e.g., wire), while the **left-hand-side** of a **procedural assignment** (in an `always` block) must be a _variable_ type (e.g., reg). These types (wire vs. reg) have nothing to do with what hardware is synthesized, and is just syntax left over from Verilog's use as a hardware _simulation_ language.
 
 </details>
 
-### `always` block - Clocked[^1]
+### Clocked[^1] `always` block
 
 Clocked always blocks create a blob of combinational logic just like combinational always blocks, but also creates a set of [flip-flops](https://wenbo-notes.gitbook.io/ddca-notes/textbook/sequential-logic-design/latches-and-flip-flops#d-flip-flop) (or "[registers](https://wenbo-notes.gitbook.io/ddca-notes/textbook/sequential-logic-design/latches-and-flip-flops#register)") at the output of the blob of combinational logic. Instead of the outputs of the blob of logic being visible immediately, the outputs are visible only immediately after the next (`posedge` clk).
 
@@ -234,5 +238,30 @@ We have already seen the rule of thumb for blocking and non-blocking statements 
 > In a **combinational** `always` block, use **blocking** assignments. In a **clocked** `always` block, use **non-blocking** assignments.
 
 </details>
+
+### `initial` block
+
+The `initial` block is primarily used to initialize variables and drive design ports with specific values. It is **not synthesizable** and hence cannot be converted into a hardware schematic with digital elements. Thus, we have stated above that the `initial` block is usually used in testbench. However, we can still use them in our RTL code to initialize our variables, but note that this initialization is just for testbench!
+
+{% hint style="warning" %}
+As `initial` block is also a _procedure_, the [rule](verilog-lifesaver.md#reg-vs.-wire) here still applies!
+{% endhint %}
+
+### Function
+
+A function can reduce the appearance of repeated code in Verilog. For now, please visit [here](https://www.chipverify.com/verilog/verilog-functions) for more examples.
+
+### Task
+
+A `function` is meant to do some processing on the input and return a single value, whereas a `task` is more general and can calculate multiple result values and return them using _output_ and _inout_ type arguments. Tasks can contain simulation time consuming elements such as `@`, `posedge` and others.
+
+To write a task, a good example is introduced in [NUS CG3207 Lab 1's testbench](../lab-01-get-prepared.md#auto-check-version).
+
+***
+
+#### Credits
+
+1. [HDLBits](https://hdlbits.01xz.net/wiki/Main_Page)
+2. [ChipVerify.com](https://chipverify.com/)
 
 [^1]: "Clocked" is a synonym of "sequential"

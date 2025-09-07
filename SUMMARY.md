@@ -17,6 +17,7 @@
 * [Resources](lab/resources/README.md)
   * [FPGA Design Tips](lab/resources/fpga-design-tips.md)
   * [RISC-V Resources](lab/resources/risc-v-resources.md)
+  * [Verilog LifeSaver](lab/resources/verilog-lifesaver.md)
 
 ## Textbook
 
@@ -46,7 +47,6 @@
   * [Data Types](textbook/hardware-description-languages/data-types.md)
   * [Parameterized Modules](textbook/hardware-description-languages/parameterized-modules.md)
   * [Testbench](textbook/hardware-description-languages/testbench.md)
-  * [More Verilog](textbook/hardware-description-languages/more-verilog.md)
 * [Digital Building Blocks](textbook/digital-building-blocks/README.md)
   * [Arithmetic Circuits](textbook/digital-building-blocks/arithmetic-circuits.md)
   * [Sequential Building Blocks](textbook/digital-building-blocks/sequential-building-blocks.md)

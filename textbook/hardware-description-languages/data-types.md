@@ -27,4 +27,4 @@ endmodule
 
 ***
 
-Verilog/SystemVerilog has much more stuff other than the things we've covered so far, for your interest, can jump to [more-verilog.md](more-verilog.md "mention")!
+Verilog/SystemVerilog has much more stuff other than the things we've covered so far, for your interest, can jump to [verilog-lifesaver.md](../../lab/resources/verilog-lifesaver.md "mention")!
