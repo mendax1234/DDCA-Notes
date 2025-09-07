@@ -53,20 +53,6 @@ endmodule
 {% step %}
 **Part Select: Endianness Swap**
 
-The part-select operator can be used to access a portion of a vector:
-
-```
-w[3:0]      // Only the lower 4 bits of w
-x[1]        // The lowest bit of x
-x[1:1]      // ...also the lowest bit of x
-z[-1:-2]    // Two lowest bits of z
-b[3:0]      // Illegal. Vector part-select must match the direction of the declaration.
-b[0:3]      // The *upper* 4 bits of b.
-assign w[3:0] = b[0:3];    // Assign upper 4 bits of b to lower 4 bits of w. w[3]=b[0], w[2]=b[1], etc.
-```
-
-***
-
 Example 1: A 32-bit vector can be viewed as containing 4 bytes (bits \[31:24], \[23:16], etc.). Build a circuit that will reverse the _byte_ ordering of the 4-byte word.
 
 ```
@@ -201,3 +187,52 @@ endmodule
 {% endcode %}
 {% endstep %}
 {% endstepper %}
+
+## Procedures
+
+### `always` block - Combinational
+
+Since digital circuits are composed of logic gates connected with wires, any circuit can be expressed as some **combination of modules** and `assign` statements. However, sometimes this is not the most convenient way to describe the circuit. _Procedures_ (of which `always` blocks are one example) provide an alternative syntax for describing circuits.
+
+For synthesizing hardware, two types of always blocks are relevant:
+
+* Combinational: `always @(*)`
+* Clocked: `always @(posedge clk)`
+
+Combinational `always` blocks are **equivalent** to `assign` statements, thus there is always a way to express a combinational circuit both ways. The choice between which to use is mainly an issue of which syntax is more convenient. The syntax for code inside a procedural block is different from code that is outside. Procedural blocks have a richer set of statements (e.g., `if-else`, `case`), cannot contain [continuous assignments](https://wenbo-notes.gitbook.io/ddca-notes/textbook/hardware-description-languages/combinational-logic#continuous-assignment-statement), but also introduces many new non-intuitive ways of making errors.
+
+<details>
+
+<summary><code>reg</code> vs. <code>wire</code></summary>
+
+As we have seen the rule of thumb explained [here](data-types.md#reg-and-wire-rule-of-thumb), we have further explanation below
+
+> The **left-hand-side** of an [**continuous assign statement**](https://wenbo-notes.gitbook.io/ddca-notes/textbook/hardware-description-languages/combinational-logic#continuous-assignment-statement) must be a _net_ type (e.g., wire), while the **left-hand-side** of a **procedural assignment** (in an `always` block) must be a _variable_ type (e.g., reg). These types (wire vs. reg) have nothing to do with what hardware is synthesized, and is just syntax left over from Verilog's use as a hardware _simulation_ language.
+
+</details>
+
+### `always` block - Clocked[^1]
+
+Clocked always blocks create a blob of combinational logic just like combinational always blocks, but also creates a set of [flip-flops](https://wenbo-notes.gitbook.io/ddca-notes/textbook/sequential-logic-design/latches-and-flip-flops#d-flip-flop) (or "[registers](https://wenbo-notes.gitbook.io/ddca-notes/textbook/sequential-logic-design/latches-and-flip-flops#register)") at the output of the blob of combinational logic. Instead of the outputs of the blob of logic being visible immediately, the outputs are visible only immediately after the next (`posedge` clk).
+
+{% hint style="success" %}
+The second sentence (Staring from "Instead") is goated!!!
+{% endhint %}
+
+<details>
+
+<summary>Blocking vs. Non-blocking Assignments</summary>
+
+There are three types of assignments in Verilog:
+
+* [Continuous assignments](https://wenbo-notes.gitbook.io/ddca-notes/textbook/hardware-description-languages/combinational-logic#continuous-assignment-statement) (`assign x = y;`). Can only be used when **not** inside a procedure ("`always` block").
+* Procedural blocking assignment: (`x = y;`). Can only be used inside a procedure.
+* Procedural non-blocking assignment: (`x <= y;`). Can only be used inside a procedure.
+
+We have already seen the rule of thumb for blocking and non-blocking statements [here](https://wenbo-notes.gitbook.io/ddca-notes/textbook/hardware-description-languages/combinational-logic#continuous-assignment-statement)! Feel free to go back and review the rules again! A short summary is
+
+> In a **combinational** `always` block, use **blocking** assignments. In a **clocked** `always` block, use **non-blocking** assignments.
+
+</details>
+
+[^1]: "Clocked" is a synonym of "sequential"

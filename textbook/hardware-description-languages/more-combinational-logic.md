@@ -200,7 +200,7 @@ The following guidelines explain when and how to use each type of assignment. If
 
 {% tabs %}
 {% tab title="SystemVerilog" %}
-1.  Use `always @ (posedge clk)` and **nonblocking assigments** to model **synchronous sequential logic.**
+1.  Use `always_ff @(posedge clk)` and **nonblocking assigments** to model **synchronous sequential logic.**
 
     {% code lineNumbers="true" %}
     ```verilog
@@ -234,7 +234,7 @@ The following guidelines explain when and how to use each type of assignment. If
 {% endtab %}
 
 {% tab title="Verilog" %}
-1.  Use `always_ff @(posedge clk)` and **nonblocking assigments** to model **synchronous sequential logic.**
+1.  Use `always @ (posedge clk)` and **nonblocking assigments** to model **synchronous sequential logic.**
 
     {% code lineNumbers="true" %}
     ```verilog

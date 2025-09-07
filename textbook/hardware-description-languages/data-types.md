@@ -2,7 +2,7 @@
 
 In Verilog (not SystemVerilog), there are two types: `reg` and `wire`. This was a great source of confusion for those learning the language (including me😂). This section will explain `reg` and `wire`.
 
-## `reg` and `wire` Rule of Thumb
+## `reg` and `wire`
 
 The rule of thumb is,
 
