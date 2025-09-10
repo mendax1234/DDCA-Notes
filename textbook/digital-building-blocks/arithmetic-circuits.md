@@ -93,7 +93,7 @@ endmodule
 
 Recall from [previous part](https://wenbo-notes.gitbook.io/ddca-notes/textbook/from-zero-to-one/number-systems#signed-binary-number-representation) that adders can add positive and negative numbers using [two's complement number representation](https://wenbo-notes.gitbook.io/ddca-notes/textbook/from-zero-to-one/number-systems#id-2s-complement). Substraction is almost as easy:
 
-1. flip the sign of teh second number
+1. flip the sign of the second number
 2. then add
 
 {% hint style="info" %}
