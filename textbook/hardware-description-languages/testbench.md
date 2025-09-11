@@ -101,3 +101,54 @@ endmodule
 {% endcode %}
 {% endtab %}
 {% endtabs %}
+
+### More on Delay
+
+What does delay actually mean? In essence, during the delay time, all signal values in the block where delay (`#`) is used remain **unchanged**, so in the waveform viewer it _looks flat_ (no change), unless there are other blocks which has some signal assignments.
+
+For example,
+
+{% code lineNumbers="true" %}
+```verilog
+// Signal declarations
+reg a;
+reg b;
+reg clk;
+
+// Waveform generation
+initial begin
+    // Initialize signals
+    a = 0;
+    b = 1;
+    clk = 0;
+    #10; // Wait 10 time units
+    a = 1;
+    #10; // Wait another 10 time units
+    b = 0;
+    #10; // Additional time to observe final state
+    $finish; // End simulation
+end
+```
+{% endcode %}
+
+So basically, at time `t=0`, `a=0` and `b=1`. Then from time `t=0` to `t=10`, because of delay, nothing happens and signals stay same as `t=0`. Similar to the remaining, and the waveform looks like below,
+
+<figure><img src="../../.gitbook/assets/more-on-delay-waveform.png" alt=""><figcaption></figcaption></figure>
+
+However, the delay (`#`) only applies to the block the delay statement is in, if we have another block, for example, an always block to generate the clock signal, that block won't be affected by the `delay` in the initial block.
+
+{% code lineNumbers="true" %}
+```verilog
+// Singal declaration same as above
+
+// Waveform generation, the initial block same as above
+
+always begin
+    #5 clk = ~clk;
+end
+```
+{% endcode %}
+
+And thus, the waveform will look like as follows,
+
+<figure><img src="../../.gitbook/assets/more-on-delay-with-clock.png" alt=""><figcaption></figcaption></figure>

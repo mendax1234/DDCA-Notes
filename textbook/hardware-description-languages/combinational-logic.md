@@ -298,7 +298,7 @@ assign y = {c[2:1], {3{d[0]}}, c[0], 3'b101};
 HDL statements may be associated with delays specified in arbitrary units. They are helpful during simulation to predict how fast a circuit will work (if you specify meaningful delays) and also for debugging purposes to understand cause and effect (deducing the source of a bad output is tricky if all signals change simultaneously in the simulation results).
 
 {% hint style="warning" %}
-These delays are ignored during synthesis! Thus, it is highly **not recommended** to use delays in combinational circuits!
+These delays are ignored during synthesis! Thus, it is highly **not recommended** to use delays in combinational circuits! However, delays may be very useful in [testbench](https://wenbo-notes.gitbook.io/ddca-notes/textbook/hardware-description-languages/testbench)!
 {% endhint %}
 
 The delay of a gate produced by the synthesizer depends on its $$t_{\text{pd}}$$ and $$t_{\text{cd}}$$ specifications, not on numbers in HDL code.
@@ -322,13 +322,6 @@ module example(input  logic a, b, c,
 endmodule
 ```
 {% endcode %}
-
-{% hint style="success" %}
-#### Code Explanation
-
-1. SystemVerilog/Verilog can include a timescale directive that indicates the value of each time unit. The statement is of the form `timescale unit/precision`. In this file, each unit is 1 ns, and the simulation has 1 ps precision.
-2. If no timescale directive is given in the file, a default unit and precision (usually 1 ns for both) is used.
-{% endhint %}
 {% endtab %}
 
 {% tab title="Verilog" %}
@@ -349,3 +342,10 @@ endmodule
 {% endcode %}
 {% endtab %}
 {% endtabs %}
+
+{% hint style="success" %}
+#### Code Explanation
+
+1. SystemVerilog/Verilog can include a timescale directive that indicates the value of each time unit. The statement is of the form `timescale unit/precision`. In this file, each unit is 1 ns, and the simulation has 1 ps precision.
+2. If no timescale directive is given in the file, a default unit and precision (usually 1 ns for both) is used.
+{% endhint %}
