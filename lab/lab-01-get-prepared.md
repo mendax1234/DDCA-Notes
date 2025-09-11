@@ -301,24 +301,21 @@ And the total timing is also not difficult to calcualte. Let's say we delay 10ns
 
 Here, the auto-check means we should read the IROM and DMEM data again in our testbench. And then check at each clock cycle, the led output of our UUT is the same as the expected led. (Only led here because `led` is the only port visible to us). See more from this [issue](https://github.com/NUS-CG3207/labs/discussions/37#discussioncomment-14328479).
 
-To implement this, we will write two verilog tasks to do the checking for us.
+{% hint style="info" %}
+Notice that what we want to achieve here is that we press the `btnU` for several "seconds", and then release, and then press `btnC` for several seconds, then release. Then check whether the `uut.led` and the `expected_led` match or not.
+{% endhint %}
 
-{% tabs %}
-{% tab title="Check Regular Mode" %}
+To implement this, we are recommended to write a verilog task to do the checking for us. (Reduce duplicate code)
+
 {% code overflow="wrap" lineNumbers="true" %}
 ```verilog
-// Task for checking a given mode (except pause mode)
-task check_mode;
-  input integer cycles;
-  integer j;
-  integer addr;
+task check;
+  input integer cycles;  // number of LED updates to observe
+  integer i;
   reg [15:0] expected_led;
-  reg upper_lower_tb;
   begin
-    addr = 0;
-    upper_lower_tb = 0;
-    for (j = 0; j < cycles; j = j + 1) begin
-      @(posedge uut.enable);  // sync with DUT update
+    for (i = 0; i < cycles; i = i + 1) begin
+      @(posedge uut.enable);
 
       // compute expected LED value
       if (addr < 128) expected_led = (upper_lower_tb == 0) ? IROM[addr][31:16] : IROM[addr][15:0];
@@ -328,82 +325,60 @@ task check_mode;
       if (uut.led !== expected_led) begin
         $error("Mismatch at addr %0d (upper_lower=%b): got %h expected %h", addr, upper_lower_tb,
                uut.led, expected_led);
+        $stop;
       end
 
-      // update TB model state
+      // Update TB model state
       upper_lower_tb = ~upper_lower_tb;
       if (upper_lower_tb == 0) addr = addr + 1;
     end
+    $display("Nothing Wrong, good job!");
   end
 endtask
 ```
 {% endcode %}
-{% endtab %}
 
-{% tab title="Check Pause Mode" %}
-{% code overflow="wrap" lineNumbers="true" %}
-```verilog
-// Task for checking pause mode
-task check_pause;
-  input integer cycles;  // number of checks
-  integer i;
-  reg [15:0] prev_led;
-  begin
-    prev_led = uut.led;
-    for (i = 0; i < cycles; i = i + 1) begin
-      #10;  // advance simulation, not waiting for enable
-      if (uut.led !== prev_led) begin
-        $error("LED changed during Pause!");
-        $display("Mismatch during Pause at iteration %0d: prev_led=%h, uut.led=%h", i, prev_led,
-                 uut.led);
-      end
-    end
-  end
-endtask
-```
-{% endcode %}
-{% endtab %}
-{% endtabs %}
+{% hint style="success" %}
+#### Code Explanation
 
-Then in our main simulation, we can just calle these two methods under each phase.
+1. The argument `cycles` doesn't need to take the threhold into accound because it uses the posedge of `uut.enable`.
+{% endhint %}
+
+Then in our main simulation, we can just call these two methods under each phase.
 
 {% code lineNumbers="true" %}
 ```verilog
-// Simulation code for auto checking
 initial begin
-  // Load memories
-  $readmemh("IROM.mem", IROM);
-  $readmemh("DMEM.mem", DMEM);
+  // Load from memory
+  // Load only 128 words (0 through 127)
+  $readmemh("IROM.mem", IROM, 0, 127);
+  $readmemh("DMEM.mem", DMEM, 0, 127);
 
-  // Init signals
   clk = 0;
   btnU = 0;
   btnC = 0;
+  addr = 0;
+  upper_lower_tb = 0;
 
-  // Phase 1: 1 Hz mode
+  // 1Hz mode
   $display("Starting 1 Hz mode...");
-  check_mode(512);
+  check(5);
+  #10;
 
-  // Phase 2: switch to 4 Hz
+  // 4Hz mode
   $display("Switching to 4 Hz mode...");
   btnU = 1;
-  check_mode(512);
+  check(10);
   btnU = 0;
-  #20; // This is important, make sure the simulation sees the button changes
+  #10;
 
-  // Phase 3: switch to Pause
+  // Pause mode
   $display("Switching to Pause mode...");
   btnC = 1;
-  // In pause, LEDs should stay constant, check 50 cycles
-  check_pause(50);
+  #200;
   btnC = 0;
-  #20;
 
-  // Phase 4: back to 1 Hz
-  $display("Back to 1 Hz mode...");
-  check_mode(512);
-
-  $display("Simulation finished successfully!");
+  $display("Simulation finished.");
   $stop;
 end
 ```
@@ -412,8 +387,7 @@ end
 {% hint style="success" %}
 #### Code Explanation
 
-1. The `512` as the argument for `check_mode` is explained [above](lab-01-get-prepared.md#no-auto-check-version).
-2. The `#20` at Line 21 and Line 29 is **important** as it makes sure the during the next phase the simulation actually sees the button change. The value may change depending on the the clock period. Usually, we should pause for 2 clock periods.
+1. The `#10` at Line 16 and Line 23 is **important** as it makes sure the during the next phase the simulation actually sees the button change. The value may change depending on the the clock period. Usually, we should pause for 1 clock period.
 {% endhint %}
 
 ## The fruits of our labour
