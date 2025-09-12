@@ -125,9 +125,9 @@ This code snippet mainly does the following
 
 So, the overall effect is: LEDs continuously reflect DIP switches, but with a controlled **refresh rate** (slowed down by the delay loop). And the detailed explanation is as follows:
 
-1. Line 46: Loads the constant `delay_val` (here = 4) from data memory into `s3`.
-2. Line 47: Reads the DIP switch values from the MMIO register at `s2 = 0xFFFF0064`.
-3. Line 48: Writes the same value into the LED MMIO register (`s1 = 0xFFFF0060`). So the LEDs mirror whatever is on the DIP switches.
+1. Line 47: Loads the constant `delay_val` (here = 4) from data memory into `s3`.
+2. Line 48: Reads the DIP switch values from the MMIO register at `s2 = 0xFFFF0064`.
+3. Line 49: Writes the same value into the LED MMIO register (`s1 = 0xFFFF0060`). So the LEDs mirror whatever is on the DIP switches.
 4. Line 51: Decrement the delay counter.
 5. Line 52: If counter hits zero, go back to `loop:` to reload `delay_val` and refresh LEDs.
 6. Line 53: If counter ≠ 0, jump back to `wait:` (continue counting down).
@@ -155,6 +155,10 @@ This is the data memory,
 In RISC-V, the word is stored in low-endianness. So, below is how the String in Line 72 is stored,
 
 <figure><img src="../.gitbook/assets/cg3207-lab01-task1-data-memory.png" alt=""><figcaption></figcaption></figure>
+
+{% hint style="success" %}
+The word is stored using [**little endianess**](https://wenbo-notes.gitbook.io/cg2111a-notes/studio/studio-13-communication-protocol#big-and-little-endianness) (we've encounterd little-endiance in CG2111A) in RISC-V memory, but within each byte, the byte is stored normally.
+{% endhint %}
 {% endstep %}
 {% endstepper %}
 
