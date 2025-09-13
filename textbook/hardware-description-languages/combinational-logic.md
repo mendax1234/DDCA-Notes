@@ -298,7 +298,7 @@ assign y = {c[2:1], {3{d[0]}}, c[0], 3'b101};
 HDL statements may be associated with delays specified in arbitrary units. They are helpful during simulation to predict how fast a circuit will work (if you specify meaningful delays) and also for debugging purposes to understand cause and effect (deducing the source of a bad output is tricky if all signals change simultaneously in the simulation results).
 
 {% hint style="warning" %}
-These delays are ignored during synthesis! Thus, it is highly **not recommended** to use delays in combinational circuits! However, delays may be very useful in [testbench](https://wenbo-notes.gitbook.io/ddca-notes/textbook/hardware-description-languages/testbench)!
+These delays are ignored during synthesis! Thus, it is highly **not recommended** to use delays in combinational circuits in RTL! However, delays may be very useful in [testbench](https://wenbo-notes.gitbook.io/ddca-notes/textbook/hardware-description-languages/testbench)!
 {% endhint %}
 
 The delay of a gate produced by the synthesizer depends on its $$t_{\text{pd}}$$ and $$t_{\text{cd}}$$ specifications, not on numbers in HDL code.

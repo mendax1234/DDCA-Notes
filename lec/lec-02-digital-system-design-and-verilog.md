@@ -261,3 +261,251 @@ We have learned quite a lot about [FPGA in Harris & Harris](https://wenbo-notes.
 
 * **FPGA:** flexible, fast to deploy, good for prototyping and low-volume/highly-custom tasks.
 * **ASIC:** high-performance, power/area-efficient, cost-effective only for large-scale production.
+
+## Verilog for Synthesis
+
+Note that the verilog and the rules we are talking here are for writing the RTL code, not for the testbench/simulation.
+
+### General Rules for Synthesizability
+
+#### Do NOT use delays (`#delay`)
+
+Combinational (propagation) delays are hardware dependent; not&#x20;something the synthesis tool can insert based on HDL code. So, the following and the use of delay mentioned [here](https://wenbo-notes.gitbook.io/ddca-notes/textbook/hardware-description-languages/combinational-logic#delays) are **not recommended,**
+
+{% code lineNumbers="true" %}
+```verilog
+always @(posedge clk) begin
+  data_out <= #10 data_in;   // #10 only works in simulation
+end
+```
+{% endcode %}
+
+In RTL Verilog code, we insert **clock cycle delays** explicity by introducing a&#x20;**physical** [**register**](https://wenbo-notes.gitbook.io/ddca-notes/textbook/sequential-logic-design/latches-and-flip-flops#register) (i.e., it is a part of your design). So, the following is the correct code for the above,
+
+{% code lineNumbers="true" %}
+```verilog
+reg [7:0] data_d1, data_d2;
+
+always @(posedge clk) begin
+  data_d1 <= data_in;   // 1 clock cycle delay
+  data_d2 <= data_d1;   // 2 clock cycle delay
+end
+
+assign data_out = data_d2;
+
+```
+{% endcode %}
+
+So, the key takeaway is
+
+* `#delay` is for [**testbenches**](https://wenbo-notes.gitbook.io/ddca-notes/textbook/hardware-description-languages/testbench) **only**.
+* In real FPGA/ASIC design, delays are achieved via **registers (clock cycles)** and **timing constraints (.xdc)**.
+
+#### Try to use only one clock for the entire design
+
+The key takeaway here is
+
+1. Connect the input of every sequential element to this only one clock
+   1. Run different things on **different speed**, instead of using different clocks. (One example is the [`Clock_Enable`](https://wenbo-notes.gitbook.io/ddca-notes/lab/lab-01-get-prepared#clock-enable) module from CG3207 Lab01)
+2. The clock should not come from a **combinational circuit**, as a combinational circuit can have [glitches](https://wenbo-notes.gitbook.io/ddca-notes/textbook/combinational-logic-design/timing#glitches) in its output.
+
+<figure><img src="../.gitbook/assets/cg3207-lec02-glitch.png" alt=""><figcaption></figcaption></figure>
+
+Here, the glitch happens because NOT gate has a propagation delay.
+
+#### Do not use `posedge/negedge` for anything other than clock or reset of a sequential process
+
+For example, **do not use** something like `@(posedge button)` for detecting a transition.
+
+* Use a synchronous edge detection scheme instead — e.g., by comparing the current value with the previous value stored in a register.
+
+{% code lineNumbers="true" %}
+```verilog
+assign button_edge = button & ~button_prev;
+
+always @(posedge CLK)
+begin
+    button_prev <= button;
+end
+```
+{% endcode %}
+
+<figure><img src="../.gitbook/assets/cg3207-lec02-button-edge-check.png" alt="" width="563"><figcaption></figcaption></figure>
+
+#### Do not have combinational feedback path
+
+Every circular assignment should be broken by a register (an assignment in a&#x20;synchronous `always` block). This is what we have seen in [Harris and Harris](https://wenbo-notes.gitbook.io/ddca-notes/textbook/sequential-logic-design/synchronous-logic-design).
+
+<figure><img src="../.gitbook/assets/cg3207-lec02-synchronous-sequential-logic.png" alt=""><figcaption></figcaption></figure>
+
+#### `reg` and `wire` should not have multiple drivers
+
+* A wire should appear on the LHS of only **one** `assign` statement.
+* A reg should appear on the LHS of only **one** `always` block.
+
+For example, the following is **wrong**
+
+{% code lineNumbers="true" %}
+```verilog
+assign Z = A & B;
+assign Z = X | Y;
+```
+{% endcode %}
+
+But its' ok to have a `reg` at the LHS of multiple statements within the **same**&#x20;`always` block as long as the **same type of assignment** is used.
+
+* Only blocking or only non-blocking, do not mix the two for a particular `reg`.
+* Within an always block, if a signal is assigned more than once, whichever assignment executes last in the flow of control is what the `reg` ends up holding.
+
+#### Initializations of reg (via initial block and reg declaration) are ignored by synthesis
+
+If you use either [`initial` block](https://wenbo-notes.gitbook.io/ddca-notes/lab/resources/verilog-lifesaver#initial-block) or `reg` declaration (e.g., `reg  = 1'b0`) to initialize a register, this initialization will be useful for registers and memories for FPGAs in **simulation**, but are **ignored** by the synthesis tools.
+
+* `wire`s cannot be meaningfully initialized as they don't store anything. (Go back review the [working principle of `wire`](https://wenbo-notes.gitbook.io/ddca-notes/lab/resources/verilog-lifesaver#wire) again if you forget)
+  * Initialization to 0 or 1 will connect the wire to a constant 0 or 1 respectively.    &#x20;Further assignment using assign will lead to it having multiple drivers. This is **dangerous** and **not recommended!**
+*   `reg`s that get synthesized as combinational circuits **cannot be    &#x20;meaningfully initialized**.
+
+    {% code lineNumbers="true" %}
+    ```verilog
+    reg z = 1'b1;   // initialization ignored in synthesis
+
+    always @(*) begin
+      z = a & b;    // purely combinational assignment
+    end
+    ```
+    {% endcode %}
+
+    Here, `z` is **not a flip-flop** — it’s just a combinational output of `a & b`. The `= 1'b1` initialization only affects **simulation**; in real hardware it’s ignored. So on power-up, `z` won’t magically start at `1`. It will simply depend on `a & b`.
+
+    * Not all `reg`s infer physical registers.
+* **Do not** assume registers and memory have 0s as initial value
+
+#### Every always should follow one of the three templates given below strictly
+
+> This part is very similar to the content in [Harris & Harris](https://wenbo-notes.gitbook.io/ddca-notes/textbook/hardware-description-languages/more-combinational-logic#tab-verilog-3). But with more tips added.
+
+{% stepper %}
+{% step %}
+**Purely combinational** (`always_comb` in SystemVerilog)
+
+To write RTL for **more complex combinational circuit**, use
+
+1. blocking statements
+2. `always @(*)`
+
+These are the same as Harris & Harris, besides that, we also recommend that
+
+1.  Every `reg` must be assigned a meaningful value (not something like `Z <= Z;`) for    &#x20;every possible combination of inputs (e.g., all branches of `if/case` statements). Otherwise, that `reg` will become **physical register** and it is no longer a combinational circuit anymore. For example, the following is correct
+
+    {% code lineNumbers="true" %}
+    ```verilog
+    always @(*)
+    begin
+        if (x)
+            Z = 1'b0;
+        else
+            Z = Y;
+    end
+    ```
+    {% endcode %}
+2. Two cases with blocking and non-blocking statements in `always @(*)`
+   1. Blocking executes **immediately, in order**. So if a `reg` is used on both **left-hand side (LHS)** and **right-hand side (RHS)**, you should assign it **first** before you read it. (that `reg` should appear on LHS before RHS)
+   2.  Non-blocking executes **in parallel at the end of the clock edge**, so within the same block you’ll **never see the updated value** in the RHS. For example, the following is **not recommended**
+
+       {% code lineNumbers="true" %}
+       ```verilog
+       always @ (*)
+       begin
+           notX = ~X;
+           Z <= notX & Y;
+           A <= Z;
+       end
+       ```
+       {% endcode %}
+
+In short, the first 3 rules are important! The fourth one just never use **non-blocking** statement in `always @(*)`.
+{% endstep %}
+
+{% step %}
+**Sychronous** (`always_ff`)
+
+Synchronous means that the output changes only on the rising or falling edge of a single clock. And in Harris & Harris, we have seen two rules of thumb
+
+1. use `always @(posedge clk)`
+2. non-blocking assignments only
+
+By keeping the above two rules, you should be able to avoid 99% of problems. But the remaining 1%, will probably be in the paper exam. 😂
+
+1. Use **non-blocking** assignments for the outputs of the always block (signals),   &#x20;as well as for any internal physical registers. **But** the updated values are **not available** for use at the **same clock edge**.
+2.  If you insist on using blocking assignments for internal combinational parts (variables). In this case, the variable should appear on the LHS **before** RHS.
+
+    {% code lineNumbers="true" %}
+    ```verilog
+    always @ (posedge CLK)
+    begin
+        tmp = X | Y; // tmp is a combinational variable
+        Z <= tmp; //Z is an output (signal)
+        // Z <= X | Y; is fine as well
+    end
+    ```
+    {% endcode %}
+
+    1. However, it is **recommended** to move combinational parts into a separate `always` block or `assign` statement so that the original block just becomes a register.
+{% endstep %}
+
+{% step %}
+**Synchronous with asynchronous** set/reset
+
+This usually involves a [resettable register](https://wenbo-notes.gitbook.io/ddca-notes/textbook/hardware-description-languages/sequential-logic#resettable-registers) which we've seen a lot in Harris & Harris. To design such resettable register, we should keep the following rules in mind
+
+1. Inside the `if` statement (to reset the value in the register), output should be assigned a vector of 0's and 1's,   &#x20;and **nothing more should be done**.
+2. All other code (e.g., the synchronous portion) should be inside the `else` (begin   &#x20;and end of else). There should not be additional **outer** `if/else ifs`, but can have **inner** `if/else ifs`, but these `if`s need not have `else`, why?
+   1. It’s because it’s synchronous. In clocked logic, missing `else` = “hold value,” which is fine. But in combinational logic, missing `else` = “need to remember,” which infers unintended latches. (**This is super important!**)
+
+In short, Prof. Rajesh recommends to **never** use resettable registers in this course.
+{% endstep %}
+{% endstepper %}
+
+### When are physical regs inferred
+
+In Verilog, `reg` doesn't mean it is a physical registers. The following rules summarize when are physiscal registers actually inferred
+
+1. non-blocking assignments of `reg`s in a synchronous `always` block
+2. In an `always @(posedge clk)`, if you use **blocking assignment** (`=`) to read a reg (RHS) before writing it (LHS), that `reg` is inferred as a **physical register**.
+   1. Inferring this way is **not recommended**!
+
+Basically, the registers will be **simplified** if they fall into the following two cases
+
+1. If there are two registers storing identical content, they could be merged by   &#x20;the synthesis tool as a part of optimization (configurable)
+2. If a register content is not used in a parent module, it is optimized away,   &#x20;along with the combinational circuits exclusively feeding it.
+
+For example, given the following Verilog code, draw the schematic,
+
+{% code lineNumbers="true" %}
+```verilog
+assign Z = X & Y;
+    always @ (posedge CLK)
+    begin
+        B = A;
+        C = B ^ Z;
+        D <= C;
+        E = C;
+        A = E;
+    end
+```
+{% endcode %}
+
+To solve this kind of drawing schematic questions, we do it systematically
+
+1. **Find the registers**: Based on the two rules listed above, here `D` and `A` are register.
+2. **Start building/drawing the circuit in order**: We start from the first line, which is the `assign` statement to build the circuit
+   1. Line 1 is an AND gate
+   2. Line 2 just connect the output of the register, which is A to B
+   3. Line C is just an XOR gate
+   4. Line D connects the C to a register and its output is D
+   5. E is just C
+   6. So, C is directly connected to the input to the register whose output is A
+
+The final schematic looks like below,
+
+<figure><img src="../.gitbook/assets/cg3207-lec02-schematic-drawing-example.png" alt="" width="375"><figcaption></figcaption></figure>
