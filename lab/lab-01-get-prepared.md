@@ -162,6 +162,46 @@ The word is stored using [**little endianess**](https://wenbo-notes.gitbook.io/c
 {% endstep %}
 {% endstepper %}
 
+<details>
+
+<summary>What's actually going on in Line 47? (<code>auipc</code>)</summary>
+
+In Line 47, the instruction is actually implemented by two RISC-V instructions.&#x20;
+
+{% code lineNumbers="true" %}
+```armasm
+auipc x19, 0x0000fc10
+lw    x19, 0xffffffec(x19)
+```
+{% endcode %}
+
+This is as shown as follows, (`x19` is the `s3` register)
+
+<figure><img src="../.gitbook/assets/cg3207-lab01-auipc.png" alt=""><figcaption></figcaption></figure>
+
+The reason for this two-step sequence is that **`lw`** is an I-type instruction, and I-type immediates are limited to a signed **12-bit offset** relative to a base register. This means `lw` can only directly access data within ±2048 bytes of the base address. When the data we want to load is located _far away_, we need an additional instruction to construct a base address that is “close enough.”
+
+This is where `auipc` (Add Upper Immediate to PC) comes in. `auipc` takes the current PC value, adds a 20-bit immediate shifted left by 12 bits, and stores the result into the destination register. In other words, it lets us build a base address relative to the PC, suitable for accessing distant memory.
+
+1. The symbol **`delay_val`** is at address `0x10010000`. The instruction `lw s3, delay_val` itself is at `0x00400014`.
+   1. These two addresses differ by much more than 12 bits, so a plain `lw` cannot reach `delay_val` directly.
+2. To bridge the gap, the assembler splits the target address into a **high part** and a **low part**.
+   1. The **upper 20 bits** difference is: `0x10010 - 0x00400 = 0xFC10`. This becomes the immediate for `auipc`.
+3. After executing `auipc x19, 0x0000fc10`, register `x19` holds: `x19 = PC + (0xFC10 << 12)`, which is a value “close” to the address of `delay_val`.
+4. Now only a **small offset** is left to cover.
+   1. The **lower 12 bits** difference is: `0x000 - 0x014 = 0xFFFFFFEC`. This fits within the signed 12-bit immediate range of `lw`.
+5. Finally, the instruction `lw x19, 0xffffffec(x19)` uses `x19` as the base plus the small offset to reach the exact address of `delay_val` and load its value into `s3`.
+
+***
+
+The key idea is that `auipc` provides a way to **construct PC-relative addresses for far-away data or code**. By combining `auipc` (for the high 20 bits of the address) with an I-type instruction like `lw` (for the low 12 bits), RISC-V can access any 32-bit address in memory, despite the immediate size limitations of a single instruction.
+
+{% hint style="success" %}
+The use of `la` to load address which is far away from the current PC address works in exactly similar ways. Instead storing the content, `la` store the address of that content.
+{% endhint %}
+
+</details>
+
 #### Demonstration
 
 In this task, we mainly just need to demonstrate as the following images shows,
@@ -172,6 +212,13 @@ In this task, we mainly just need to demonstrate as the following images shows,
 2. Change the input at the DIP switches (`0xffff0064`), then run Line 48 and 49, the output at LEDs (`0xffff0060`) should be mirrored.
 3. This loop is infinite, so showing this mirror once suffices.
 4. Wait for the problems proposed by the TA.
+
+#### Questions Preparation
+
+1. What is the 32-bit representation of certain instruciont, like the `opcode`, `funct3`, etc
+   1. bring the risc-v card along with you
+2. What is the memory capcity of IROM?
+   1. As we IROM can store 128 words, its memory capcity is 7 bits. (Although I think it is a bit not good here as memory capcity should be 128 words bruh, and the address of IROM is 7 bits.)
 
 ### Optional Task
 
@@ -242,6 +289,14 @@ The time `enable` is low is controlled by the corresponding `threshold` for each
 {% hint style="info" %}
 The image uses the `1Hz` mode and change the `threshold` to 8 for simluation. Normally should be `100_000_000` for real world.
 {% endhint %}
+
+<details>
+
+<summary><code>threshold</code> should be implemented sequentially or combinationally?</summary>
+
+Don't be confused by the comments in the Verilog code, `threshold` should be updated in a **combinational block**. (It is faster) Although you can still implement it sequentially. But the later is not recommended if you want to get a small improvement on your CPU.
+
+</details>
 
 #### Get Mem
 
@@ -394,22 +449,66 @@ end
 1. The `#10` at Line 16 and Line 23 is **important** as it makes sure the during the next phase the simulation actually sees the button change. The value may change depending on the the clock period. Usually, we should pause for 1 clock period.
 {% endhint %}
 
+### Demostration
+
+1. Load the bitstream file into your FPGA.
+2. Press the `btnU`, `btnC` to see the output of your FPGA.
+
+#### Questions Asked
+
+1. What is the difference between `Clock_Enable` between the normal 100MHz clock?
+   1. `Clock_Enable` is a slower clock implemented by the `threshold` thinking.
+2. How to verify the content shown on the **seven-seg display** is correct?
+   1. The only way we can do is to compare it visually with the memory files  (IROM and DMEM)
+
 ## The fruits of our labour
 
 {% embed url="https://youtu.be/5n7rySEmE8o" %}
 
 The video is out-dated and is for reference only as the lower-half and upper-half displaying sequence is flipped. As our design specification, should display upper-half first, then lower-half.
 
-<details>
+### Some Interesting Questions
 
-<summary>Why the actual behavior of seven-seg display and leds is different from the behavorial simulation?</summary>
+{% stepper %}
+{% step %}
+**Why the actual behavior of seven-seg display and leds is different from the behavorial simulation?**
 
 An interesting phenomenon I find out is that after the instruction memory, the last line will blink several times and then it still prints the instructions memory.
 
 ***
 
 This is solved by Dr. Rajesh and TA Neil in this [disscussion](https://github.com/NUS-CG3207/labs/discussions/41). The main reasons is that the synthesis tool will likely optimise the storage to a combinational circuit (4-input, 32-output) instead of a ROM as the utilisation is very low. That means repeating pattern modulo 16 composed of 13 valid and 3 garbage words.
+{% endstep %}
 
-</details>
+{% step %}
+**Why after I press** `btnU`, **my FPGA will have a delay, then change to fast speed?**
+
+This happens because of the way the `Clock_Enable` logic uses the **counter vs. threshold** comparison.
+
+<pre class="language-verilog" data-line-numbers><code class="lang-verilog">always @(posedge clk) begin
+  if (threshold == 0) begin
+    // Pause mode: no enable pulses
+    counter &#x3C;= 0;
+    enable  &#x3C;= 0;
+  end else begin
+<strong>    if (counter >= threshold - 1) begin
+</strong>      counter &#x3C;= 0;
+      enable  &#x3C;= 1;  // pulse high for 1 cycle
+    end else begin
+      counter &#x3C;= counter + 1;
+      enable  &#x3C;= 0;
+    end
+  end
+end
+</code></pre>
+
+If your Line 7 is `counter == threshold - 1`, then you will encounter the problem stated. But why?
+
+1. In **1 Hz mode**, the `threshold` is large, so the `counter` can hold a relatively big value.
+2. When you switch to **4 Hz mode**, the new `threshold` is much smaller
+3. If the **current counter value is still larger than the** `threshold_4Hz` (new threshold) but smaller than the `threshold_1Hz`, the condition `counter==threshold-1` will be false for many cycles. Thus, the counter continues incrementing until it eventually wraps around to zero, only then generating the first enable pulse at the new faster rate.
+4. This “wrap-around” is the **delay** you see when switching speeds.
+{% endstep %}
+{% endstepper %}
 
 [^1]: Why not directly clock cycles here? It is because we have slowed down the system clock on our `Get_Mem` module by using an `enable` signal instead. Thus, the real clock cycle will be "rounds" x "threshold"
