@@ -294,3 +294,7 @@ fn2:
 {% endhint %}
 {% endtab %}
 {% endtabs %}
+
+#### Some useful resources for RISC-V ISA
+
+1.
