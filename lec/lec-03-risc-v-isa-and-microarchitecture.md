@@ -1,5 +1,7 @@
 # Lec 03 - RISC-V ISA and Microarchitecture
 
+> As ISA is just architecture (see [Harris & Harris](https://wenbo-notes.gitbook.io/ddca-notes/textbook/from-zero-to-one#abstraction)!), so this lecture will talk about the architecture and microarchitecture part of RISC-V!
+
 ## RISC-V ISA
 
 As we have already seen in [Harris & Harris](https://wenbo-notes.gitbook.io/ddca-notes/textbook/architecture)'s introduction to architecture, we first recap some important points regarding architecture and microarchitecture.
