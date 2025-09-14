@@ -6,6 +6,7 @@
 
 * [Lec 01 - History, Technology, Performance](lec/lec-01-history-technology-performance.md)
 * [Lec 02 - Digital System Design and Verilog](lec/lec-02-digital-system-design-and-verilog.md)
+* [Lec 03 - RISC-V ISA and Microarchitecture](lec/lec-03-risc-v-isa-and-microarchitecture.md)
 
 ## Lab
 
