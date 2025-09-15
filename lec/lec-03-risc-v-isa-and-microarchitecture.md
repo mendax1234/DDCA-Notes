@@ -1,6 +1,6 @@
 # Lec 03 - RISC-V ISA and Microarchitecture
 
-> As ISA is just architecture (see [Harris & Harris](https://wenbo-notes.gitbook.io/ddca-notes/textbook/from-zero-to-one#abstraction)!), so this lecture will talk about the architecture and microarchitecture part of RISC-V!
+As ISA is just architecture (see [Harris & Harris](https://wenbo-notes.gitbook.io/ddca-notes/textbook/from-zero-to-one#abstraction)!), so this lecture will talk about the architecture and microarchitecture part of RISC-V!
 
 ## RISC-V ISA
 
@@ -76,7 +76,7 @@ RISC-V instruction has 6 formats, and they are well summarized in the following 
 
 {% stepper %}
 {% step %}
-**Opcode field occupies the least significant part of the instruction**
+#### **Opcode field occupies the least significant part of the instruction**
 
 This gives us the benefit that,
 
@@ -85,13 +85,13 @@ This gives us the benefit that,
 {% endstep %}
 
 {% step %}
-`rd`, `rs1`, `rs2` **always in the same place across formats**
+#### `rd`, `rs1`, `rs2` **always in the same place across formats**
 
 This makes decoder hardware is simpler (fewer multiplexers, will see later in the microarchitecture).
 {% endstep %}
 
 {% step %}
-**All immediates are MSB-extended**
+#### **All immediates are MSB-extended**
 
 So all immediates become sign-extended words. RISC-V immediates are encoded in **2’s complement form**. So when you sign-extend, you’re effectively just preserving the correct integer value. For example, in RV32I, 12-bit immediate,
 
@@ -121,7 +121,7 @@ Treat negative number in 2's complement as **unsigned** meaning it will become a
 {% endstep %}
 
 {% step %}
-**The location of immediate is well-designed**
+#### **The location of immediate is well-designed**
 
 From the table above, we may think why the immediate's location is that wired! Actually, later from the microarchitecture view, we will see that this is a **genius design** as it minimizes the number of multiplexers!
 {% endstep %}
@@ -166,7 +166,7 @@ The following is the base control instructions:
 
 {% stepper %}
 {% step %}
-**Jump vs. Branch**
+#### **Jump vs. Branch**
 
 1. `jal` can jump farther than conditional branches because
    1. `jal` instructions use 20-bit signed immediate
@@ -175,7 +175,7 @@ The following is the base control instructions:
 {% endstep %}
 
 {% step %}
-**Two types of jumps**
+#### **Two types of jumps**
 
 1. `jal`: jump and link, is a J-type instruction. And it stores return address in `rd`.
    1. Used when you know the **target address at assembly time**.
@@ -295,6 +295,181 @@ fn2:
 {% endtab %}
 {% endtabs %}
 
-#### Some useful resources for RISC-V ISA
+## RISC-V Microarchitecture
 
-1.
+From a computer hardware engineer's view, a computer can be divided into 2 parts
+
+* Datapath
+* Control Unit
+
+### Datapath
+
+Datapath is the path through which data "flows". It includes the following elements
+
+{% stepper %}
+{% step %}
+#### **Storage elements**
+
+Like memories and registers. The storage elements can be further divided into the following parts
+
+1. **Architectural state elements**: manipulated by the programmer, like instruction memory (IROM), data memory (DMEM), register file (x0-x31), PC, and other control registers.
+2. **Microarchitectural state elements**: **not accessible** to the   &#x20;programmers, like pipeline registers, cache tags, and branch predictor state
+{% endstep %}
+
+{% step %}
+#### **Steering logic**
+
+This is to **channel** data properly. For example, in the pipeline, should the ALU take operand from register file, or from immediate, or from forwarding path?
+
+The steering logic is implemented using
+
+* **multiplexers** (select one of many inputs) and
+* **internal buses** (shared connections).
+{% endstep %}
+
+{% step %}
+#### **Functional units**
+
+These units **operate** on data, like deciding **where the data should go**. For example,
+
+* **ALU**: performs add, subtract, AND, OR, shifts, etc.
+* **Adders**: sometimes separate for PC update, address calculation, etc.
+  * Often **stateless** because they don’t store, just compute outputs when inputs arrive.
+{% endstep %}
+
+{% step %}
+#### **Interface resources**
+
+These connect the CPU to the **outside world**. For example,
+
+* **External buses**: connect CPU to memory, I/O devices, GPU, etc.
+* **Ports**: I/O interfaces like memory-mapped registers, communication ports.
+{% endstep %}
+{% endstepper %}
+
+<details>
+
+<summary>What is bus?</summary>
+
+From the above points, we may wonder what on earth is a bus? From Wikipedia, the definition is
+
+> In computer architecture, a **bus** is a communication system that transfers data between components inside a computer or between computers. At its core, a bus is a **shared physical pathway**, typically composed of wires, that allows multiple devices to communicate.
+
+And, bus in computer architecture can be categorized based on the following two categories
+
+#### The **location** of the bus
+
+1. **Internal buses**: inside the CPU datapath.
+   1. Example: register file → ALU operand buses.
+2. **External buses**: connects CPU to **outside world** (main memory, I/O devices, GPU, etc.).
+   1. Example: system bus, PCIe, AMBA, memory bus.
+
+#### The **purpose** of the bus
+
+This is basically what the information a bus can carry
+
+1. **Data bus**: carries the actual _data values_ being read or written.
+2. **Address bus**: carries the _location_ of data (memory address or register index).
+3. **Control bus**: carries _signals_ that say _what operation is happening_.
+
+***
+
+Usually, we use the location of the bus first, then say the purpose of the bus.
+
+</details>
+
+### Control Unit
+
+Control Unit **controls** the flow/processing/storage of data in&#x20;the datapath via
+
+* **Mux selects**: choose which input goes into a multiplexer (e.g., should ALU input B come from register or immediate?).
+* **Register write enables**: should this register latch a new value at the clock edge or stay the same?
+* **Functional unit activation**: is the ALU active? Is the memory doing a read or a write?
+* **Operation selection**: what exact operation should ALU perform (add, sub, AND, OR…)?
+
+### Implement a single-cycle microarchitecture
+
+**I**n this lecture, we will implement a multi-cycle microarchitecture first. So basically, a single-cycle microarchitecture will fetch, decode, execute all in **one clock cycle**. And in this lecture, we have covered four single-cycle microarchitecture, each is built upon the previous one,
+
+{% stepper %}
+{% step %}
+#### Single-Cycle Processor with Control
+
+<figure><img src="../.gitbook/assets/cg3207-lec03-single-cycle-processor-control.png" alt=""><figcaption></figcaption></figure>
+
+As in a single-cycled processor, the CU is just a decoder, the following table summarises the decoder behavior,
+
+<figure><img src="../.gitbook/assets/cg3207-lec03-cu-decoder-logic.png" alt=""><figcaption></figcaption></figure>
+
+As you can save from the schematic above, the ALU will also output a 3-bit ALUFlags to the PC Logic, inside the Control Unit, and the PC logic is summarised as follows,
+
+<figure><img src="../.gitbook/assets/cg3207-lec03-pc-logic.png" alt="" width="467"><figcaption></figcaption></figure>
+
+Inside the PC logic, we should be clear that it has two **inputs** (`PCS`, `ALUFlags[2:0]`) and one **output** (`PCSrc`)
+
+* `PCS`: determines the **instruction category** for PC updates.
+* `ALUFlags[2:0]`: Bits that describe the outcome of the ALU operation. The three bits are `{eq, lt, ltu}`.
+* `PCSrc`: 1-bit control signal to choose the next PC Value.
+  * `0`: use the **default PC+4** (fallthrough to next instruction).
+  * `1`: use the **branch/jump target** (computed by ALU + immediate).
+
+For now, our PC only supports the `beq`, it will support more in the following iteration.
+{% endstep %}
+
+{% step %}
+#### PC Logic with all conditions
+
+The schematic is the same as the above. But, the PC logic is complete, we will look at `func3` field in the instruction to decide which branch instruction is being chosen.
+
+<figure><img src="../.gitbook/assets/cg3207-lec03-pc-logic-complete-branch.png" alt="" width="563"><figcaption></figcaption></figure>
+{% endstep %}
+
+{% step %}
+#### Support for `lui` and `auipc`
+
+<figure><img src="../.gitbook/assets/cg3207-lec03-support-for-lui-auipc.png" alt=""><figcaption></figcaption></figure>
+
+Here, we just add a 2-bit output named `ALUSrcA` from our decoder, these 2 bits will control whether the ALU SrcA will have the current `PC` as input. And regarding this, we have CU decoder table updated as follows,
+
+<figure><img src="../.gitbook/assets/cg3207-lec03-lui-auipc-cu-logic.png" alt=""><figcaption></figcaption></figure>
+
+{% hint style="success" %}
+It is clear that we can see from DP Reg to branch instruction, the ALUSrcA is just `x0`, which means the first bit is Don't Care and the second bit is 0.
+{% endhint %}
+{% endstep %}
+
+{% step %}
+#### Support for link and `jalr`
+
+<figure><img src="../.gitbook/assets/cg3207-lec03-support-for-link-jalr.png" alt=""><figcaption></figcaption></figure>
+
+Here, we have two modifications:
+
+1. change the `ALUSrcB` from 1-bit to 2-bit, thus adding another possibility for the immediate 4 to be the input of ALU SrcB.
+2. change the `PCSrc` from 1-bit to 2-bit, thus adding another possibility for the PC value to be read from Register File `RD1`.
+
+Thus, we have two changes for our tables, the first one is the CU decoder table
+
+<figure><img src="../.gitbook/assets/cg3207-lec03-link-jalr-cu-logic.png" alt=""><figcaption></figcaption></figure>
+
+{% hint style="success" %}
+Here, we can clearly see that when our instruction is `jal`, the `ALUSrcA=11` makes sure the ALU SrcA is the current PC value. And `ALUSrcB=01` makes sure that the ALU SrcB is immediate 4. Then the ALU will add these two and store the result into `rd`.
+{% endhint %}
+
+And our PC Logic table will also change,
+
+<figure><img src="../.gitbook/assets/cg3207-lec03-pc-logic-jalr.png" alt="" width="563"><figcaption></figcaption></figure>
+
+{% hint style="success" %}
+Again, we can see it clearly that when the instruction is `jalr`, `PCSrc[1]=1`, and this will load the value in `rs1` into the PC adder, and `PCSrc[0]=1` will load the immediate value into the PC adder. And now the new PC value will be the sum of these two values! (As `jalr rd, imm(rs1)` -> `rd=PC+4, PC=rs1+imm`.)
+{% endhint %}
+{% endstep %}
+{% endstepper %}
+
+This is the whole content to build a simple single-cycle RISC-V processor. And we may notice the following,
+
+* No datapath resource can be used more than once per instruction, so some must be duplicate
+  * **Separate memories**: because fetch and load/store both need memory at the same time.
+  * **Two adders**: because PC+4 and normal ALU addition both need addition in the same cycle.
+
+> So, how can we make it faster? The answer is wait for Lec 04 😉!
