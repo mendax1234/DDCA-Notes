@@ -1,3 +1,20 @@
+---
+layout:
+  width: default
+  title:
+    visible: true
+  description:
+    visible: true
+  tableOfContents:
+    visible: true
+  outline:
+    visible: true
+  pagination:
+    visible: true
+  metadata:
+    visible: true
+---
+
 # Lec 03 - RISC-V ISA and Microarchitecture
 
 As ISA is just architecture (see [Harris & Harris](https://wenbo-notes.gitbook.io/ddca-notes/textbook/from-zero-to-one#abstraction)!), so this lecture will talk about the architecture and microarchitecture part of RISC-V!
@@ -6,13 +23,25 @@ As ISA is just architecture (see [Harris & Harris](https://wenbo-notes.gitbook.i
 
 As we have already seen in [Harris & Harris](https://wenbo-notes.gitbook.io/ddca-notes/textbook/architecture)'s introduction to architecture, we first recap some important points regarding architecture and microarchitecture.
 
-* Architecture: Programmer's view of computer
-  * Defined by instructions & operand locations
-  * Assembly language: human-readable format of    &#x20;instructions
-  * Machine language: computer-readable format    &#x20;(1’s and 0’s)
-  * Assembly language -> Machine language    &#x20;conversion is done by the assembler
-    * one to one correspondence      &#x20;(except for pseudo-instructions)
-* Microarchitecture: how to implement an architecture in hardware (we will see later in this lec)
+{% stepper %}
+{% step %}
+#### Architectur
+
+This is the programmer's view of computer. And it has the following features:
+
+* Defined by instructions & operand locations
+* Assembly language: human-readable format of  &#x20;instructions
+* Machine language: computer-readable format  &#x20;(1’s and 0’s)
+* Assembly language -> Machine language  &#x20;conversion is done by the assembler
+  * one to one correspondence    &#x20;(except for pseudo-instructions)
+{% endstep %}
+
+{% step %}
+#### Microarchitecture
+
+This is about how to implement an architecture in hardware (we will see later in [second half](lec-03-risc-v-isa-and-microarchitecture.md#risc-v-microarchitecture) of this lec series)
+{% endstep %}
+{% endstepper %}
 
 ### RISC-V Features
 
@@ -20,10 +49,15 @@ In the lec, we have introduced some interesting features about RISC-V, and they 
 
 * As a RISC architecture, the RISC-V ISA is a load–store architecture — only load/store variants can access memory
   * No mixing of memory access with data processing or branching
+
+{% hint style="warning" %}
+Memory and register is **not the same**! Here, memory usually refers to the data memory, like RAM.
+{% endhint %}
+
 * Interesting design choices to simplify hardware implementation
   * Especially the encoding of immediates (We will see later)
 
-{% hint style="danger" %}
+{% hint style="warning" %}
 Instruction length and word length are not necessarily the same!
 {% endhint %}
 
@@ -53,20 +87,47 @@ The register set has been introduced in [Harris & Harris](https://wenbo-notes.gi
 
 And below are some useful notes
 
-* In Assembly code, we can use ABI name, like `zero`, `ra`, etc. But in compiled code, ISA names, like `x0`, `x1`, etc, is used.
-* PC is not a register readable/writable explicitly by any  &#x20;instruction, e.g., it is not a visible register
-  * In RISC-V, PC just stores the address of the current instruction. (Not like ARM, PC actually stores the address of the current instruction address +4 or +8)
-  * Writing PC is done **only by** branch/jump instructions.
-* **No** instruction updates more than one visible register, and the register updated is **explicitly** specified in the `rd` field.
-  * This ensures that the [register file](https://wenbo-notes.gitbook.io/ddca-notes/textbook/digital-building-blocks/memory-arrays#register-files) only needs **one write port**.
-* **No** instruction reads more than two registers.
-  * This ensures that the register file needs only **2 read ports**. Below is the example of RISC-V's register file,
+{% stepper %}
+{% step %}
+#### ABI name and ISA name
+
+In RISC-V assembly code, we can use ABI name, like `zero`, `ra`, etc. But in compiled code, ISA names, like `x0`, `x1`, etc, is used.
+{% endstep %}
+
+{% step %}
+#### PC in RISC-V
+
+In RISC-V, PC is not a register readable/writable explicitly by any&#x20;instruction, e.g., it is not a visible register. And,
+
+* In RISC-V, PC just stores the address of the current instruction. (Not like ARM, PC actually stores the address of the current instruction address +4 or +8)
+* Writing PC is done **only by** branch/jump instructions.
+{% endstep %}
+
+{% step %}
+#### **No** instruction updates more than one visible register
+
+This is a very important golden rule (The step title here) And, in RISC-V, the register updated is **explicitly** specified in the `rd` field. This ensures that the [register file](https://wenbo-notes.gitbook.io/ddca-notes/textbook/digital-building-blocks/memory-arrays#register-files) only needs **one write port**.
+{% endstep %}
+
+{% step %}
+#### **No** instruction reads more than two registers.
+
+Another golden rule here. This ensures that the register file needs only **2 read ports**. Below is the example of RISC-V's register file,
+
+So, in summary, below is the illustration of RISC-V register file,
 
 <figure><img src="../.gitbook/assets/cg3207-lec03-risc-v-register-file.png" alt=""><figcaption></figcaption></figure>
+{% endstep %}
 
-* There is **no flag registers**. Flags are never stored for “future use.” Instead, comparisons and branches are **self-contained**. For example, `beq x1, x2, target;` will directly compare `x1` and `x2`, and branches to `target`.
-  * If you _do_ need the comparison result as data, use an instruction like `slt` to store it in an **general-purpose register** `slt x3, x1, x2;` means `x3 1` if `x1<x2`, else `x3=0`.
-  * Because branch instructions already use the ALU for comparison, RISC-V usually has a separate unit to compute branch target addresses (`PC + offset`).
+{% step %}
+#### No flag registers
+
+In RISC-V, flags are never stored for “future use.” Instead, comparisons and branches are **self-contained**. For example, `beq x1, x2, target;` will directly compare `x1` and `x2`, and branches to `target`.
+
+* If you _do_ need the comparison result as data, use an instruction like `slt` to store it in an **general-purpose register** `slt x3, x1, x2;` means `x3 1` if `x1<x2`, else `x3=0`.
+* Because branch instructions already use the ALU for comparison, RISC-V usually has a separate unit to compute branch target addresses (`PC + offset`).
+{% endstep %}
+{% endstepper %}
 
 ### Instruction Formats
 
@@ -133,14 +194,14 @@ From the table above, we may think why the immediate's location is that wired! A
 
 <figure><img src="../.gitbook/assets/cg3207-lec03-risc-v-dp-instructions.png" alt=""><figcaption></figcaption></figure>
 
-* `subi` is unnecessary as the assembler can encode `A-B` as `A+(-B)`. This find as `B` is immediate, if `B` is a register, then `B` cannot be known at assembly time, and that's why `sub` is still needed.
-* Include the example of 3 types of shifts operation from Harris & Harris here!
+From this table, we notice that
 
-<figure><img src="../.gitbook/assets/risc-v-shift-instrucitons-example.png" alt=""><figcaption></figcaption></figure>
+* `subi` is unnecessary as the assembler can encode `A-B` as `A+(-B)`. This find as `B` is immediate, if `B` is a register, then `B` cannot be known at assembly time, and that's why `sub` is still needed.
+* And the following table is copied from [Harris & Harris](https://wenbo-notes.gitbook.io/ddca-notes/textbook/architecture/programming#shift-instructions), just for CG3207 midterm quiz purpose.
 
 #### DP Pseudo-Instruction
 
-All the pseudo-instruction in RISC-V is introduced [here](../lab/resources/risc-v-resources.md#risc-v-pseudo-instruction)! Among them, knowing the working principle of `auipc` from [Lab 1](https://wenbo-notes.gitbook.io/ddca-notes/lab/lab-01-get-prepared#whats-actually-going-on-in-line-47-auipc) is also necessary!
+All the pseudo-instruction in RISC-V is introduced [here](../lab/resources/risc-v-resources.md#risc-v-pseudo-instruction)! Among them, knowing the working principle of `auipc` from [Lab 1](https://wenbo-notes.gitbook.io/ddca-notes/lab/lab-01-get-prepared#whats-actually-going-on-in-line-47-auipc) is also necessary! This means that the working principle should also be included in this page manually for CG3207 midterm quiz purpose.
 
 #### Multiply and Divide
 
@@ -154,7 +215,9 @@ The following is the base memory instruction:
 
 <figure><img src="../.gitbook/assets/cg3207-lec03-risc-v-memory-instruction.png" alt=""><figcaption></figcaption></figure>
 
-* For the memory instruction syntax, if `imm=0`, can omit the `imm`. e.g., `op rd, (rs1)`.
+So, from this table, notice that
+
+* For the memory instruction syntax, if `imm=0`, we can omit the `imm`. e.g., `op rd, (rs1)`.
 * For `lb` and `lh`, which loads a byte or a half word, the rest of bits are formed by **sign-extension/MSB-extension** (just copy the MSB) of the byte/half-word
 * For `lbu` and `lhu`, **zero extension** (copy zero only) is done.
 
@@ -299,8 +362,8 @@ fn2:
 
 From a computer hardware engineer's view, a computer can be divided into 2 parts
 
-* Datapath
-* Control Unit
+* [Datapath](lec-03-risc-v-isa-and-microarchitecture.md#datapath)
+* [Control Unit](lec-03-risc-v-isa-and-microarchitecture.md#control-unit)
 
 ### Datapath
 

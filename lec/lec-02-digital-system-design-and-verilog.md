@@ -12,7 +12,7 @@ Let's have a detailed look on each level,
 
 {% stepper %}
 {% step %}
-**Algorithm/System Level (Untimed)**
+#### **Algorithm/System Level (Untimed)**
 
 At the highest level, the design is expressed as algorithms or functional behavior without worrying about timing. For example, describing `output = (A+B) + (C+D)` in a flowchart or C-like pseudocode.
 
@@ -20,7 +20,7 @@ At the highest level, the design is expressed as algorithms or functional behavi
 {% endstep %}
 
 {% step %}
-**Register Transfer Level (RTL, Timed)**
+#### **Register Transfer Level (RTL, Timed)**
 
 It is the macroscopic hardware view. The system is described in terms of **data transfers between registers** and **operations performed by functional units (ALUs, multiplexers, etc.)** under clock control. It is timed, cycle-accurate, but still abstract (macroscopic). For example, the RTL Verilog Code we have written in [CG3207 Lab01](https://wenbo-notes.gitbook.io/ddca-notes/lab/lab-01-get-prepared#rtl-design) or the following simple code in Verilog
 
@@ -35,7 +35,7 @@ always @(posedge clk)
 {% endstep %}
 
 {% step %}
-**Gate Level**
+#### **Gate Level**
 
 It is the microscopic hardware view. RTL constructs are **synthesized into logic gates** (AND, OR, NOT, flip-flops). For example,`(A+B)` becomes a [ripple-carry adder](https://wenbo-notes.gitbook.io/ddca-notes/textbook/digital-building-blocks/arithmetic-circuits#ripple-carry-adder) built out of AND/OR/XOR gates. It is boolean equations + gates, but no transistor-level details.
 
@@ -43,7 +43,7 @@ It is the microscopic hardware view. RTL constructs are **synthesized into logic
 {% endstep %}
 
 {% step %}
-**Circuit Level**
+#### **Circuit Level**
 
 It is the actual electronic implementation of logic gates using [**CMOS Transistors**](https://wenbo-notes.gitbook.io/ddca-notes/textbook/from-zero-to-one/cmos-transistors). For example, an inverter (`NOT gate`) is realized using one PMOS and one NMOS transistor.
 
@@ -51,7 +51,7 @@ It is the actual electronic implementation of logic gates using [**CMOS Transist
 {% endstep %}
 
 {% step %}
-**Layout Level**
+#### **Layout Level**
 
 It is the physical representation of the circuit on silicon. Masks for fabrication are designed here. And it is the final physical placement/routing of transistors and wires.
 {% endstep %}
@@ -301,8 +301,6 @@ So, the key takeaway is
 * `#delay` is for [**testbenches**](https://wenbo-notes.gitbook.io/ddca-notes/textbook/hardware-description-languages/testbench) **only**.
 * In real FPGA/ASIC design, delays are achieved via **registers (clock cycles)** and **timing constraints (.xdc)**.
 
-#### Try to use only one clock for the entire design
-
 The key takeaway here is
 
 1. Connect the input of every sequential element to this only one clock
@@ -312,8 +310,6 @@ The key takeaway here is
 <figure><img src="../.gitbook/assets/cg3207-lec02-glitch.png" alt=""><figcaption></figcaption></figure>
 
 Here, the glitch happens because NOT gate has a propagation delay.
-
-#### Do not use `posedge/negedge` for anything other than clock or reset of a sequential process
 
 For example, **do not use** something like `@(posedge button)` for detecting a transition.
 
@@ -337,8 +333,6 @@ end
 Every circular assignment should be broken by a register (an assignment in a&#x20;synchronous `always` block). This is what we have seen in [Harris and Harris](https://wenbo-notes.gitbook.io/ddca-notes/textbook/sequential-logic-design/synchronous-logic-design).
 
 <figure><img src="../.gitbook/assets/cg3207-lec02-synchronous-sequential-logic.png" alt=""><figcaption></figcaption></figure>
-
-#### `reg` and `wire` should not have multiple drivers
 
 * A wire should appear on the LHS of only **one** `assign` statement.
 * A reg should appear on the LHS of only **one** `always` block.
