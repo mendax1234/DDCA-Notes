@@ -25,7 +25,7 @@ As we have already seen in [Harris & Harris](https://wenbo-notes.gitbook.io/ddca
 
 {% stepper %}
 {% step %}
-#### Architectur
+#### Architecture
 
 This is the programmer's view of computer. And it has the following features:
 
