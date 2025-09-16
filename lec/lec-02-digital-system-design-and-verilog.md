@@ -14,7 +14,9 @@ Let's have a detailed look on each level,
 {% step %}
 #### **Algorithm/System Level (Untimed)**
 
-At the highest level, the design is expressed as algorithms or functional behavior without worrying about timing. For example, describing `output = (A+B) + (C+D)` in a flowchart or C-like pseudocode.
+At the highest level, the design is expressed as algorithms or functional behavior without worrying about timing.
+
+For example, describing `output = (A+B) + (C+D)` in a flowchart or C-like pseudocode.
 
 **Focus:** This part is only on the _functionality_, not on how many cycles or how it’s implemented in hardware.
 {% endstep %}
@@ -22,7 +24,9 @@ At the highest level, the design is expressed as algorithms or functional behavi
 {% step %}
 #### **Register Transfer Level (RTL, Timed)**
 
-It is the macroscopic hardware view. The system is described in terms of **data transfers between registers** and **operations performed by functional units (ALUs, multiplexers, etc.)** under clock control. It is timed, cycle-accurate, but still abstract (macroscopic). For example, we have written the RTL Code in [CG3207 Lab01](https://wenbo-notes.gitbook.io/ddca-notes/lab/lab-01-get-prepared#rtl-design), and the following simple Verilog code is also an example of RTL Code
+It is the macroscopic hardware view and is described in terms of **data transfers between registers** and **operations performed by functional units (ALUs, multiplexers, etc.)** under clock control. And this macroscopic hardware view is **implemented** using the RTL code. Thus, it is timed, cycle-accurate, but still abstract (macroscopic).
+
+For example, we have written the RTL Code in [CG3207 Lab01](https://wenbo-notes.gitbook.io/ddca-notes/lab/lab-01-get-prepared#rtl-design), and the following simple Verilog code is also an example of RTL Code
 
 {% code lineNumbers="true" %}
 ```verilog
@@ -37,7 +41,9 @@ always @(posedge clk)
 {% step %}
 #### **Gate Level**
 
-It is the microscopic hardware view. RTL constructs are **synthesized into logic gates** (AND, OR, NOT, flip-flops) or **cells** from the technology library (as you will see later). For example,`(A+B)` becomes a [ripple-carry adder](https://wenbo-notes.gitbook.io/ddca-notes/textbook/digital-building-blocks/arithmetic-circuits#ripple-carry-adder) built out of AND/OR/XOR gates. It is boolean equations + gates, but no transistor-level details.
+It is the microscopic hardware view. The RTL code is **synthesized into** [**logic gates**](#user-content-fn-1)[^1] (AND, OR, NOT, flip-flops).
+
+For example,`(A+B)` becomes a [ripple-carry adder](https://wenbo-notes.gitbook.io/ddca-notes/textbook/digital-building-blocks/arithmetic-circuits#ripple-carry-adder) built out of AND/OR/XOR gates. It is boolean equations + gates, but no transistor-level details.
 
 **Focus:** This is your **microscopic implementation** of RTL macros.
 {% endstep %}
@@ -45,7 +51,9 @@ It is the microscopic hardware view. RTL constructs are **synthesized into logic
 {% step %}
 #### **Circuit Level**
 
-It is the actual electronic implementation of logic gates using [**CMOS Transistors**](https://wenbo-notes.gitbook.io/ddca-notes/textbook/from-zero-to-one/cmos-transistors). For example, an inverter (`NOT gate`) is realized using one PMOS and one NMOS transistor.
+It is the actual electronic implementation of logic gates using [**CMOS Transistors**](https://wenbo-notes.gitbook.io/ddca-notes/textbook/from-zero-to-one/cmos-transistors).
+
+For example, an inverter (`NOT gate`) is realized using one PMOS and one NMOS transistor.
 
 **Focus:** Device-level representation, electrical properties like delay, power, capacitance are considered.
 {% endstep %}
@@ -102,7 +110,7 @@ We see that the architectural synthesis fits between Behavioral Modeling and Log
 
 {% stepper %}
 {% step %}
-**Workflow**
+#### **Workflow**
 
 As shown in the diagram below, the logic synthesis will take in three things (HDL Code, Constraints, and Technology Library) and output one thing (mapped schematic)
 
@@ -120,7 +128,7 @@ As shown in the diagram below, the logic synthesis will take in three things (HD
 {% endstep %}
 
 {% step %}
-**Substeps**
+#### **Substeps**
 
 1. **Logic optimization**: minimize undesirable redundancies (think [karnaugh-maps](https://wenbo-notes.gitbook.io/ddca-notes/recap-from-ntu-sc1005/boolean-algebra/combinational#forms-of-boolean-expressions)), and hence, the cost and complexity of the design.
 
@@ -132,7 +140,7 @@ As shown in the diagram below, the logic synthesis will take in three things (HD
 {% endstep %}
 
 {% step %}
-**RTL and Registers**
+#### **RTL and Registers**
 
 **RTL (Register Transfer Level):** Describes **how data moves between registers** on each clock cycle.
 
@@ -150,7 +158,7 @@ As shown in the diagram below, the logic synthesis will take in three things (HD
 {% endstep %}
 
 {% step %}
-[**Critical Path**](https://wenbo-notes.gitbook.io/ddca-notes/textbook/combinational-logic-design/timing#critical-path)
+#### [**Critical Path**](https://wenbo-notes.gitbook.io/ddca-notes/textbook/combinational-logic-design/timing#critical-path)
 
 Here, we add one point from [Harris & Harris](https://wenbo-notes.gitbook.io/ddca-notes/textbook/combinational-logic-design/timing#critical-path), that is,
 
@@ -496,3 +504,5 @@ To solve this kind of drawing schematic questions, we do it systematically
 The final schematic looks like below,
 
 <figure><img src="../.gitbook/assets/cg3207-lec02-schematic-drawing-example.png" alt="" width="375"><figcaption></figcaption></figure>
+
+[^1]: In FPGA/ASIC design, the RTL code is synthesized into **a netlist** using the **cells/microscopic building blocks** from the technology library (as you will see later).
