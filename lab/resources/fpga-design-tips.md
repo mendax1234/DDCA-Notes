@@ -4,7 +4,7 @@
 
 ### Theoretical
 
-This part has been introduced in Lec 02! Why theoretical, I guess it's because it is introduced during the lec. 😂 But that doesn't mean it's not important, it's still very important!
+This part has been introduced in [Lec 02](https://wenbo-notes.gitbook.io/ddca-notes/lec/lec-02-digital-system-design-and-verilog#behavioral-modelling-1)! Why theoretical, I guess it's because it is introduced during the lec. 😂 But that doesn't mean it's not important, it's still very important!
 
 ### Practical
 

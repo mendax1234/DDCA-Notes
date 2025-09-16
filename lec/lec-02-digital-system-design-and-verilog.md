@@ -575,4 +575,4 @@ The final schematic looks like below,
 
 <figure><img src="../.gitbook/assets/cg3207-lec02-schematic-drawing-example.png" alt="" width="375"><figcaption></figcaption></figure>
 
-[^1]: In FPGA/ASIC design, the RTL code is synthesized into **a netlist** using the **cells/microscopic building blocks** from the technology library (as you will see later).
+[^1]: In FPGA/ASIC design, the RTL code is synthesized into **a netlist** using the **cells/microscopic building blocks** from the technology library (as you will see [later](https://wenbo-notes.gitbook.io/ddca-notes/lec/lec-03-risc-v-isa-and-microarchitecture#risc-v-microarchitecture)).
