@@ -104,7 +104,77 @@ The following images shows the difference between behavioural modelling and arch
 
 <figure><img src="../.gitbook/assets/cg3207-lec02-behavioural-vs-architectural.png" alt="" width="563"><figcaption></figcaption></figure>
 
-We see that the architectural synthesis fits between Behavioral Modeling and Logic Synthesis in the design flow, balancing abstraction with hardware readiness.
+{% hint style="success" %}
+**Binding directly determines how many actual FUs are instantiated** in the final design, which in turn determines the **area cost**.
+{% endhint %}
+
+For now, we should be able to use the hardware thinking to write RTL Code, let's recap on the necessary steps by looking through a very simple step!
+
+{% stepper %}
+{% step %}
+#### Behavioral Modelling
+
+Describes **what the computation is**, but not _when_ or _where_ it happens. This is what we have seen in [#behavioral-modelling](lec-02-digital-system-design-and-verilog.md#behavioral-modelling "mention") For example, we want to calculate the following formula,
+
+$$
+Z=(A+B)\times(C+D)\times E
+$$
+{% endstep %}
+
+{% step %}
+#### **Build a macroscopic model**
+
+Now, we start the [#architectural-synthesis](lec-02-digital-system-design-and-verilog.md#architectural-synthesis "mention"), where we first decide **what kinds of resources** will be in the datapath (e.g., 2 adders, 1 multiplier, 1 register file). Still no cycle-by-cycle schedule, just “these are the building blocks.” And this is the **high-level datapath architecture**.
+{% endstep %}
+
+{% step %}
+#### Scheduling
+
+This is done manually by deciding **when each operation executes** — e.g., in which clock cycle. For example, we want
+
+* Cycle 1: compute A+B
+* Cycle 2: compute C+D
+* Cycle 3: multiply results → (A+B)∗(C+D)
+* Cycle 4: multiply with E
+
+{% hint style="warning" %}
+Without scheduling, RTL can’t be written, because RTL requires explicit **registers and clocked behavior**.
+{% endhint %}
+{% endstep %}
+
+{% step %}
+#### Binding
+
+This is still done manually. Once we know **when** things happen, we decide **where** they happen — e.g., which hardware resource executes each operation. For example,
+
+* Cycle 1: `(A+B)` → Adder #1
+* Cycle 2: `(C+D)` → Adder #1 again (reused)
+* Cycle 3: `sum1 * sum2` → Multiplier #1
+* Cycle 4: `prod * E` → Multiplier #1 again
+
+{% hint style="warning" %}
+Binding decides the **resource allocation vs reuse tradeoff** (performance vs area).
+{% endhint %}
+{% endstep %}
+
+{% step %}
+#### RTL Coding
+
+The final step is to write the RTL Code, which is also the last step of [#architectural-synthesis](lec-02-digital-system-design-and-verilog.md#architectural-synthesis "mention"). Once scheduling + binding are decided, the RTL code can be written, cycle-accurate. For example,
+
+{% code lineNumbers="true" %}
+```verilog
+reg [31:0] sum1, sum2, prod, Z;
+always @(posedge clk) begin
+    sum1 <= A + B;        // cycle 1
+    sum2 <= C + D;        // cycle 2 (same adder reused)
+    prod <= sum1 * sum2;  // cycle 3
+    Z    <= prod * E;     // cycle 4 (same multiplier reused)
+end
+```
+{% endcode %}
+{% endstep %}
+{% endstepper %}
 
 #### Logical Synthesis
 

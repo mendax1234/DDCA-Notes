@@ -2,6 +2,12 @@
 
 ## RTL Coding Steps
 
+### Theoretical
+
+This part has been introduced in Lec 02! Why theoretical, I guess it's because it is introduced during the lec. 😂 But that doesn't mean it's not important, it's still very important!
+
+### Practical
+
 We have introduced the FPGA Design Flow in [CS2100DE Lab 01](https://wenbo-notes.gitbook.io/ddca-notes/lab/preparation-cs2100de/lab-01#the-fpga-design-flow). Here, I want to add more steps when we write our RTL Code.
 
 {% stepper %}
