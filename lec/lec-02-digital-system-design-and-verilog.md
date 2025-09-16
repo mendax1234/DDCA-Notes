@@ -4,7 +4,7 @@
 
 ### Levels of Abstraction
 
-Different from the [abstraction](https://wenbo-notes.gitbook.io/ddca-notes/textbook/from-zero-to-one#abstraction) we have seen in Harris & Harris. Here, we talk about the abstraction in digital system design.
+Different from the [abstraction](https://wenbo-notes.gitbook.io/ddca-notes/textbook/from-zero-to-one#abstraction) we have seen in Harris & Harris, here, we will talk about the abstraction in digital system design. And below is a simple illustration,
 
 <figure><img src="../.gitbook/assets/ cg3207-lec02-levels-of-abstraction-digital.png" alt="" width="563"><figcaption></figcaption></figure>
 
@@ -22,7 +22,7 @@ At the highest level, the design is expressed as algorithms or functional behavi
 {% step %}
 #### **Register Transfer Level (RTL, Timed)**
 
-It is the macroscopic hardware view. The system is described in terms of **data transfers between registers** and **operations performed by functional units (ALUs, multiplexers, etc.)** under clock control. It is timed, cycle-accurate, but still abstract (macroscopic). For example, the RTL Verilog Code we have written in [CG3207 Lab01](https://wenbo-notes.gitbook.io/ddca-notes/lab/lab-01-get-prepared#rtl-design) or the following simple code in Verilog
+It is the macroscopic hardware view. The system is described in terms of **data transfers between registers** and **operations performed by functional units (ALUs, multiplexers, etc.)** under clock control. It is timed, cycle-accurate, but still abstract (macroscopic). For example, we have written the RTL Code in [CG3207 Lab01](https://wenbo-notes.gitbook.io/ddca-notes/lab/lab-01-get-prepared#rtl-design), and the following simple Verilog code is also an example of RTL Code
 
 {% code lineNumbers="true" %}
 ```verilog
@@ -31,13 +31,13 @@ always @(posedge clk)
 ```
 {% endcode %}
 
-**Focus:** This is where your **macroscopic blocks** appear — ALUs, adders, multiplexers, etc.
+**Focus:** This is where your **macroscopic blocks** appear — ALUs, adders, multiplexers, etc. And RTL code is the implementation of these macroscopic blocks.
 {% endstep %}
 
 {% step %}
 #### **Gate Level**
 
-It is the microscopic hardware view. RTL constructs are **synthesized into logic gates** (AND, OR, NOT, flip-flops). For example,`(A+B)` becomes a [ripple-carry adder](https://wenbo-notes.gitbook.io/ddca-notes/textbook/digital-building-blocks/arithmetic-circuits#ripple-carry-adder) built out of AND/OR/XOR gates. It is boolean equations + gates, but no transistor-level details.
+It is the microscopic hardware view. RTL constructs are **synthesized into logic gates** (AND, OR, NOT, flip-flops) or **cells** from the technology library (as you will see later). For example,`(A+B)` becomes a [ripple-carry adder](https://wenbo-notes.gitbook.io/ddca-notes/textbook/digital-building-blocks/arithmetic-circuits#ripple-carry-adder) built out of AND/OR/XOR gates. It is boolean equations + gates, but no transistor-level details.
 
 **Focus:** This is your **microscopic implementation** of RTL macros.
 {% endstep %}
@@ -65,9 +65,9 @@ It is the physical representation of the circuit on silicon. Masks for fabricati
 The words at the right side of the arrow is the **output** of its upper step. For example, after "Logic Synthesis", the output is a **netlist**.
 {% endhint %}
 
-#### Behavioural Modelling
+#### Behavioral Modelling
 
-Behavioral modeling defines the "what" of your FPGA/ASIC design — its high-level logic and algorithms— without hardware details. It’s for verifying functionality early.
+Behavioral modeling defines the "what" of your FPGA/ASIC design — its high-level logic and algorithms — without hardware details. It’s for verifying functionality early.
 
 * **Purpose**: Ensures algorithmic correctness via simulations.
 * **Tools**:
@@ -76,19 +76,19 @@ Behavioral modeling defines the "what" of your FPGA/ASIC design — its high-lev
 * **Not Directly Synthesized**: Meant for validation, not hardware generation.
 * **HLS Trend**: High-Level Synthesis tools (e.g., Vivado HLS) can convert behavioral code to RTL, but effectiveness varies by tool, domain, and needs manual tweaks.
 
-Then, it will be fed into Architectural Synthesis in the design flow, making complex problems manageable through iteration.
+Then, the behavioral code/algo will be fed into Architectural Synthesis in the design flow, making complex problems manageable through iteration.
 
 #### Architectural Synthesis
 
 Architectural synthesis turns a high-level functional/behavioral (acrhitectural) model into a **macroscopic** structural (microarchitectural) model for FPGAs/ASICs. It’s mostly manual but becoming more automated.
 
-> In short, acchitectural synthesis is just to write **RTL Code**.
+> In short, architectural synthesis is just writing **RTL Code** or get the schematic (macroscopic model). But to write good RTL Code, we first need to have a clear **macroscopic** model/diagram. (See [RISC-V microarchitecture](https://wenbo-notes.gitbook.io/ddca-notes/lec/lec-03-risc-v-isa-and-microarchitecture#risc-v-microarchitecture) from Lec 03 as an example)
 
-* **Purpose**: Converts abstract logic into a cycle-accurate, synthesizable RTL code, typically with structural and behavioral elements.
+* **Purpose**: Converts abstract logic into a cycle-accurate, synthesizable RTL code, typically with [structural](https://wenbo-notes.gitbook.io/ddca-notes/textbook/hardware-description-languages/structural-modeling) and [behavioral](https://wenbo-notes.gitbook.io/ddca-notes/textbook/hardware-description-languages/combinational-logic) elements.
 * **Output**: A block-level model where operations are **timed** and assigned to **hardware blocks**. _Example_: From `Z = (A+B) * (C+D) * E`, it creates a plan with adders and multipliers.
 * **Key Steps**:
-  * **Scheduling** (time): Assigns operations to clock cycles. e.g.,  `(A+B)` in cycle #1, `(C+D)` in cycle #2.
-  * **Binding** (space): Maps operations to specific hardware blocks. e.g., `(A+B)` done by ALU #1, `(C+D)` by ALU #2.
+  * **Scheduling** (time, or when do we do the operation): Assigns operations to clock cycles. e.g.,  `(A+B)` in cycle #1, `(C+D)` in cycle #2.
+  * **Binding** (space, or where do we do the operation): Maps operations to specific hardware resources, like function units, memories or interconnects. e.g., `(A+B)` done by ALU #1, `(C+D)` by ALU #2.
   * **Flexibility**: Adders can reuse for different pairs with multiplexers. e.g., ALU #1 adds `A+B` in cycle #1, then `E+F` in cycle #2 if inputs switch.
 * **Tools**: RTL synthesis infers register transfers and generates a netlist if guidelines are followed.
 
@@ -96,7 +96,7 @@ The following images shows the difference between behavioural modelling and arch
 
 <figure><img src="../.gitbook/assets/cg3207-lec02-behavioural-vs-architectural.png" alt="" width="563"><figcaption></figcaption></figure>
 
-Fits between Behavioral Modeling and Logic Synthesis in the design flow, balancing abstraction with hardware readiness.
+We see that the architectural synthesis fits between Behavioral Modeling and Logic Synthesis in the design flow, balancing abstraction with hardware readiness.
 
 #### Logical Synthesis
 
@@ -104,16 +104,16 @@ Fits between Behavioral Modeling and Logic Synthesis in the design flow, balanci
 {% step %}
 **Workflow**
 
-<figure><img src="../.gitbook/assets/cg3207-lec02-logic-synthesis.png" alt=""><figcaption></figcaption></figure>
-
 As shown in the diagram below, the logic synthesis will take in three things (HDL Code, Constraints, and Technology Library) and output one thing (mapped schematic)
+
+<figure><img src="../.gitbook/assets/cg3207-lec02-logic-synthesis.png" alt=""><figcaption></figcaption></figure>
 
 * **Technology Library:** The **cells / microscopic building blocks** we are allowed to use. Its purpose is to enable **logic synthesis tools** to map a design into the physical hardware efficiently while respecting the process technology constraints (timing, power, area).
   * For ASICs, cells are usually **gates or gate combinations.** (e.g., flip-flops, latches and buffers, etc) They are    &#x20;custom designed and characterized carefully by the foundry while    &#x20;respecting the physical limitations of the specific process technology.
   * For FPGAs, technology library is composed of higher-level **CLB functions** (like adders, multipliers, LUTs, etc.) but still considered basic elements for synthesis.
 * **Mapped Schematic**
-  * Optimized schematic realizing the HDL code, using building    &#x20;blocks from the technology library.
-  * Usually a [**netlist**](https://wenbo-notes.gitbook.io/ddca-notes/textbook/hardware-description-languages#synthesis) that textually describes the interconnection    &#x20;between cells / blocks
+  * Optimized schematic realizing the HDL code, using **building    &#x20;blocks** from the technology library.
+  * Usually a [**netlist**](https://wenbo-notes.gitbook.io/ddca-notes/textbook/hardware-description-languages#synthesis) that textually describes the interconnection    &#x20;between cells/building blocks
 * **Constraints**
   * Location: Logical port to physical pin mapping etc. (See from [CS2100DE Lab 01](https://wenbo-notes.gitbook.io/ddca-notes/lab/preparation-from-cs2100de/lab-01#constraints))
   * Timing specifications (optimization goals): Different schematics can be obtained from the same HDL code.
@@ -126,7 +126,7 @@ As shown in the diagram below, the logic synthesis will take in three things (HD
 
 <figure><img src="../.gitbook/assets/cg3207-lec02-logical-optimization.png" alt=""><figcaption></figcaption></figure>
 
-2. **Technology mapping (library binding)**: map logic to **cells** in the library
+2. **Technology mapping (library binding)**: map logic/hardware resources in macroscopic diagram to **cells/building blocks** in the library. This actually answers "Which actual silicon component from the library will implement this block?".
 
 <figure><img src="../.gitbook/assets/cg3207-lec02-technology-mapping.png" alt=""><figcaption></figcaption></figure>
 {% endstep %}
@@ -152,22 +152,15 @@ As shown in the diagram below, the logic synthesis will take in three things (HD
 {% step %}
 [**Critical Path**](https://wenbo-notes.gitbook.io/ddca-notes/textbook/combinational-logic-design/timing#critical-path)
 
-Here, we add one point Harris & Harris.
+Here, we add one point from [Harris & Harris](https://wenbo-notes.gitbook.io/ddca-notes/textbook/combinational-logic-design/timing#critical-path), that is,
 
 > Critical path = **combinational path** with maximum delay.
 
-From Step 3 above, we see that between registers, there is only combinational logic. Hence, the critical path will determine the max clock in our circuit! The following contains two examples,
+From Step 3 above, we see that between registers, there is only combinational logic. Hence, the critical path will determine the max clock in our circuit! The following image contains two examples,
 
 <figure><img src="../.gitbook/assets/cg3207-lec02-critical-path-max-clock.png" alt=""><figcaption></figcaption></figure>
 
-✅ **Analogy:**
-
-* **Registers = stations** → they **hold passengers (data)** at each clock edge.
-* **Combinational logic = roads** → the paths passengers travel between stations.
-* **Critical path = longest road** → determines how much time a passenger needs to get to the next station.
-* **Clock period** = how fast the train runs.
-
-If the clock is too fast (train moves too quickly) and the longest road (critical path) hasn’t been traversed yet, the **passengers won’t arrive in time**, causing **incorrect data at the next register**. So, the **maximum clock frequency** is limited by the **critical path delay**.
+If the clock is too fast and the longest "road" (critical path) hasn’t been traversed yet, the **data won’t arrive in time**, causing **incorrect data at the next register**. So, the **maximum clock frequency** is limited by the **critical path delay**.
 {% endstep %}
 {% endstepper %}
 
@@ -188,7 +181,7 @@ And IP is usually much higher-level than technology library — often **entire s
 
 ***
 
-✅ **Analogy:**
+**Analogy:**
 
 * Think of **technology libraries** as **bricks and mortar**.
 * **IP blocks** are like **pre-built rooms or furniture** made from those bricks. You can assemble your building (chip) faster if you have ready-made rooms rather than making everything brick by brick.
@@ -216,7 +209,7 @@ Because exact wirelength calculation requires routing every connection, which is
 {% step %}
 **Routing**
 
-It is mapping of logical connection between cells to physical interconnects, which is to physically connect all the cells with wires according to the netlist.
+It is mapping of logical connection between cells to physical interconnects, which is to physically **connect** all the cells with wires according to the netlist.
 
 * **Goal**: Make wires **as short as possible**. As this reduces delay, power, and congestion.
 * **Constraint**: You need **placement first** to know where to draw the wires.
@@ -238,7 +231,7 @@ This is because
 * Optimal placement depends on routing (because wire lengths affect timing).
 * Optimal routing depends on placement (because you need cell locations to route).
 
-And our solution in practice is to use  **iterative approaches**:
+And our solution in practice is to use **iterative approaches**:
 
 1. Place cells using approximate wirelengths.
 2. Route the design.
@@ -249,7 +242,7 @@ And our solution in practice is to use  **iterative approaches**:
 
 #### Some Notes
 
-1. Always Think Hardware — have the topology of the circuit in mind, and write RTL code which will imply/infer the topology from the code.
+1. Always Think Hardware — have the topology of the circuit in mind (the macroscopic model), and write RTL code which will imply/infer the topology from the code.
 2. [Simulation and synthesis](https://wenbo-notes.gitbook.io/ddca-notes/textbook/hardware-description-languages#simulation) tools work very differently (Add more notes in Harris & Harris)
    1. Simulation "**executes**" HDL code following the semantics of the HDL
    2. Synthesis "**infers the hardware structure**" described by HDL (RTL) code
