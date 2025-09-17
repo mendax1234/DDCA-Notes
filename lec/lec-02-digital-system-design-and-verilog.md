@@ -341,7 +341,7 @@ Note that the verilog and the rules we are talking here are for writing the RTL 
 
 #### Do NOT use delays (`#delay`)
 
-Combinational (propagation) delays are hardware dependent; not&#x20;something the synthesis tool can insert based on HDL code. So, the following and the use of delay mentioned [here](https://wenbo-notes.gitbook.io/ddca-notes/textbook/hardware-description-languages/combinational-logic#delays) are **not recommended,**
+Combinational (propagation) delays are hardware dependent; not&#x20;something the synthesis tool can insert based on HDL code. So, the following code and the use of delay mentioned [here](https://wenbo-notes.gitbook.io/ddca-notes/textbook/hardware-description-languages/combinational-logic#delays) are **not recommended,**
 
 {% code lineNumbers="true" %}
 ```verilog
@@ -351,7 +351,7 @@ end
 ```
 {% endcode %}
 
-In RTL Verilog code, we insert **clock cycle delays** explicity by introducing a&#x20;**physical** [**register**](https://wenbo-notes.gitbook.io/ddca-notes/textbook/sequential-logic-design/latches-and-flip-flops#register) (i.e., it is a part of your design). So, the following is the correct code for the above,
+In RTL Verilog code, we insert **clock cycle delays** explicity by introducing a&#x20;**physical** [**register**](https://wenbo-notes.gitbook.io/ddca-notes/textbook/sequential-logic-design/latches-and-flip-flops#register) (e.g., it is a part of your design). So, the following is the correct code for the above,
 
 {% code lineNumbers="true" %}
 ```verilog
@@ -372,7 +372,7 @@ So, the key takeaway is
 * `#delay` is for [**testbenches**](https://wenbo-notes.gitbook.io/ddca-notes/textbook/hardware-description-languages/testbench) **only**.
 * In real FPGA/ASIC design, delays are achieved via **registers (clock cycles)** and **timing constraints (.xdc)**.
 
-The key takeaway here is
+#### Use one clock for the entire design
 
 1. Connect the input of every sequential element to this only one clock
    1. Run different things on **different speed**, instead of using different clocks. (One example is the [`Clock_Enable`](https://wenbo-notes.gitbook.io/ddca-notes/lab/lab-01-get-prepared#clock-enable) module from CG3207 Lab01)
@@ -380,9 +380,11 @@ The key takeaway here is
 
 <figure><img src="../.gitbook/assets/cg3207-lec02-glitch.png" alt=""><figcaption></figcaption></figure>
 
-Here, the glitch happens because NOT gate has a propagation delay.
+{% hint style="info" %}
+In the above image, the glitch happens because NOT gate has a propagation delay.
+{% endhint %}
 
-For example, **do not use** something like `@(posedge button)` for detecting a transition.
+Another example is that "**do not use** something like `@(posedge button)` for detecting a transition".
 
 * Use a synchronous edge detection scheme instead — e.g., by comparing the current value with the previous value stored in a register.
 
@@ -405,8 +407,10 @@ Every circular assignment should be broken by a register (an assignment in a&#x
 
 <figure><img src="../.gitbook/assets/cg3207-lec02-synchronous-sequential-logic.png" alt=""><figcaption></figcaption></figure>
 
-* A wire should appear on the LHS of only **one** `assign` statement.
-* A reg should appear on the LHS of only **one** `always` block.
+#### `reg`s and `wire`s should not have multiple drivers
+
+* A `wire` should appear on the LHS of only **one** `assign` statement.
+* A `reg` should appear on the LHS of only **one** `always` block. -> Cannot appear in more than one `always` block.
 
 For example, the following is **wrong**
 
@@ -417,7 +421,7 @@ assign Z = X | Y;
 ```
 {% endcode %}
 
-But its' ok to have a `reg` at the LHS of multiple statements within the **same**&#x20;`always` block as long as the **same type of assignment** is used.
+But its' ok to have a `reg` at the LHS of multiple statements within the **same**&#x20;`always` block as long as the **same type of assignment** is used. e.g., the use of `if` statements.
 
 * Only blocking or only non-blocking, do not mix the two for a particular `reg`.
 * Within an always block, if a signal is assigned more than once, whichever assignment executes last in the flow of control is what the `reg` ends up holding.
@@ -475,7 +479,7 @@ These are the same as Harris & Harris, besides that, we also recommend that
     {% endcode %}
 2. Two cases with blocking and non-blocking statements in `always @(*)`
    1. Blocking executes **immediately, in order**. So if a `reg` is used on both **left-hand side (LHS)** and **right-hand side (RHS)**, you should assign it **first** before you read it. (that `reg` should appear on LHS before RHS)
-   2.  Non-blocking executes **in parallel at the end of the clock edge**, so within the same block you’ll **never see the updated value** in the RHS. For example, the following is **not recommended**
+   2.  Non-blocking executes **in parallel at the end of the clock edge**, so within the same block you’ll **never see the updated value** in the RHS. For example, in the following code snippet, `Z` in Line 5 will hold the old value of `Z`.
 
        {% code lineNumbers="true" %}
        ```verilog
@@ -488,7 +492,7 @@ These are the same as Harris & Harris, besides that, we also recommend that
        ```
        {% endcode %}
 
-In short, the first 3 rules are important! The fourth one just never use **non-blocking** statement in `always @(*)`.
+In short, rule 1 and rule 2(a) are important! For the rule 2(b), just never use **non-blocking** statement in `always @(*)`.
 {% endstep %}
 
 {% step %}
@@ -501,7 +505,7 @@ Synchronous means that the output changes only on the rising or falling edge of 
 
 By keeping the above two rules, you should be able to avoid 99% of problems. But the remaining 1%, will probably be in the paper exam. 😂
 
-1. Use **non-blocking** assignments for the outputs of the always block (signals),   &#x20;as well as for any internal physical registers. **But** the updated values are **not available** for use at the **same clock edge**.
+1. Use **non-blocking** assignments for the outputs of the always block (signals),   &#x20;as well as for any internal physical registers. **But** the updated values are **not available** for use at the **same clock edge**. (See Step 1, rule 2(b) example)
 2.  If you insist on using blocking assignments for internal combinational parts (variables). In this case, the variable should appear on the LHS **before** RHS.
 
     {% code lineNumbers="true" %}
