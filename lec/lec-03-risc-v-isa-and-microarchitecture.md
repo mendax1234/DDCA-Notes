@@ -61,9 +61,11 @@ Memory and register is **not the same**! Here, memory usually refers to the data
 Instruction length and word length are not necessarily the same!
 {% endhint %}
 
-<details>
+Below are some very interesting points starting from the **instruction length vs. word length**.
 
-<summary>Instruction Length vs. Word Length</summary>
+{% stepper %}
+{% step %}
+#### Instruction Length vs. Word Length
 
 The **word length** of a processor is the width of its registers/ALU or the size of most elements in its datapath. For example, the following are three types of Risc-V processors,
 
@@ -80,12 +82,10 @@ The **instruction length** is the number of bits to encode an instruction and it
 {% hint style="info" %}
 In a 32-bit (word length) system, the instruction length doesn't have to be 32-bit.
 {% endhint %}
+{% endstep %}
 
-</details>
-
-<details>
-
-<summary>What if word length and instruction lengt doesn't match?</summary>
+{% step %}
+#### What if word length and instruction lengt doesn't match?
 
 * **Instruction length ≠ word length**
   * A 32-bit processor does not mean all instructions must be 32 bits long.
@@ -107,12 +107,10 @@ The idea of frontend and backend of a processor is very important and we will co
   * This limits the maximum directly addressable memory to $$2^{32} = 4\ \text{GB}.$$
   * This is a **backend (data memory)** property, tied to word length, not instruction length.
   * Thus, even if instructions are compressed to 16 bits, the system is still limited to 4 GB RAM because addressing depends on word length.
+{% endstep %}
 
-</details>
-
-<details>
-
-<summary>More about modern processors</summary>
+{% step %}
+#### More about modern processors
 
 * **ISA Stability**
   * The **Instruction Set Architecture (ISA)** (e.g., x86, ARM, RISC-V) usually remains stable across generations.
@@ -131,8 +129,8 @@ The idea of frontend and backend of a processor is very important and we will co
 * **Microarchitecture vs. ISA**
   * New processors primarily innovate by updating the **microarchitecture** (pipeline depth, branch prediction, cache design, out-of-order execution, etc.) while keeping the ISA stable.
   * This allows performance to improve without breaking software compatibility.
-
-</details>
+{% endstep %}
+{% endstepper %}
 
 ### Registers
 
