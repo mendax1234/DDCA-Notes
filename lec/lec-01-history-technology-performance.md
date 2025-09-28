@@ -1,4 +1,4 @@
-# Lec 01- History, Technology, Performance
+# Lec 01 - History, Technology, Performance
 
 ## Intro
 
@@ -233,6 +233,8 @@ $$
 
 ### Instruction Count (IC) and CPI
 
+> Here, "instruction" **means the machine instructions** (e.g. RISC-V instructions in our course)
+
 $$
 \begin{align*}
 \text{Clock Cycles} &= \text{Instruction Count} \times \text{CPI} \\
@@ -246,15 +248,73 @@ $$
 * **Instruction Count (IC)** : the **total** number of instructions that a CPU must execute to complete a given program or task.
   * It is determined by **program, ISA** and **compiler**.
 * **Cycles per Instruction (CPI):** As its name suggested.
-  * It is determined by **CPU hardware**.
+  * It is determined by **CPU hardware**, but can be affected by many other [stuff](lec-01-history-technology-performance.md#example).
 
 {% hint style="info" %}
-If different instructions have different CPI. Average CPI affected by instruction mix.
+#### Notes
+
+1. If different instructions have different CPI, then the average CPI is affected by instruction mix.
+2. CPI is **not** a fixed property bonding with the processor, it is a **statistics** which is defined by $$\text{Clock Cycles}\div\text{Instruction Count}$$.
 {% endhint %}
 
 #### Example
 
-1. CISC-> lower IC, higher CPI. RISC->higher IC, lower CPI.
+{% stepper %}
+{% step %}
+#### **IC and CPI in CISC and RISC**
+
+* CISC ->lower IC, higher CPI.
+* RISC -> higher IC, lower CPI.
+{% endstep %}
+
+{% step %}
+#### IC and CPI are affected by almost everything
+
+* **Algorithm**
+  * The _algorithm_ determines the sequence of operations.
+  * Even if two implementations solve the same problem, one may require fewer high-level steps (e.g., binary search vs. linear search).
+  * This directly changes the **instruction count (IC)** — and possibly the mix of instructions (e.g., more multiplications vs. more additions).
+  * Since different types of instructions can take different cycles (e.g., loads may stall on memory, multiplications may take multiple cycles), the _average CPI_ changes.
+* **Programming language**
+  * A high-level algorithm written in C vs. Python (or even C vs. Java) will not translate to the same low-level instructions.
+  * Some languages encourage more abstraction (e.g., object-oriented overhead, runtime checks), which can generate _more instructions_ when compiled or interpreted.
+  * So the **same algorithm** in different languages can have very different instruction sequences and counts.
+* **Compiler**
+  * Even with the same programming language and algorithm, different compilers — or different compiler optimization levels (`-O0`, `-O2`, `-Ofast`) — can produce very different machine code.
+  * Example: A smart compiler might use one `mul` instruction, while a naive compiler generates a loop of additions.
+  * This changes both the **instruction count** and the **instruction mix**, and therefore affects CPI.
+* **ISA**
+  * If you change the ISA (e.g., RISC-V vs. x86 vs. ARM), the same high-level operation may take very different numbers and types of instructions.
+  * Example: A complex x86 instruction (like `rep movsb`) might do in _one instruction_ what RISC-V requires a loop of multiple instructions to do.
+  * Even within the same ISA, the instruction set extensions (e.g., RISC-V `M` extension for multiplication/division) change CPI by replacing multi-cycle software routines with single hardware instructions.
+{% endstep %}
+
+{% step %}
+#### Use profiling to measure IC and CPI
+
+In real-world, the IC and CPI is hard to measure (it is usually done by executing the program line by line), and the industry uses **profiling tools** instead. The idea of profiling is to try and get performance estimates.
+{% endstep %}
+
+{% step %}
+#### IC is data dependant
+
+Instruction Count (IC) is _data-dependent_. The compiler can tell us the **static instruction count** (how many instructions exist in the program), but the **dynamic instruction count** (how many are actually executed) depends on runtime inputs and data. For example, a `while` loop may run 10 times or 1,000,000 times depending on the input, so the actual IC cannot be determined at compile time.
+{% endstep %}
+
+{% step %}
+#### Don't only look at CPI
+
+A lower CPI doesn’t automatically mean better performance — we must also consider the clock rate and instruction count. The true measure is **execution time**, given by the following formula we have introduced:
+
+$$
+\text{CPU Time}=\frac{\text{Instruction Count} \times \text{CPI}}{\text{Clock Rate}}
+$$
+
+{% hint style="success" %}
+This formula is very very important!
+{% endhint %}
+{% endstep %}
+{% endstepper %}
 
 ### CPI in more detail
 

@@ -16,6 +16,7 @@
   * [Lab 03](lab/preparation-from-cs2100de/lab-03.md)
   * [Lab 04](lab/preparation-from-cs2100de/lab-04.md)
 * [Lab 01 - Get prepared](lab/lab-01-get-prepared.md)
+* [Lab 02 - Single Cylce RV Processor](lab/lab-02-single-cylce-rv-processor.md)
 * [Resources](lab/resources/README.md)
   * [FPGA Design Tips](lab/resources/fpga-design-tips.md)
   * [RISC-V Resources](lab/resources/risc-v-resources.md)

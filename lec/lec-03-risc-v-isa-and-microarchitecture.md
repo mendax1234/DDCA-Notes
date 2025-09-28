@@ -65,17 +65,72 @@ Instruction length and word length are not necessarily the same!
 
 <summary>Instruction Length vs. Word Length</summary>
 
-**Word length** is width of registers/ALU and it is determined by the architecture variant you choose. For example,
+The **word length** of a processor is the width of its registers/ALU or the size of most elements in its datapath. For example, the following are three types of Risc-V processors,
 
 * **RV32** → word length = 32 bits (registers and ALU are 32-bit wide).
 * **RV64** → word length = 64 bits.
 * **RV128** (rare, theoretical) → word length = 128 bits.
 
-**Instruction Length** is the number of bits to encode an instruction and it is determined by the ISA encoding design and extensions included. For example,
+The **instruction length** is the number of bits to encode an instruction and it is determined by the ISA encoding design and extensions included. For example,
 
 * Base ISA (RV32I, RV64I, RV128I) → instructions are **always 32 bits long**.
 * If you add the **Compressed (C) extension**, some instructions are **16 bits long**.
 * There are also **48-bit and 64-bit instruction encodings** in the RISC-V spec (for special extensions).
+
+{% hint style="info" %}
+In a 32-bit (word length) system, the instruction length doesn't have to be 32-bit.
+{% endhint %}
+
+</details>
+
+<details>
+
+<summary>What if word length and instruction lengt doesn't match?</summary>
+
+* **Instruction length ≠ word length**
+  * A 32-bit processor does not mean all instructions must be 32 bits long.
+  * Example: ARM Thumb and RISC-V compressed (`C`) extension use 16-bit instructions on a 32-bit processor.
+  * The processor’s frontend (fetch/decode) handles variable instruction sizes, while the backend (execution units, registers, ALU) still works on 32-bit data.
+
+{% hint style="success" %}
+The idea of frontend and backend of a processor is very important and we will come back to it in the [microarchitecture](lec-03-risc-v-isa-and-microarchitecture.md#risc-v-microarchitecture) again later also!
+{% endhint %}
+
+* **Microarchitecture impact**
+  * Supporting multiple instruction lengths adds complexity to the **frontend** (fetch, decode).
+  * The **backend** (datapath, ALU, register file) usually remains tied to the word length, so the impact on overall hardware design is noticeable but not drastic.
+* **Practical advantage: saving instruction memory**
+  * Shorter instructions (16-bit vs. 32-bit) reduce code size.
+  * This allows more instructions to fit into the same memory/cache, improving memory efficiency and potentially performance.
+* **Word length and memory addressing**
+  * In a 32-bit processor, addresses are 32 bits wide.
+  * This limits the maximum directly addressable memory to $$2^{32} = 4\ \text{GB}.$$
+  * This is a **backend (data memory)** property, tied to word length, not instruction length.
+  * Thus, even if instructions are compressed to 16 bits, the system is still limited to 4 GB RAM because addressing depends on word length.
+
+</details>
+
+<details>
+
+<summary>More about modern processors</summary>
+
+* **ISA Stability**
+  * The **Instruction Set Architecture (ISA)** (e.g., x86, ARM, RISC-V) usually remains stable across generations.
+  * This ensures that code compiled decades ago can still run on modern processors of the same ISA family.
+  * Example: Modern Intel CPUs can still run DOS-era x86 code.
+* **Extensions to the ISA**
+  * Instead of replacing the ISA, new generations often **extend** it with additional instructions (e.g., Intel’s SSE, AVX, AVX-512; ARM’s NEON; RISC-V vector extensions).
+  * These new instructions allow compilers and developers to take advantage of improved performance features, but are optional from the program’s perspective.
+* **Backward and Forward Compatibility**
+  * **Backward compatibility:** Old code (compiled for older processors) runs fine on newer processors, since the original instructions are still supported.
+  * **Forward compatibility:** New code (compiled with instructions from the newest extensions) **will not run** on older processors if those instructions are missing.
+  * Workaround: Compilers often provide a **compatibility mode** (e.g., “target x86-64 baseline”) so the same program can run on older hardware.
+* **Real-world example: Windows 11**
+  * Windows 11 requires support for certain instruction set extensions (e.g., SSE4.2, CMPXCHG16b, LAHF/SAHF, and in practice often AVX2).
+  * Older CPUs without these instructions cannot run Windows 11, even though they are technically “x86-64 processors.”
+* **Microarchitecture vs. ISA**
+  * New processors primarily innovate by updating the **microarchitecture** (pipeline depth, branch prediction, cache design, out-of-order execution, etc.) while keeping the ISA stable.
+  * This allows performance to improve without breaking software compatibility.
 
 </details>
 
@@ -362,8 +417,8 @@ fn2:
 
 From a computer hardware engineer's view, a computer can be divided into 2 parts
 
-* [Datapath](lec-03-risc-v-isa-and-microarchitecture.md#datapath)
-* [Control Unit](lec-03-risc-v-isa-and-microarchitecture.md#control-unit)
+* [Datapath](lec-03-risc-v-isa-and-microarchitecture.md#datapath): Backend
+* [Control Unit](lec-03-risc-v-isa-and-microarchitecture.md#control-unit): Frontend
 
 ### Datapath
 

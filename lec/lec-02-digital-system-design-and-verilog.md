@@ -95,7 +95,7 @@ Architectural synthesis turns a high-level functional/behavioral (acrhitectural)
 * **Purpose**: Converts abstract logic into a cycle-accurate, synthesizable RTL code, typically with [structural](https://wenbo-notes.gitbook.io/ddca-notes/textbook/hardware-description-languages/structural-modeling) and [behavioral](https://wenbo-notes.gitbook.io/ddca-notes/textbook/hardware-description-languages/combinational-logic) elements.
 * **Output**: A block-level model where operations are **timed** and assigned to **hardware blocks**. _Example_: From `Z = (A+B) * (C+D) * E`, it creates a plan with adders and multipliers.
 * **Key Steps**:
-  * **Scheduling** (time, or when do we do the operation): Assigns operations to clock cycles. e.g.,  `(A+B)` in cycle #1, `(C+D)` in cycle #2.
+  * **Scheduling** (time, or when do we do the operation): Assigns operations to clock cycles (an integer). Finding all the clock cycles (integers) is called **solving** the scheduling problem. e.g.,  `(A+B)` in cycle #1, `(C+D)` in cycle #2.
   * **Binding** (space, or where do we do the operation): Maps operations to specific hardware resources, like function units, memories or interconnects. e.g., `(A+B)` done by ALU #1, `(C+D)` by ALU #2.
   * **Flexibility**: Adders can reuse for different pairs with multiplexers. e.g., ALU #1 adds `A+B` in cycle #1, then `E+F` in cycle #2 if inputs switch.
 * **Tools**: RTL synthesis infers register transfers and generates a netlist if guidelines are followed.
@@ -114,7 +114,7 @@ For now, we should be able to use the hardware thinking to write RTL Code, let's
 {% step %}
 #### Behavioral Modelling
 
-Describes **what the computation is**, but not _when_ or _where_ it happens. This is what we have seen in [#behavioral-modelling](lec-02-digital-system-design-and-verilog.md#behavioral-modelling "mention") For example, we want to calculate the following formula,
+Describes **what the computation is**, but not _when_ or _where_ it happens. This is what we have seen in [#behavioral-modelling](lec-02-digital-system-design-and-verilog.md#behavioral-modelling "mention"). For example, we want to calculate the following formula,
 
 $$
 Z=(A+B)\times(C+D)\times E
@@ -138,7 +138,10 @@ This is done manually by deciding **when each operation executes** — e.g., in 
 * Cycle 4: multiply with E
 
 {% hint style="warning" %}
-Without scheduling, RTL can’t be written, because RTL requires explicit **registers and clocked behavior**.
+#### Attention
+
+1. Doing scheduling here is equivalent as solving a $$NP$$ hard problem.
+2. Without scheduling, RTL can’t be written, because RTL requires explicit **registers and clocked behavior**.
 {% endhint %}
 {% endstep %}
 
@@ -153,7 +156,10 @@ This is still done manually. Once we know **when** things happen, we decide **wh
 * Cycle 4: `prod * E` → Multiplier #1 again
 
 {% hint style="warning" %}
-Binding decides the **resource allocation vs reuse tradeoff** (performance vs area).
+#### Attention
+
+1. Similar to scheduling, binding is also equivalent as solving a $$NP$$ hard problem.
+2. Binding decides the **resource allocation vs reuse tradeoff** (performance vs area).
 {% endhint %}
 {% endstep %}
 
@@ -175,6 +181,10 @@ end
 {% endcode %}
 {% endstep %}
 {% endstepper %}
+
+{% hint style="danger" %}
+These 5 steps are important and usually people will ignore the macroscopic block part, which is to think hardware. This will be dangerous. As macroscopic block will be useful when we **check our sysnthesis report** to see whether the hardware after sysnthesis is the same as what we want to build.
+{% endhint %}
 
 #### Logical Synthesis
 
