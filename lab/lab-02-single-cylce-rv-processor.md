@@ -16,6 +16,8 @@ In this lab, we will build a single-cycle RISC-V processor and the lab manual is
 
 `Wrapper.v` is long, but it’s basically a **simulation harness** that sits between your RISC-V core (RV) and the outside world (testbench or FPGA board). It provides memories and **memory-mapped peripherals** so that the processor can interact with LEDs, DIP switches, buttons, UART, OLED, etc. You can think of it as the “motherboard” that your CPU plugs into.
 
+In short, it is just the Verilog Implementation of the [Lec 03 microarchitecture](https://wenbo-notes.gitbook.io/ddca-notes/lec/lec-03-risc-v-isa-and-microarchitecture#support-for-lui-and-auipc) adding the MMIO part. (Go to the [spoiler](lab-02-single-cylce-rv-processor.md#connection-to-rv) at the back)
+
 #### Purpose of Wrapper
 
 * Provides **IROM (instruction memory)** and **DMEM (data memory)** to the processor.
@@ -161,7 +163,9 @@ Same for writes: if CPU does `sw x1, LED_OFF(s0)`, Wrapper routes the data to LE
 
 #### Connection to RV
 
-Here, please go back to the Lec 03's microarchitecture so that you can better understand what's going on here.
+Different from the [Lec 03 microarchitecture](https://wenbo-notes.gitbook.io/ddca-notes/lec/lec-03-risc-v-isa-and-microarchitecture#support-for-lui-and-auipc), here we added MMIO part inside.
+
+<figure><img src="../.gitbook/assets/lab02-high-level-explanation.png" alt=""><figcaption></figcaption></figure>
 
 {% stepper %}
 {% step %}
