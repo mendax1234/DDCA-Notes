@@ -14,152 +14,126 @@ In this lab, we will build a single-cycle RISC-V processor and the lab manual is
 
 ### Why does the Wrapper exist?
 
-`Wrapper.v` is long, but it’s basically a **simulation harness** that sits between your RISC-V core (RV) and the outside world (testbench or FPGA board). It provides memories and **memory-mapped peripherals** so that the processor can interact with LEDs, DIP switches, buttons, UART, OLED, etc. You can think of it as the “motherboard” that your CPU plugs into.
+`Wrapper.v` is long, but it’s basically a **simulation harness** that sits between our RISC-V core (RV) and the outside world (testbench or FPGA board). It provides memories and **memory-mapped peripherals** so that the processor can interact with LEDs, DIP switches, buttons, UART, OLED, etc. We can think of it as the “motherboard” that our RV CPU plugs into.
 
-In short, it is just the Verilog Implementation of the [Lec 03 microarchitecture](https://wenbo-notes.gitbook.io/ddca-notes/lec/lec-03-risc-v-isa-and-microarchitecture#support-for-lui-and-auipc) adding the MMIO part. (Go to the [spoiler](lab-02-single-cylce-rv-processor.md#connection-to-rv) at the back)
+In short, `Wrapper.v` is just the Verilog implementation of our [Lec 03 microarchitecture](https://wenbo-notes.gitbook.io/ddca-notes/lec/lec-03-risc-v-isa-and-microarchitecture#support-for-lui-and-auipc) but adding the MMIO part. (Go to the [spoiler](lab-02-single-cylce-rv-processor.md#connection-to-rv) at the back)
 
 #### Purpose of Wrapper
 
 * Provides **IROM (instruction memory)** and **DMEM (data memory)** to the processor.
 * Provides **MMIO (memory-mapped I/O)** registers for peripherals like LEDs, UART, DIP switches, OLED, accelerometer, etc.
 * Translates “clean, parallel” signals into abstract peripherals that are easy to monitor in simulation.
-* Used only for **simulation** (not synthesis directly). On the FPGA, the higher-level `TOP.vhd` connects the wrapper to actual hardware pins.
+* Used only for **simulation** (not synthesis directly). On the FPGA, the higher-level `TOP_Nexys.vhd` connects the wrapper to actual hardware pins.
 
-So, it makes your RISC-V behave like it’s running on a small SoC with peripherals.
+So, it makes our RISC-V behave like it’s running on a small SoC with peripherals.
 
-#### Interfaces (ports)
+#### I/O Ports
 
-Look at the top port list:
+| Signal          | Direction | Width | Description                                     |
+| --------------- | --------- | ----- | ----------------------------------------------- |
+| `DIP`           | In        | 16    | DIP switch inputs (not debounced).              |
+| `PB`            | In        | 3     | Push buttons (BTNL, BTNC, BTNR; not debounced). |
+| `LED_OUT`       | Out (reg) | 8     | LEDs \[7:0] showing processor results.          |
+| `LED_PC`        | Out       | 7     | Shows `PC[8:2]` on LEDs \[15:9].                |
+| `SEVENSEGHEX`   | Out (reg) | 32    | Data for 8-digit 7-seg display.                 |
+| `UART_TX`       | Out (reg) | 8     | Byte sent to PC/testbench via UART.             |
+| `UART_TX_ready` | In        | 1     | UART ready flag (ok to write new TX byte).      |
+| `UART_TX_valid` | Out (reg) | 1     | Indicates Wrapper wrote a new UART TX byte.     |
+| `UART_RX`       | In        | 8     | Byte received from PC/testbench via UART.       |
+| `UART_RX_valid` | In        | 1     | Indicates new RX data available.                |
+| `UART_RX_ack`   | Out (reg) | 1     | Acknowledge that RX byte was read.              |
+| `OLED_Write`    | Out (reg) | 1     | Pixel update signal for OLED.                   |
+| `OLED_Col`      | Out (reg) | 7     | OLED column index.                              |
+| `OLED_Row`      | Out (reg) | 6     | OLED row index.                                 |
+| `OLED_Data`     | Out (reg) | 24    | OLED pixel data `<R,G,B>` (8/8/8 aligned).      |
+| `ACCEL_Data`    | In        | 32    | Packed `<Temp, X, Y, Z>` from accelerometer.    |
+| `ACCEL_DReady`  | In        | 1     | Accelerometer data ready flag.                  |
+| `RESET`         | In        | 1     | Active-high reset.                              |
+| `CLK`           | In        | 1     | Clock input (divided clock shown on LED\[8]).   |
 
-* **Inputs:**
-  * `DIP` → DIP switch values (like user input).
-  * `PB` → Pushbuttons (3 bits).
-  * `UART_RX`, `UART_RX_valid` → incoming UART data from PC/testbench.
-  * `ACCEL_Data`, `ACCEL_DReady` → accelerometer values (if connected).
-  * `RESET`, `CLK`.
-* **Outputs:**
-  * `LED_OUT` → control LEDs.
-  * `LED_PC` → debug: shows current PC\[8:2].
-  * `SEVENSEGHEX` → 32-bit value mapped to 7-seg display.
-  * `UART_TX`, `UART_TX_valid` → outgoing UART data.
-  * `UART_RX_ack` → handshake back to UART.
-  * `OLED_Write`, `OLED_Row`, `OLED_Col`, `OLED_Data` → OLED interface.
+#### Memories
 
-So: input = board/testbench → Wrapper → CPU; output = CPU → Wrapper → board/testbench.
-
-#### Memories and Addresses
-
-Wrapper defines 3 spaces:
+In `Wrapper.v` (our motherboard), we not only have our CPU `RV.v`, but also three memory spaces:
 
 * **IROM**: instruction memory (program comes from `.mem` file dumped by RARS).
 * **DMEM**: data memory (for global variables, stack, etc.).
 * **MMIO**: memory-mapped I/O (LEDs, switches, UART, OLED, etc.).
 
-Memory map (important):
+#### Address Decoding
 
-* `IROM_BASE = 0x0040_0000` → code section.
-* `DMEM_BASE = 0x1001_0000` → data section.
-* `MMIO_BASE = 0xFFFF_0000` → peripherals (LED, DIP, UART, etc.).
-
-This matches what you configure in RARS.
-
-#### Address Decode
-
-When CPU issues a memory access (via `ALUResult`):
-
-1. **Wrapper checks address range**
-   * If `ALUResult` ∈ DMEM range → access Data Memory.
-   * Else if `ALUResult` ∈ MMIO range → go to case statement.
-2. **Case statement for MMIO**
-   * Each peripheral is mapped to a fixed offset.
-   * Wrapper generates a **decoded enable signal** (`dec_*`) for the right peripheral.
-3. **Action depends on** `MemRead`/`MemWrite_out`
-   * If `MemWrite_out` **= 1** → Wrapper forwards `WriteData_out` to peripheral’s register.
-   * If `MemRead` **= 1** → Wrapper drives `ReadData_in` with peripheral’s data.
-
-{% code overflow="wrap" lineNumbers="true" %}
-```verilog
-if (ALUResult[31:DMEM_DEPTH_BITS] == DMEM_BASE[31:DMEM_DEPTH_BITS]) dec_DMEM <= 1'b1;
-else if (ALUResult[31:MMIO_DEPTH_BITS] == MMIO_BASE[31:MMIO_DEPTH_BITS]) begin
-    case (ALUResult[MMIO_DEPTH_BITS-1:2])
-        UART_RX_VALID_OFF[MMIO_DEPTH_BITS-1:2]: dec_UART_RX_VALID <= 1'b1;
-        UART_RX_OFF[MMIO_DEPTH_BITS-1:2]: dec_UART_RX <= 1'b1;
-        UART_TX_READY_OFF[MMIO_DEPTH_BITS-1:2]: dec_UART_TX_READY <= 1'b1;
-        UART_TX_OFF[MMIO_DEPTH_BITS-1:2]: dec_UART_TX <= 1'b1;
-        OLED_COL_OFF[MMIO_DEPTH_BITS-1:2]: dec_OLED_COL <= 1'b1;
-        OLED_ROW_OFF[MMIO_DEPTH_BITS-1:2]: dec_OLED_ROW <= 1'b1;
-        OLED_DATA_OFF[MMIO_DEPTH_BITS-1:2]: dec_OLED_DATA <= 1'b1;
-        OLED_CTRL_OFF[MMIO_DEPTH_BITS-1:2]: dec_OLED_CTRL <= 1'b1;
-        ACCEL_DATA_OFF[MMIO_DEPTH_BITS-1:2]: dec_ACCEL_DATA <= 1'b1;
-        ACCEL_DREADY_OFF[MMIO_DEPTH_BITS-1:2]: dec_ACCEL_DREADY <= 1'b1;
-        LED_OFF[MMIO_DEPTH_BITS-1:2]: dec_LED <= 1'b1;
-        DIP_OFF[MMIO_DEPTH_BITS-1:2]: dec_DIP <= 1'b1;
-        PB_OFF[MMIO_DEPTH_BITS-1:2]: dec_PB <= 1'b1;
-        SEVENSEG_OFF[MMIO_DEPTH_BITS-1:2]: dec_SEVENSEG <= 1'b1;
-        CYCLECOUNT_OFF[MMIO_DEPTH_BITS-1:2]: dec_CYCLECOUNT <= 1'b1;
-        default: bad_MEM_addr <= 1'b1;
-    endcase
-end else bad_MEM_addr <= 1'b1;
-
-assign dec_MMIO_read = MemRead || dec_DIP || dec_PB || dec_UART_RX_VALID || dec_UART_RX || dec_UART_TX_READY || dec_UART_TX || dec_CYCLECOUNT || dec_ACCEL_DATA || dec_ACCEL_DREADY ;
-assign MemWrite = MemWrite_out[3] || MemWrite_out[2] || MemWrite_out[1] || MemWrite_out[0];
-
-//----------------------------------------------------------------
-// Delaying the decoded signals for multiplexing (delay only if using synch read for memory)
-//----------------------------------------------------------------
-always @(*) begin  // @posedge CLK only if using synch read for memory
-    dec_DMEM_W <= dec_DMEM;
-    dec_MMIO_read_W <= dec_MMIO_read;
-end
-
-//----------------------------------------------------------------
-// Input (into RV) multiplexing
-//----------------------------------------------------------------
-always @(*) begin
-    if (dec_DMEM_W) ReadData_in <= ReadData_DMEM;
-    else  // dec_MMIO_read_W
-        ReadData_in <= ReadData_MMIO;
-end
-```
-{% endcode %}
-
-> But why got delayed here?
-
-#### I/O Multiplexing
-
-CPU only sees **one** `ReadData_in` **bus**. Wrapper multiplexes between:
-
-* DMEM read data (`ReadData_DMEM`).
-* MMIO read data (`ReadData_MMIO`).
+In our `Wrapper.v`, we need to decide whether we want to **access** (can be "read" or "write") DMEM or MMIO peripherals. To do so, we introduce lots of `dec_*` signals to indicate whether we want to access DMEM or MMIO peripherals.
 
 {% code lineNumbers="true" %}
 ```verilog
 //----------------------------------------------------------------
-// Input (into RV) multiplexing
+// Address Decode signals
+//---------------------------------------------------------------
+// 'enable' signals from data memory address decoding
+reg
+    dec_DMEM,
+    dec_UART_RX_VALID,
+    dec_UART_RX,
+    dec_UART_TX_READY,
+    dec_UART_TX,
+    dec_OLED_COL,
+    dec_OLED_ROW,
+    dec_OLED_DATA,
+    dec_OLED_CTRL,
+    dec_ACCEL_DATA,
+    dec_ACCEL_DREADY,
+    dec_LED,
+    dec_DIP,
+    dec_PB,
+    dec_SEVENSEG,
+    dec_CYCLECOUNT  // Cycle count signal
+    ;
+
+//----------------------------------------------------------------
+// Data memory address decoding
 //----------------------------------------------------------------
 always @(*) begin
-    if (dec_DMEM_W) ReadData_in <= ReadData_DMEM;
-    else  // dec_MMIO_read_W
-        ReadData_in <= ReadData_MMIO;
+    dec_DMEM          <= 1'b0;
+    bad_MEM_addr      <= 1'b0;
+    dec_UART_RX_VALID <= 1'b0;
+    dec_UART_RX       <= 1'b0;
+    dec_UART_TX_READY <= 1'b0;
+    dec_UART_TX       <= 1'b0;
+    dec_OLED_COL      <= 1'b0;
+    dec_OLED_ROW      <= 1'b0;
+    dec_OLED_DATA     <= 1'b0;
+    dec_OLED_CTRL     <= 1'b0;
+    dec_ACCEL_DATA    <= 1'b0;
+    dec_ACCEL_DREADY  <= 1'b0;
+    dec_LED           <= 1'b0;
+    dec_DIP           <= 1'b0;
+    dec_PB            <= 1'b0;
+    dec_SEVENSEG      <= 1'b0;
+    dec_CYCLECOUNT    <= 1'b0;
+
+    if (ALUResult[31:DMEM_DEPTH_BITS] == DMEM_BASE[31:DMEM_DEPTH_BITS]) dec_DMEM <= 1'b1;
+    else if (ALUResult[31:MMIO_DEPTH_BITS] == MMIO_BASE[31:MMIO_DEPTH_BITS]) begin
+        case (ALUResult[MMIO_DEPTH_BITS-1:2])
+            UART_RX_VALID_OFF[MMIO_DEPTH_BITS-1:2]: dec_UART_RX_VALID <= 1'b1;
+            UART_RX_OFF[MMIO_DEPTH_BITS-1:2]: dec_UART_RX <= 1'b1;
+            UART_TX_READY_OFF[MMIO_DEPTH_BITS-1:2]: dec_UART_TX_READY <= 1'b1;
+            UART_TX_OFF[MMIO_DEPTH_BITS-1:2]: dec_UART_TX <= 1'b1;
+            OLED_COL_OFF[MMIO_DEPTH_BITS-1:2]: dec_OLED_COL <= 1'b1;
+            OLED_ROW_OFF[MMIO_DEPTH_BITS-1:2]: dec_OLED_ROW <= 1'b1;
+            OLED_DATA_OFF[MMIO_DEPTH_BITS-1:2]: dec_OLED_DATA <= 1'b1;
+            OLED_CTRL_OFF[MMIO_DEPTH_BITS-1:2]: dec_OLED_CTRL <= 1'b1;
+            ACCEL_DATA_OFF[MMIO_DEPTH_BITS-1:2]: dec_ACCEL_DATA <= 1'b1;
+            ACCEL_DREADY_OFF[MMIO_DEPTH_BITS-1:2]: dec_ACCEL_DREADY <= 1'b1;
+            LED_OFF[MMIO_DEPTH_BITS-1:2]: dec_LED <= 1'b1;
+            DIP_OFF[MMIO_DEPTH_BITS-1:2]: dec_DIP <= 1'b1;
+            PB_OFF[MMIO_DEPTH_BITS-1:2]: dec_PB <= 1'b1;
+            SEVENSEG_OFF[MMIO_DEPTH_BITS-1:2]: dec_SEVENSEG <= 1'b1;
+            CYCLECOUNT_OFF[MMIO_DEPTH_BITS-1:2]: dec_CYCLECOUNT <= 1'b1;
+            default: bad_MEM_addr <= 1'b1;
+        endcase
+    end else bad_MEM_addr <= 1'b1;
 end
 ```
 {% endcode %}
-
-Same for writes: if CPU does `sw x1, LED_OFF(s0)`, Wrapper routes the data to LED register.
-
-#### Peripherals Implementations
-
-* **LEDs (**`LED_OFF`**)**: writing updates `LED_OUT`.
-* **DIP (**`DIP_OFF`**)**: reading returns DIP switch positions.
-* **PushButtons (**`PB_OFF`**)**: reading returns button states.
-* **SevenSeg (**`SEVENSEG_OFF`**)**: writing updates 7-seg display.
-* **UART**:
-  * `UART_TX_OFF`: write to send a char (if ready).
-  * `UART_RX_OFF`: read to get received char.
-  * Has handshake signals (`UART_TX_ready`, `UART_RX_valid`).
-* **OLED**: more complex, supports different color modes and auto-incrementing row/col.
-* **CycleCounter (**`CYCLECOUNT_OFF`**)**: free-running cycle counter (useful for performance measurement).
-* **Accelerometer**: reads `ACCEL_Data`.
 
 #### Connection to RV
 
@@ -171,39 +145,165 @@ Different from the [Lec 03 microarchitecture](https://wenbo-notes.gitbook.io/ddc
 {% step %}
 #### Instruction fetch path
 
-* CPU outputs **PC**.
-* Wrapper uses PC to fetch the **Instr** from instruction memory.
-* Wrapper sends **Instr** back into CPU.
+1. CPU outputs **PC**. This is done in `RV.v` as `PC` is an output from CPU.
+2.  Wrapper uses PC to fetch the `Instr` from instruction memory.&#x20;
 
-So CPU always gets the next instruction via this loop.
+    {% code overflow="wrap" lineNumbers="true" %}
+    ```verilog
+    //----------------------------------------------------------------
+    // IROM read
+    //----------------------------------------------------------------
+    always @(*) begin  // @posedge CLK only if using synch read for memory
+        Instr = ( ( PC[31:IROM_DEPTH_BITS] == IROM_BASE[31:IROM_DEPTH_BITS]) && // To check if address is in the valid range
+        (PC[1:0] == 2'b00) )? // and is word-aligned - we do not support instruction sizes other than 32.
+        IROM[PC[IROM_DEPTH_BITS-1:2]] : 32'h00000013 ; // If the address is invalid, the instruction fetched is NOP. 
+        // This can be changed to trigger an exception instead if need be.
+    end
+    ```
+    {% endcode %}
+3. Wrapper sends `Instr` back into CPU.  This done in `RV.v` as `Instr` is an input to CPU.
 {% endstep %}
 
 {% step %}
 #### Data access path
 
-The data access path has two parts, one is to load data from either DMEM or MMIO, the other is to store dat to either DMEM or MMIO.
+The data access path has two parts, one is to load data from either DMEM or MMIO, the other is to store data to either DMEM or MMIO.
 
-1. **Load**: Loading from both RAM and peripherals look identical to CPU, only Wrapper decides the source.
-   * CPU computes address in ALU → **ALUResult**.
-   * CPU asserts **MemRead = 1**. (This is not available in our Lec 03 microarchitecture)
-   * Wrapper checks ALUResult:
-     * If address ∈ **DMEM range** → fetch from RAM.
-     * If address ∈ **MMIO range** → fetch from peripheral (e.g. DIP switch value).
-   * Wrapper puts that value onto **ReadData\_in**.
-   * CPU reads **ReadData\_in** and writes into register file.
+1. **Load**: Loading from both RAM and peripherals look identical to CPU (in our implementation, we read both together first), only Wrapper decides the source.
+   * CPU computes address in ALU -> `ALUResult`.
+   * CPU asserts `MemRead = 1`. (`MemRead` is just `MemtoReg` in our microarchitecture)
+   *   Wrapper checks `ALUResult` and enable corresponding `dec_*` signal to indicate which memory we want to access (read from here)
+
+       {% code lineNumbers="true" %}
+       ```verilog
+       // Derive the decoded MMIO read signal
+       assign dec_MMIO_read = MemRead || dec_DIP || dec_PB || dec_UART_RX_VALID || dec_UART_RX || dec_UART_TX_READY || dec_UART_TX || dec_CYCLECOUNT || dec_ACCEL_DATA || dec_ACCEL_DREADY ;
+       ```
+       {% endcode %}
+
+       *   If address ∈ **DMEM range** (`dec_DMEM == 1`)-> access (read from) DMEM, and store the read data into `ReadData_DMEM`.
+
+           {% code lineNumbers="true" %}
+           ```verilog
+           //----------------------------------------------------------------
+           // Asych DMEM read - //Uncomment the following block (3 lines) if NOT using synch read for memory
+           //----------------------------------------------------------------
+           always @(*) begin
+               ReadData_DMEM <= DMEM[ALUResult[DMEM_DEPTH_BITS-1:2]];  // async read
+           end
+           ```
+           {% endcode %}
+       *   If address ∈ **MMIO range** (`dec_MMIO_* == 1`) ->  and access (read from) the MMIO peripheral and store the read data into `ReadData_MMIO`.
+
+           {% code lineNumbers="true" %}
+           ```verilog
+           //----------------------------------------------------------------
+           // MMIO read
+           //----------------------------------------------------------------
+           always @(*) begin  // @posedge CLK only if using synch read for memory
+               if (dec_DIP) ReadData_MMIO <= {{31 - N_DIPs + 1{1'b0}}, DIP};
+               else if (dec_PB) ReadData_MMIO <= {{31 - N_PBs + 1{1'b0}}, PB};
+               else if (dec_UART_RX && UART_RX_valid) ReadData_MMIO <= {24'd0, UART_RX};
+               else if (dec_UART_RX_VALID) ReadData_MMIO <= {31'd0, UART_RX_valid};
+               else if (dec_UART_TX_READY) ReadData_MMIO <= {31'd0, UART_TX_ready};
+               else if (dec_CYCLECOUNT) ReadData_MMIO <= cycle_count;
+               else if (dec_ACCEL_DATA) ReadData_MMIO <= ACCEL_Data;
+               else  // dec_ACCEL_DREADY // the default else to avoid the statement from being incomplete
+                   ReadData_MMIO <= {31'd0, ACCEL_DReady};
+           end
+           ```
+           {% endcode %}
+       *   After that, we delay the decoded signals
+
+           {% code lineNumbers="true" %}
+           ```verilog
+           //----------------------------------------------------------------
+           // Delaying the decoded signals for multiplexing (delay only if using synch read for memory)
+           //----------------------------------------------------------------
+           always @(*) begin  // @posedge CLK only if using synch read for memory
+               dec_DMEM_W <= dec_DMEM;
+               dec_MMIO_read_W <= dec_MMIO_read;
+           end
+           ```
+           {% endcode %}
+   *   Wrapper puts that value onto `ReadData_in`. (This is where the I/O Multiplexing comes into play)
+
+       {% code lineNumbers="true" %}
+       ```verilog
+       //----------------------------------------------------------------
+       // Input (into RV) multiplexing
+       //----------------------------------------------------------------
+       always @(*) begin
+           if (dec_DMEM_W) ReadData_in <= ReadData_DMEM;
+           else  // dec_MMIO_read_W
+               ReadData_in <= ReadData_MMIO;
+       end
+       ```
+       {% endcode %}
+   * CPU reads `ReadData_in` and writes into register file.
 2. **Store**: Storing either update memory or trigger side effects on peripherals.
-   * CPU computes address in ALU → **ALUResult**.
-   * CPU outputs the store value → **WriteData\_out**.
-   * CPU asserts **MemWrite\_out = 1**. (This is the `MemWrite` on our Lec 03 microarchitecture)
-   * Wrapper checks ALUResult:
-     * If address ∈ **DMEM range** → write WriteData\_out into RAM.
-     * If address ∈ **MMIO range** → forward WriteData\_out into peripheral (e.g. set LEDs, update 7-seg).
-   * CPU does not expect anything on ReadData\_in.
+   * CPU computes address in ALU -> `ALUResult`.
+   * CPU outputs the value we want to store in `WriteData_out`.
+   *   CPU asserts `MemWrite_out = 1`. (This is the `{4{MemWrite}}`, where `MemWrite` is in our Lec 03 microarchitecture)
 
-So, we can have a clear picture that
+       ```verilog
+       assign MemWrite = MemWrite_out[3] || MemWrite_out[2] || MemWrite_out[1] || MemWrite_out[0];
+       ```
+   * Wrapper checks `ALUResult`:
+     *   If address ∈ **DMEM range** -> write `WriteData_out` into DMEM.
 
-* `ReadData_in` = data bus from memory/peripherals back to CPU (for loads).
-* `MemWrite_out` = control signal telling wrapper “do a store now,” with data on `WriteData_out`.
+         {% code lineNumbers="true" %}
+         ```verilog
+         //----------------------------------------------------------------
+         // DMEM write
+         //----------------------------------------------------------------
+         localparam NUM_COL = 4;
+         localparam COL_WIDTH = 8;
+         integer i;
+         always @(posedge CLK) begin
+             if (MemWrite) begin
+                 for (i = 0; i < NUM_COL; i = i + 1) begin
+                     if (MemWrite_out[i]) begin
+                         if (dec_DMEM) begin
+                             DMEM[ALUResult[DMEM_DEPTH_BITS-1:2]][i*COL_WIDTH +: COL_WIDTH] <= WriteData_out[i*COL_WIDTH +: COL_WIDTH];
+                         end
+                     end
+                 end
+             end
+             //ReadData_DMEM <= DMEM[ALUResult[DMEM_DEPTH_BITS-1:2]] ; //Uncomment only if only using synch read for memory
+         end
+         ```
+         {% endcode %}
+     *   If address ∈ **MMIO range** -> forward `WriteData_out` into peripheral (e.g. set LEDs, update 7-seg).
+
+         {% code lineNumbers="true" %}
+         ```verilog
+         //----------------------------------------------------------------
+         // SevenSeg write
+         //----------------------------------------------------------------
+         integer j;
+         always @(posedge CLK) begin
+             if (MemWrite) begin
+                 for (j = 0; j < NUM_COL; j = j + 1) begin
+                     if (MemWrite_out[j]) begin
+                         if (RESET) SEVENSEGHEX <= 32'd0;
+                         else if (dec_SEVENSEG)
+                             SEVENSEGHEX[j*COL_WIDTH+:COL_WIDTH] <= WriteData_out[j*COL_WIDTH+:COL_WIDTH];
+                     end
+                 end
+             end
+         end
+
+         //----------------------------------------------------------------
+         // Memory-mapped LED write
+         //----------------------------------------------------------------
+         always @(posedge CLK) begin
+             if (RESET) LED_OUT <= 0;
+             else if (MemWrite_out[0] && dec_LED) LED_OUT <= WriteData_out[N_LEDs_OUT-1 : 0];
+         end
+         ```
+         {% endcode %}
+   * CPU does not expect anything on `ReadData_in`. (But will it mess up?)
 {% endstep %}
 {% endstepper %}
 
