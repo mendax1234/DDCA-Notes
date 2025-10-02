@@ -29,27 +29,7 @@ So, it makes our RISC-V behave like it’s running on a small SoC with periphera
 
 #### I/O Ports
 
-| Signal          | Direction | Width | Description                                     |
-| --------------- | --------- | ----- | ----------------------------------------------- |
-| `DIP`           | In        | 16    | DIP switch inputs (not debounced).              |
-| `PB`            | In        | 3     | Push buttons (BTNL, BTNC, BTNR; not debounced). |
-| `LED_OUT`       | Out (reg) | 8     | LEDs \[7:0] showing processor results.          |
-| `LED_PC`        | Out       | 7     | Shows `PC[8:2]` on LEDs \[15:9].                |
-| `SEVENSEGHEX`   | Out (reg) | 32    | Data for 8-digit 7-seg display.                 |
-| `UART_TX`       | Out (reg) | 8     | Byte sent to PC/testbench via UART.             |
-| `UART_TX_ready` | In        | 1     | UART ready flag (ok to write new TX byte).      |
-| `UART_TX_valid` | Out (reg) | 1     | Indicates Wrapper wrote a new UART TX byte.     |
-| `UART_RX`       | In        | 8     | Byte received from PC/testbench via UART.       |
-| `UART_RX_valid` | In        | 1     | Indicates new RX data available.                |
-| `UART_RX_ack`   | Out (reg) | 1     | Acknowledge that RX byte was read.              |
-| `OLED_Write`    | Out (reg) | 1     | Pixel update signal for OLED.                   |
-| `OLED_Col`      | Out (reg) | 7     | OLED column index.                              |
-| `OLED_Row`      | Out (reg) | 6     | OLED row index.                                 |
-| `OLED_Data`     | Out (reg) | 24    | OLED pixel data `<R,G,B>` (8/8/8 aligned).      |
-| `ACCEL_Data`    | In        | 32    | Packed `<Temp, X, Y, Z>` from accelerometer.    |
-| `ACCEL_DReady`  | In        | 1     | Accelerometer data ready flag.                  |
-| `RESET`         | In        | 1     | Active-high reset.                              |
-| `CLK`           | In        | 1     | Clock input (divided clock shown on LED\[8]).   |
+<table><thead><tr><th width="153.5">Signal</th><th width="100">Direction</th><th width="93.5">Width</th><th>Description</th></tr></thead><tbody><tr><td><code>DIP</code></td><td>In</td><td>16</td><td>DIP switch inputs (not debounced).</td></tr><tr><td><code>PB</code></td><td>In</td><td>3</td><td>Push buttons (BTNL, BTNC, BTNR; not debounced).</td></tr><tr><td><code>LED_OUT</code></td><td>Out (reg)</td><td>8</td><td>LEDs [7:0] showing processor results.</td></tr><tr><td><code>LED_PC</code></td><td>Out</td><td>7</td><td>Shows <code>PC[8:2]</code> on LEDs [15:9].</td></tr><tr><td><code>SEVENSEGHEX</code></td><td>Out (reg)</td><td>32</td><td>Data for 8-digit 7-seg display.</td></tr><tr><td><code>UART_TX</code></td><td>Out (reg)</td><td>8</td><td>Byte sent to PC/testbench via UART.</td></tr><tr><td><code>UART_TX_ready</code></td><td>In</td><td>1</td><td>UART ready flag (ok to write new TX byte).</td></tr><tr><td><code>UART_TX_valid</code></td><td>Out (reg)</td><td>1</td><td>Indicates Wrapper wrote a new UART TX byte.</td></tr><tr><td><code>UART_RX</code></td><td>In</td><td>8</td><td>Byte received from PC/testbench via UART.</td></tr><tr><td><code>UART_RX_valid</code></td><td>In</td><td>1</td><td>Indicates new RX data available.</td></tr><tr><td><code>UART_RX_ack</code></td><td>Out (reg)</td><td>1</td><td>Acknowledge that RX byte was read.</td></tr><tr><td><code>OLED_Write</code></td><td>Out (reg)</td><td>1</td><td>Pixel update signal for OLED.</td></tr><tr><td><code>OLED_Col</code></td><td>Out (reg)</td><td>7</td><td>OLED column index.</td></tr><tr><td><code>OLED_Row</code></td><td>Out (reg)</td><td>6</td><td>OLED row index.</td></tr><tr><td><code>OLED_Data</code></td><td>Out (reg)</td><td>24</td><td>OLED pixel data <code>&#x3C;R,G,B></code> (8/8/8 aligned).</td></tr><tr><td><code>ACCEL_Data</code></td><td>In</td><td>32</td><td>Packed <code>&#x3C;Temp, X, Y, Z></code> from accelerometer.</td></tr><tr><td><code>ACCEL_DReady</code></td><td>In</td><td>1</td><td>Accelerometer data ready flag.</td></tr><tr><td><code>RESET</code></td><td>In</td><td>1</td><td>Active-high reset.</td></tr><tr><td><code>CLK</code></td><td>In</td><td>1</td><td>Clock input (divided clock shown on LED[8]).</td></tr></tbody></table>
 
 #### Memories
 
@@ -137,7 +117,7 @@ end
 
 #### Connection to RV
 
-Different from the [Lec 03 microarchitecture](https://wenbo-notes.gitbook.io/ddca-notes/lec/lec-03-risc-v-isa-and-microarchitecture#support-for-lui-and-auipc), here we added MMIO part inside.
+Different from the [Lec 03 microarchitecture](https://wenbo-notes.gitbook.io/ddca-notes/lec/lec-03-risc-v-isa-and-microarchitecture#support-for-lui-and-auipc), here we added the MMIO part inside.
 
 <figure><img src="../.gitbook/assets/lab02-high-level-explanation.png" alt=""><figcaption></figcaption></figure>
 
@@ -148,7 +128,7 @@ Different from the [Lec 03 microarchitecture](https://wenbo-notes.gitbook.io/ddc
 1. CPU outputs **PC**. This is done in `RV.v` as `PC` is an output from CPU.
 2.  Wrapper uses PC to fetch the `Instr` from instruction memory.&#x20;
 
-    {% code overflow="wrap" lineNumbers="true" %}
+    {% code lineNumbers="true" %}
     ```verilog
     //----------------------------------------------------------------
     // IROM read
@@ -169,7 +149,7 @@ Different from the [Lec 03 microarchitecture](https://wenbo-notes.gitbook.io/ddc
 
 The data access path has two parts, one is to load data from either DMEM or MMIO, the other is to store data to either DMEM or MMIO.
 
-1. **Load**: Loading from both RAM and peripherals look identical to CPU (in our implementation, we read both together first), only Wrapper decides the source.
+1. **Load**: Loading from both DMEM and MMIO peripherals look identical to CPU (in our implementation, we read both together first), only Wrapper decides the source.
    * CPU computes address in ALU -> `ALUResult`.
    * CPU asserts `MemRead = 1`. (`MemRead` is just `MemtoReg` in our microarchitecture)
    *   Wrapper checks `ALUResult` and enable corresponding `dec_*` signal to indicate which memory we want to access (read from here)
@@ -193,7 +173,7 @@ The data access path has two parts, one is to load data from either DMEM or MMIO
            end
            ```
            {% endcode %}
-       *   If address ∈ **MMIO range** (`dec_MMIO_* == 1`) ->  and access (read from) the MMIO peripheral and store the read data into `ReadData_MMIO`.
+       *   If address ∈ **MMIO range** (`dec_MMIO_* == 1`) -> access (read from) the MMIO peripheral and store the read data into `ReadData_MMIO`.
 
            {% code lineNumbers="true" %}
            ```verilog
@@ -226,7 +206,7 @@ The data access path has two parts, one is to load data from either DMEM or MMIO
            end
            ```
            {% endcode %}
-   *   Wrapper puts that value onto `ReadData_in`. (This is where the I/O Multiplexing comes into play)
+   *   Wrapper puts that value into `ReadData_in`. (This is where the I/O Multiplexing comes into play)
 
        {% code lineNumbers="true" %}
        ```verilog
@@ -241,7 +221,7 @@ The data access path has two parts, one is to load data from either DMEM or MMIO
        ```
        {% endcode %}
    * CPU reads `ReadData_in` and writes into register file.
-2. **Store**: Storing either update memory or trigger side effects on peripherals.
+2. **Store**: It will either update memory or trigger side effects on peripherals.
    * CPU computes address in ALU -> `ALUResult`.
    * CPU outputs the value we want to store in `WriteData_out`.
    *   CPU asserts `MemWrite_out = 1`. (This is the `{4{MemWrite}}`, where `MemWrite` is in our Lec 03 microarchitecture)
