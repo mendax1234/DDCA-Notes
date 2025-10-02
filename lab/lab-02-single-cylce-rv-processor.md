@@ -287,6 +287,23 @@ The data access path has two parts, one is to load data from either DMEM or MMIO
 {% endstep %}
 {% endstepper %}
 
+### RISC-V processor
+
+Our RISC-V processor, or simply denoted as RV processor, is designed in `RV.v`, which also has the following hierarchy
+
+```bash
+- RV.v                  // Our CPU!
+    |
+    - ALU.v
+        |
+        - Shifter.v
+    - Decoder.v
+    - Extend.v
+    - PC_Logic.v
+    - ProgramCounter.v
+    - RegFile.v
+```
+
 ## Tips
 
 ### Demo
