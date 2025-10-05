@@ -47,7 +47,7 @@ This is about how to implement an architecture in hardware (we will see later in
 
 In the lec, we have introduced some interesting features about RISC-V, and they are as follows,
 
-* As a RISC architecture, the RISC-V ISA is a load–store architecture — only load/store variants can access memory
+* As a RISC architecture, the RISC-V ISA is a load-store architecture, which means only load/store variants can access memory
   * No mixing of memory access with data processing or branching
 
 {% hint style="warning" %}
@@ -159,7 +159,7 @@ In RISC-V, PC is not a register readable/writable explicitly by any&#x20;instru
 {% step %}
 #### **No** instruction updates more than one visible register
 
-This is a very important golden rule (The step title here) And, in RISC-V, the register updated is **explicitly** specified in the `rd` field. This ensures that the [register file](https://wenbo-notes.gitbook.io/ddca-notes/textbook/digital-building-blocks/memory-arrays#register-files) only needs **one write port**.
+This is a very important golden rule (The step title here). And, in RISC-V, the register updated is **explicitly** specified in the `rd` field. This ensures that the [register file](https://wenbo-notes.gitbook.io/ddca-notes/textbook/digital-building-blocks/memory-arrays#register-files) only needs **one write port**.
 {% endstep %}
 
 {% step %}

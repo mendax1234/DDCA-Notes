@@ -12,6 +12,46 @@ In this lab, we will build a single-cycle RISC-V processor and the lab manual is
 
 ## Design Files
 
+### Top Module
+
+Our Top design file, `Top_Nexys.vhd`, is written in VHDL instead of Verilog. (FYI, some of our teaching team is really a fan of VHDL 😂). Before reading about this section, I strongly recommended you to read the our [Wrapper file](lab-02-single-cylce-rv-processor.md#why-does-the-wrapper-exist) first.
+
+#### Purpose of Top
+
+In this module, we explicitly connect the ports (like LED, Seven-seg, etc) on our Wrapper (or, motherboard) to the real ports (LEC, Seven-seg, etc) on our Nexys 4 FPGA.
+
+#### CLK\_DIV\_BITS
+
+You don't need to know how everything works in `Top_Nexys.vhd` except for one variable — `CLK_DIV_BITS`, which is essentially a variable to slow down the processor's speed.
+
+For example, given that the base clock frequency on our FPGA is 100MHz.
+
+1. If `CLK_DIV_BITS = 5`, then the processr's clock frequency will be $$100\div2^5\approx3~\text{MHz}$$.
+2. Or if `CLK_DIV_BITS = 2`, then the processor's clock frequency will be $$100\div2^2\approx25\text{~MHz}$$.
+
+In summary, the relationship between `CLK_DIV_BITS` and clock frequency is
+
+$$
+\text{clock frequency}=100~\text{MHz}\div2^{\text{CLK\_DIV\_BITS}}
+$$
+
+<details>
+
+<summary>If you are able to choose to run your processor at 20, 50 and 100MHz, what will you choose?</summary>
+
+As discussed in [Lec 02](https://wenbo-notes.gitbook.io/ddca-notes/lec/lec-02-digital-system-design-and-verilog#critical-path), the maximum clock frequency is determined by the critical path — the combinational path between two registers with the longest delay.
+
+So, to answer this question, we need to clearly demonstrate to the TA that
+
+1. Since we are designing a single-cycled processor here, this means every instruction must complete in one cycle.
+2. Among all RISC-V instructions, the load instruction has the longest execution time.
+3. Therefore, the critical path can be identified within the load instruction.
+4. If this critical path meets the timing requirements for 20 MHz, 50 MHz, or 100 MHz, the processor can run at that frequency by adjusting `CLK_DIV_BITS`.
+
+Thus, when choosing between 20 MHz, 50 MHz, and 100 MHz, the decision depends on whether the critical path can support the higher frequencies without violating timing constraints.
+
+</details>
+
 ### Why does the Wrapper exist?
 
 `Wrapper.v` is long, but it’s basically a **simulation harness** that sits between our RISC-V core (RV) and the outside world (testbench or FPGA board). It provides memories and **memory-mapped peripherals** so that the processor can interact with LEDs, DIP switches, buttons, UART, OLED, etc. We can think of it as the “motherboard” that our RV CPU plugs into.
@@ -149,143 +189,174 @@ Different from the [Lec 03 microarchitecture](https://wenbo-notes.gitbook.io/ddc
 
 The data access path has two parts, one is to load data from either DMEM or MMIO, the other is to store data to either DMEM or MMIO.
 
-1. **Load**: Loading from both DMEM and MMIO peripherals look identical to CPU (in our implementation, we read both together first), only Wrapper decides the source.
-   * CPU computes address in ALU -> `ALUResult`.
-   * CPU asserts `MemRead = 1`. (`MemRead` is just `MemtoReg` in our microarchitecture)
-   *   Wrapper checks `ALUResult` and enable corresponding `dec_*` signal to indicate which memory we want to access (read from here)
+***
 
-       {% code lineNumbers="true" %}
-       ```verilog
-       // Derive the decoded MMIO read signal
-       assign dec_MMIO_read = MemRead || dec_DIP || dec_PB || dec_UART_RX_VALID || dec_UART_RX || dec_UART_TX_READY || dec_UART_TX || dec_CYCLECOUNT || dec_ACCEL_DATA || dec_ACCEL_DREADY ;
-       ```
-       {% endcode %}
+**Load**: Loading from both DMEM and MMIO peripherals look identical to CPU (in our implementation, we read both together first), only Wrapper decides the source.
 
-       *   If address ∈ **DMEM range** (`dec_DMEM == 1`)-> access (read from) DMEM, and store the read data into `ReadData_DMEM`.
+* CPU computes address in ALU -> `ALUResult`.
+* CPU asserts `MemRead = 1`. (`MemRead` is just `MemtoReg` in our microarchitecture)
+*   Wrapper checks `ALUResult` and enable corresponding `dec_*` signal to indicate which memory we want to access (read from here)
 
-           {% code lineNumbers="true" %}
-           ```verilog
-           //----------------------------------------------------------------
-           // Asych DMEM read - //Uncomment the following block (3 lines) if NOT using synch read for memory
-           //----------------------------------------------------------------
-           always @(*) begin
-               ReadData_DMEM <= DMEM[ALUResult[DMEM_DEPTH_BITS-1:2]];  // async read
-           end
-           ```
-           {% endcode %}
-       *   If address ∈ **MMIO range** (`dec_MMIO_* == 1`) -> access (read from) the MMIO peripheral and store the read data into `ReadData_MMIO`.
+    {% code lineNumbers="true" %}
+    ```verilog
+    // Derive the decoded MMIO read signal
+    assign dec_MMIO_read = MemRead || dec_DIP || dec_PB || dec_UART_RX_VALID || dec_UART_RX || dec_UART_TX_READY || dec_UART_TX || dec_CYCLECOUNT || dec_ACCEL_DATA || dec_ACCEL_DREADY ;
+    ```
+    {% endcode %}
 
-           {% code lineNumbers="true" %}
-           ```verilog
-           //----------------------------------------------------------------
-           // MMIO read
-           //----------------------------------------------------------------
-           always @(*) begin  // @posedge CLK only if using synch read for memory
-               if (dec_DIP) ReadData_MMIO <= {{31 - N_DIPs + 1{1'b0}}, DIP};
-               else if (dec_PB) ReadData_MMIO <= {{31 - N_PBs + 1{1'b0}}, PB};
-               else if (dec_UART_RX && UART_RX_valid) ReadData_MMIO <= {24'd0, UART_RX};
-               else if (dec_UART_RX_VALID) ReadData_MMIO <= {31'd0, UART_RX_valid};
-               else if (dec_UART_TX_READY) ReadData_MMIO <= {31'd0, UART_TX_ready};
-               else if (dec_CYCLECOUNT) ReadData_MMIO <= cycle_count;
-               else if (dec_ACCEL_DATA) ReadData_MMIO <= ACCEL_Data;
-               else  // dec_ACCEL_DREADY // the default else to avoid the statement from being incomplete
-                   ReadData_MMIO <= {31'd0, ACCEL_DReady};
-           end
-           ```
-           {% endcode %}
-       *   After that, we delay the decoded signals
+    *   If address ∈ **DMEM range** (`dec_DMEM == 1`)-> access (read from) DMEM, and store the read data into `ReadData_DMEM`.
 
-           {% code lineNumbers="true" %}
-           ```verilog
-           //----------------------------------------------------------------
-           // Delaying the decoded signals for multiplexing (delay only if using synch read for memory)
-           //----------------------------------------------------------------
-           always @(*) begin  // @posedge CLK only if using synch read for memory
-               dec_DMEM_W <= dec_DMEM;
-               dec_MMIO_read_W <= dec_MMIO_read;
-           end
-           ```
-           {% endcode %}
-   *   Wrapper puts that value into `ReadData_in`. (This is where the I/O Multiplexing comes into play)
+        {% code lineNumbers="true" %}
+        ```verilog
+        //----------------------------------------------------------------
+        // Asych DMEM read - //Uncomment the following block (3 lines) if NOT using synch read for memory
+        //----------------------------------------------------------------
+        always @(*) begin
+            ReadData_DMEM <= DMEM[ALUResult[DMEM_DEPTH_BITS-1:2]];  // async read
+        end
+        ```
+        {% endcode %}
+    *   If address ∈ **MMIO range** (`dec_MMIO_* == 1`) -> access (read from) the MMIO peripheral and store the read data into `ReadData_MMIO`.
 
-       {% code lineNumbers="true" %}
-       ```verilog
-       //----------------------------------------------------------------
-       // Input (into RV) multiplexing
-       //----------------------------------------------------------------
-       always @(*) begin
-           if (dec_DMEM_W) ReadData_in <= ReadData_DMEM;
-           else  // dec_MMIO_read_W
-               ReadData_in <= ReadData_MMIO;
-       end
-       ```
-       {% endcode %}
-   * CPU reads `ReadData_in` and writes into register file.
-2. **Store**: It will either update memory or trigger side effects on peripherals.
-   * CPU computes address in ALU -> `ALUResult`.
-   * CPU outputs the value we want to store in `WriteData_out`.
-   *   CPU asserts `MemWrite_out = 1`. (This is the `{4{MemWrite}}`, where `MemWrite` is in our Lec 03 microarchitecture)
+        {% code lineNumbers="true" %}
+        ```verilog
+        //----------------------------------------------------------------
+        // MMIO read
+        //----------------------------------------------------------------
+        always @(*) begin  // @posedge CLK only if using synch read for memory
+            if (dec_DIP) ReadData_MMIO <= {{31 - N_DIPs + 1{1'b0}}, DIP};
+            else if (dec_PB) ReadData_MMIO <= {{31 - N_PBs + 1{1'b0}}, PB};
+            else if (dec_UART_RX && UART_RX_valid) ReadData_MMIO <= {24'd0, UART_RX};
+            else if (dec_UART_RX_VALID) ReadData_MMIO <= {31'd0, UART_RX_valid};
+            else if (dec_UART_TX_READY) ReadData_MMIO <= {31'd0, UART_TX_ready};
+            else if (dec_CYCLECOUNT) ReadData_MMIO <= cycle_count;
+            else if (dec_ACCEL_DATA) ReadData_MMIO <= ACCEL_Data;
+            else  // dec_ACCEL_DREADY // the default else to avoid the statement from being incomplete
+                ReadData_MMIO <= {31'd0, ACCEL_DReady};
+        end
+        ```
+        {% endcode %}
+    *   After that, we delay the decoded signals
 
-       ```verilog
-       assign MemWrite = MemWrite_out[3] || MemWrite_out[2] || MemWrite_out[1] || MemWrite_out[0];
-       ```
-   * Wrapper checks `ALUResult`:
-     *   If address ∈ **DMEM range** -> write `WriteData_out` into DMEM.
+        {% code lineNumbers="true" %}
+        ```verilog
+        //----------------------------------------------------------------
+        // Delaying the decoded signals for multiplexing (delay only if using synch read for memory)
+        //----------------------------------------------------------------
+        always @(*) begin  // @posedge CLK only if using synch read for memory
+            dec_DMEM_W <= dec_DMEM;
+            dec_MMIO_read_W <= dec_MMIO_read;
+        end
+        ```
+        {% endcode %}
+*   Wrapper puts that value into `ReadData_in`. (This is where the I/O Multiplexing comes into play)
 
-         {% code lineNumbers="true" %}
-         ```verilog
-         //----------------------------------------------------------------
-         // DMEM write
-         //----------------------------------------------------------------
-         localparam NUM_COL = 4;
-         localparam COL_WIDTH = 8;
-         integer i;
-         always @(posedge CLK) begin
-             if (MemWrite) begin
-                 for (i = 0; i < NUM_COL; i = i + 1) begin
-                     if (MemWrite_out[i]) begin
-                         if (dec_DMEM) begin
-                             DMEM[ALUResult[DMEM_DEPTH_BITS-1:2]][i*COL_WIDTH +: COL_WIDTH] <= WriteData_out[i*COL_WIDTH +: COL_WIDTH];
-                         end
-                     end
-                 end
-             end
-             //ReadData_DMEM <= DMEM[ALUResult[DMEM_DEPTH_BITS-1:2]] ; //Uncomment only if only using synch read for memory
-         end
-         ```
-         {% endcode %}
-     *   If address ∈ **MMIO range** -> forward `WriteData_out` into peripheral (e.g. set LEDs, update 7-seg).
+    {% code lineNumbers="true" %}
+    ```verilog
+    //----------------------------------------------------------------
+    // Input (into RV) multiplexing
+    //----------------------------------------------------------------
+    always @(*) begin
+        if (dec_DMEM_W) ReadData_in <= ReadData_DMEM;
+        else  // dec_MMIO_read_W
+            ReadData_in <= ReadData_MMIO;
+    end
+    ```
+    {% endcode %}
+* CPU reads `ReadData_in` and writes into register file.
 
-         {% code lineNumbers="true" %}
-         ```verilog
-         //----------------------------------------------------------------
-         // SevenSeg write
-         //----------------------------------------------------------------
-         integer j;
-         always @(posedge CLK) begin
-             if (MemWrite) begin
-                 for (j = 0; j < NUM_COL; j = j + 1) begin
-                     if (MemWrite_out[j]) begin
-                         if (RESET) SEVENSEGHEX <= 32'd0;
-                         else if (dec_SEVENSEG)
-                             SEVENSEGHEX[j*COL_WIDTH+:COL_WIDTH] <= WriteData_out[j*COL_WIDTH+:COL_WIDTH];
-                     end
-                 end
-             end
-         end
+{% hint style="success" %}
+The data to be read (either from MMIO or DMEM) is always stored at `ReadData_in` first (as `always @(*)` is used). But whether it will be passed to the register `rd` (via the `WD` port) in the processor depends on the `MemRead` or `MemtoReg` signal.&#x20;
+{% endhint %}
 
-         //----------------------------------------------------------------
-         // Memory-mapped LED write
-         //----------------------------------------------------------------
-         always @(posedge CLK) begin
-             if (RESET) LED_OUT <= 0;
-             else if (MemWrite_out[0] && dec_LED) LED_OUT <= WriteData_out[N_LEDs_OUT-1 : 0];
-         end
-         ```
-         {% endcode %}
-   * CPU does not expect anything on `ReadData_in`. (But will it mess up?)
+**Store**: It will either update memory or trigger side effects on peripherals.
+
+* CPU computes address in ALU -> `ALUResult`.
+* CPU outputs the value we want to store in `WriteData_out`.
+*   CPU asserts `MemWrite_out = 1`. (This is the `{4{MemWrite}}`, where `MemWrite` is in our Lec 03 microarchitecture)
+
+    ```verilog
+    assign MemWrite = MemWrite_out[3] || MemWrite_out[2] || MemWrite_out[1] || MemWrite_out[0];
+    ```
+* Wrapper checks `ALUResult`:
+  *   If address ∈ **DMEM range** -> write `WriteData_out` into DMEM.
+
+      {% code lineNumbers="true" %}
+      ```verilog
+      //----------------------------------------------------------------
+      // DMEM write
+      //----------------------------------------------------------------
+      localparam NUM_COL = 4;
+      localparam COL_WIDTH = 8;
+      integer i;
+      always @(posedge CLK) begin
+          if (MemWrite) begin
+              for (i = 0; i < NUM_COL; i = i + 1) begin
+                  if (MemWrite_out[i]) begin
+                      if (dec_DMEM) begin
+                          DMEM[ALUResult[DMEM_DEPTH_BITS-1:2]][i*COL_WIDTH +: COL_WIDTH] <= WriteData_out[i*COL_WIDTH +: COL_WIDTH];
+                      end
+                  end
+              end
+          end
+          //ReadData_DMEM <= DMEM[ALUResult[DMEM_DEPTH_BITS-1:2]] ; //Uncomment only if only using synch read for memory
+      end
+      ```
+      {% endcode %}
+  *   If address ∈ **MMIO range** -> forward `WriteData_out` into peripheral (e.g. set LEDs, update 7-seg).
+
+      {% code lineNumbers="true" %}
+      ```verilog
+      //----------------------------------------------------------------
+      // SevenSeg write
+      //----------------------------------------------------------------
+      integer j;
+      always @(posedge CLK) begin
+          if (MemWrite) begin
+              for (j = 0; j < NUM_COL; j = j + 1) begin
+                  if (MemWrite_out[j]) begin
+                      if (RESET) SEVENSEGHEX <= 32'd0;
+                      else if (dec_SEVENSEG)
+                          SEVENSEGHEX[j*COL_WIDTH+:COL_WIDTH] <= WriteData_out[j*COL_WIDTH+:COL_WIDTH];
+                  end
+              end
+          end
+      end
+
+      //----------------------------------------------------------------
+      // Memory-mapped LED write
+      //----------------------------------------------------------------
+      always @(posedge CLK) begin
+          if (RESET) LED_OUT <= 0;
+          else if (MemWrite_out[0] && dec_LED) LED_OUT <= WriteData_out[N_LEDs_OUT-1 : 0];
+      end
+      ```
+      {% endcode %}
+* CPU does not expect anything on `ReadData_in`.
+
+{% hint style="success" %}
+We use **synchronous** memory write here, which means we store `WriteData_out` at the end of the 1 clock cycle we use to execute the store instruction. It happens “at the end” of the cycle — not in a separate cycle.
+
+***
+
+Why use synchronus? This is because now memory updates **exactly at the clock edge**. So, by the time the clock rises:
+
+* `ALUResult` is stable
+* `WriteData_out` is stable
+* `MemWrite_out` is stable
+
+So, the memory can just latch the correct value reliably, which is to write on the next `posedge CLK`.
+{% endhint %}
 {% endstep %}
 {% endstepper %}
+
+<details>
+
+<summary>Why do you simulate <a href="lab-02-single-cylce-rv-processor.md#why-does-the-wrapper-exist">Wrapper</a> instead of <a href="lab-02-single-cylce-rv-processor.md#top-module">Top_Nexys</a>?</summary>
+
+In this lab, simulating the Wrapper is sufficient because it contains representations of all the FPGA ports. The `Top_Nexys` module only connects these ports to the actual FPGA hardware. Since simulation only involves providing inputs to these ports and observing the outputs, the physical connections to the FPGA are unnecessary. Therefore, simulating the Wrapper alone captures the full functionality needed for verification.
+
+</details>
 
 ### RISC-V processor
 
@@ -303,6 +374,24 @@ Our RISC-V processor, or simply denoted as RV processor, is designed in `RV.v`, 
     - ProgramCounter.v
     - RegFile.v
 ```
+
+<details>
+
+<summary>Why there is no <code>mv</code> instruction in RISC-V?</summary>
+
+In ARM assembly (if you have taken CG2028), `mv` can do two things:
+
+1. Register -> Register: It just copies the value from source register `rs` into the destionation register `rd`.
+2. Immediate -> Register: Move an immediate value to the destination register `rd`.
+
+For these two scenarios, RISC-V can use its base instructions or combination of base instructions (pseudo-instructinos) to achieve
+
+1. Register -> Register: `addi rd, rs, 0`.
+2. Immediate -> Register: `li rd, imm`. (`li` is a pseudo-instruction and it will be implemented in `lui` + `addi`)
+
+So, RISC-V doesn’t need a special instruction for all the variants that ARM has because the same effects can be achieved with a combination of simple instructions.
+
+</details>
 
 ## Tips
 
@@ -335,7 +424,7 @@ In the lab, OLED is provided, but it is just another output. The fancy demo you 
 #### General Steps
 
 {% hint style="success" %}
-This is the most important tip for demo!
+This is the most important tip for the demo!
 {% endhint %}
 
 1. Assembly code correctness: Step through the assembly program step by step to make sure the algorithm works correctly on the "high-level".
