@@ -421,6 +421,14 @@ In the lab, OLED is provided, but it is just another output. The fancy demo you 
 {% endstep %}
 
 {% step %}
+#### Prepare about the [RISC-V Microarchitecture](../lec/lec-03-risc-v-isa-and-microarchitecture.md#risc-v-microarchitecture)
+
+Especially know what is the datapath for every type of instruction we have learned. Better to understand and then memorise it! Below is a file summarised all the datapaths for each instruction:
+
+{% file src="../.gitbook/assets/Chapter 3B RISC-V Microarchitecture.pdf" %}
+{% endstep %}
+
+{% step %}
 #### General Steps
 
 {% hint style="success" %}
