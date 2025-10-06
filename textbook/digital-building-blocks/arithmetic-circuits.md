@@ -235,7 +235,9 @@ In summary, we know that
 2. When C = 0, it indicates that the **unsigned subtraction** result is wrong.
 3. When V = 1, it indicates that both **signed addition** and **signed subtraction** result are wrong.
 
-For RISC-V, NZCV is relevant only when ALU does the **subtraction**. It is not stored as flag bits for ues by future instructions, but used within the same instruction for branch/slt variants, e.g., `beq` etc.
+For RISC-V, NZCV is relevant only when ALU does the **subtraction**. It is not stored as flag bits for ues by future instructions, but used within the same instruction for branch/slt variants, e.g., `beq` etc. So, the rule of thumb will be
+
+> Just treat two operands as [**unsigned**](#user-content-fn-4)[^4], and then do the hardware addition/subtraction to get the NZCV. Then determine which comparison you want to use for branch/slt variants.
 
 | Comparison | Signed/Unsigned | Condition | Implemented as | Uses                  |
 | ---------- | --------------- | --------- | -------------- | --------------------- |
@@ -250,6 +252,7 @@ For RISC-V, NZCV is relevant only when ALU does the **subtraction**. It is not s
 #### Table Explanation
 
 1. For the `lt` and `ge`, whch are for signed numbers, we must first make sure there is **no overflow**, then check the N flag.
+2. For the `ltu` and `geu`, use the ARM borrow logic to understand. If `A<B`, then A-B will need a borrow, thus the carry flag is 0, and vice versa.
 {% endhint %}
 
 <details>
@@ -499,3 +502,5 @@ endmodule
 [^2]: Here, the “carry-in” refers to the **initial** carry input of the adder. Each adder has only one carry-in signal; for multi-bit adders, this single carry-in propagates through the stages of the adder to produce carries for subsequent bits.
 
 [^3]: This means, when there is a carry in, the column will always produce a carry out, which **propagates** the carry in it receives.
+
+[^4]: don't interpret the operands first, just do the hardware addition first!
