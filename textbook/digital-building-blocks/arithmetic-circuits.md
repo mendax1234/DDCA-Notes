@@ -205,6 +205,7 @@ By observing the addition examples above, we may find out that
 2. The hardware as well as the instruction used for performing both signed and unsigned addition are the same
    1. The hardware doesn't know and doesn't care if we are dealing with signed or unsigned.
    2. Only the _interpretation_ of the result and/or the way the _condition codes_ are used are different.
+   3. So, first use signed/unsigned to write out the two operands, then just do the binary addition on these two operands and derive the flags.
 {% endhint %}
 
 #### Signed Subtraction
@@ -224,20 +225,30 @@ By observing the subtraction examples above, we can find out that
 {% hint style="success" %}
 #### Notes
 
-1. Again, the hardware for performing both signed and unsigned subtraction are the same!
+1. The hardware as well as the instruction used for performing both signed and unsigned subtraction are the same
+   1. The hardware doesn't know and doesn't care if we are dealing with signed or unsigned.
+   2. Only the _interpretation_ of the result and/or the way the _condition codes_ are used are different.
+   3. So, first use signed/unsigned to write out the two operands, then just do the binary subtraction on these two operands and derive the flags.
 {% endhint %}
 
 ***
 
-In summary, we know that
+In summary, we know the following points from the human interpretation side,
 
-1. When C = 1, it indicates the **unsigned addition** result is wrong.
-2. When C = 0, it indicates that the **unsigned subtraction** result is wrong.
+1. When C = 1, it indicates the **unsigned addition result** is wrong.
+2. When C = 0, it indicates that the **unsigned subtraction** **result** is wrong.
 3. When V = 1, it indicates that both **signed addition** and **signed subtraction** result are wrong.
 
-For RISC-V, NZCV is relevant only when ALU does the **subtraction**. It is not stored as flag bits for ues by future instructions, but used within the same instruction for branch/slt variants, e.g., `beq` etc. So, the rule of thumb will be
+***
 
-> Just treat two operands as [**unsigned**](#user-content-fn-4)[^4], and then do the hardware addition/subtraction to get the NZCV. Then determine which comparison you want to use for branch/slt variants.
+For RISC-V, NZCV is **irrelevant** only when ALU does the **addition**. But, it is still recommended to go through how each flag of the NZCV is generated during [addition](arithmetic-circuits.md#signed-addition).
+
+Instead, in RISC-V, NZCV is **relevant** when ALU does the **subraction**. Again, it is important to go through how NZCV is generated during [subtraction](arithmetic-circuits.md#signed-subtraction). In RISC-V, the subtraction can be done in
+
+* `sub`
+* branch/slt variants
+
+In pure `sub` instruction, the NZCV may not be that useful. But in branch/slt variants, this NZCV flag, which is not stored as bits for use by future instructions, becomes much more useful. The different comparisons, like `eq`, etc, are implemented using these NZCV flags.
 
 | Comparison | Signed/Unsigned | Condition | Implemented as | Uses                  |
 | ---------- | --------------- | --------- | -------------- | --------------------- |
@@ -253,6 +264,7 @@ For RISC-V, NZCV is relevant only when ALU does the **subtraction**. It is not s
 
 1. For the `lt` and `ge`, whch are for signed numbers, we must first make sure there is **no overflow**, then check the N flag.
 2. For the `ltu` and `geu`, use the ARM borrow logic to understand. If `A<B`, then A-B will need a borrow, thus the carry flag is 0, and vice versa.
+3. `sltu` is useful to check whether the subtraction of two numbers will need a **borrow** or not.
 {% endhint %}
 
 <details>
@@ -502,5 +514,3 @@ endmodule
 [^2]: Here, the “carry-in” refers to the **initial** carry input of the adder. Each adder has only one carry-in signal; for multi-bit adders, this single carry-in propagates through the stages of the adder to produce carries for subsequent bits.
 
 [^3]: This means, when there is a carry in, the column will always produce a carry out, which **propagates** the carry in it receives.
-
-[^4]: don't interpret the operands first, just do the hardware addition first!
