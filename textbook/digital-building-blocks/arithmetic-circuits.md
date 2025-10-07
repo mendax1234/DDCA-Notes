@@ -377,7 +377,7 @@ endmodule
 
 An _Arithmetic/Logical Unit_ (ALU) combines a variety of mathematical and logical operations into a single unit. For example, a typical ALU might perform addition, subtraction, magnitude comparison, AND, and OR operations. The ALU forms the heart of most computer systems.
 
-Figure 5.14 shows the symbol for an N-bit ALU with N-bit inputs and outputs.
+Figure 5.14 shows the symbol for an $$N$$-bit ALU with N-bit inputs and outputs.
 
 <figure><img src="../../.gitbook/assets/alu-symbol.png" alt=""><figcaption></figcaption></figure>
 
@@ -397,12 +397,14 @@ Figure 5.15 shows an implementation of the ALU.
 3. When $$F_{\text{[2:0]}}=111$$, the ALU performs the _set if less than_ (SLT) operation. When $$A<B$$, $$Y=1$$. Otherwise, $$Y=0$$. In other words, Y is set to 1 if A is less than B.
    1. SLT is performed by computing `S=A-B`. If S is negative (e.g., the sign bit is set), A is less than B. The _zero extend unit_ produces an N-bit output by concatenating is 1-bit input with 0's in the most significant bits. The sign bit ( $$(N-1)^{\text{th}}$$ bit) of S is the input to the zero extend unit.
 4. The AND and OR gate shown in the figure above both need **32 2-input** AND/OR gate to implement! **NOT One!**
-5. The multiplexer to select whether input is the N-bit $$\bar B$$ or $$B$$ can be implemented using N 2-input [XOR gate](https://wenbo-notes.gitbook.io/ddca-notes/lab/resources/verilog-lifesaver#hint), where one input of it is the 1-bit from the N-bit $$B$$, the other is from $$F_2$$.
+5. The multiplexer to select whether one of the input sources is the $$N$$-bit $$\bar B$$ or $$B$$ can be implemented using $$N$$ 2-input [XOR gates](https://wenbo-notes.gitbook.io/ddca-notes/lab/resources/verilog-lifesaver#hint), where one input of the XOR gate is 1-bit from the $$N$$-bit $$B$$, the other is from the 1-bit signal $$F_2$$.
 {% endhint %}
 
 Some ALUs produce extra outputs, called _flags_, that indicate information about the ALU output. For example, an _overflow flag_ indicates that the result of the adder overflowed. A _zero flag_ indicates that teh ALU output is 0.
 
-The HDL for an N-bit ALU is shown as follows
+### HDL Implementation
+
+The HDL for an $$N$$-bit ALU is shown as follows
 
 {% tabs %}
 {% tab title="SystemVerilog" %}
@@ -439,43 +441,161 @@ _Shifters_ and _rotators_ move bits and multiply or divide by powers of 2. There
 
 {% stepper %}
 {% step %}
-**Logical shifter**
+#### **Logical shifter**
 
-It shifts the number to the left (LSL) or right (LSR) and fills empty spots with 0's.
+It shifts the number to the left (LSL) or right (LSR) and fills empty spots with 0's. For example,
 
-Ex. 11001 LSR 2 = 00110; 11001 LSL 2 = 00100;
+```
+11001 LSR 2 = 00110; 11001 LSL 2 = 00100;
+```
 {% endstep %}
 
 {% step %}
-**Arithmetic shifter**
+#### **Arithmetic shifter**
 
-It is the same as logical shifter, but on right shifts fills the most significant bits with a copy of the old most significant bit (msb). This is useful for multiplying and dividing signed numbers. Arithmetic shift left (ASL) is the same as logical shift left (LSL) because we will fill the empty spots at right with 0, this doesn't matter much.
+It is the same as logical shifter, but on right shifts fills the most significant bits with a copy of the old most significant bit (msb). This is useful for multiplying and dividing signed numbers. Arithmetic shift left (ASL) is the same as logical shift left (LSL) because we will fill the empty spots at **righ**t with 0, this doesn't matter much. For example,
 
-Ex. 11001 ASR 2 = 11110; 11001 ASL 2 = 00100;
+```
+11001 ASR 2 = 11110; 11001 ASL 2 = 00100;
+```
 {% endstep %}
 
 {% step %}
-**Rotator**
+#### **Rotator**
 
-It rotates number in circle such that empty spots are filled with bits shifted off the other end.
+It rotates number in **circle** such that empty spots are filled with bits shifted off the other end.
 
-Ex. 11001 ROR 2 = 01110; 11001 ROL 2 = 00111;
+```
+11001 ROR 2 = 01110; 11001 ROL 2 = 00111;
+```
 {% endstep %}
 {% endstepper %}
 
-A N-bit shifter can be built from N N:1 multiplexers. This input is shifted by 0 to N-1 bits, depending on the value of the $$\log_2N$$-bit select lines. Figure 5.16 shows the symbol and hardware of 4-bit shifters. The operators `<<`, `>>`, and `>>>` typically indicate shift left, logical shift right, and arithmetic shift right, respectively.
+A N-bit shifter can be built from N N:1 multiplexers. This input is shifted by 0 to N-1 bits, depending on the value of the $$\log_2N$$-bit select lines (`shamt`). Figure 5.16 shows the symbol and hardware of 4-bit shifters. The operators `<<`, `>>`, and `>>>` typically indicate shift left, logical shift right, and arithmetic shift right, respectively.
 
 <figure><img src="../../.gitbook/assets/4-bit-shifters.png" alt=""><figcaption></figcaption></figure>
+
+{% hint style="success" %}
+#### Image Explanation
+
+1. For the Figure 5.16(b), which is about `srl` (shift right logical), we can divide it into four cases
+   1. `shamt = 00` (no shift), then output $$Y_{[3:0]}=A_{[3:0]}$$.
+   2. `shamt = 01` (srl 1 bit), then output $$Y_{[3:0]}=\{0,~A_{[3:1]}\}$$
+   3. `shamt = 10` (srl 2 bits), then output $$Y_{[3:0]}=\{00,~A_{[3:2]}\}$$
+   4. `shamt = 11` (srl 3 bits),  then output $$Y_{[3:0]}=\{000,~A_3\}$$
+2. Such a shifter shown in the Figure 5.16 which can combinationally shift an input by an arbitrary amount is called a **barrel shifter**.
+{% endhint %}
+
+If we want to use this idea to build a [32-bit shifter](#user-content-fn-4)[^4], we need 32 x 32-to-1 multiplexer, which has a very high hardware usage. To solve this problem, let's introduce the [hardware-efficient shifter](arithmetic-circuits.md#hardware-efficient-shifter).
+
+### Hardware-efficient Shifter
+
+This hardware-efficient shifter only needs 5 x 32 x 2-to-1 multiplexer. And below is the implementation for the 32-bit `srl` shifter.
+
+<figure><img src="../../.gitbook/assets/cg3207-lec04-hardware-efficient-shifter.png" alt=""><figcaption></figcaption></figure>
+
+This shifter uses a **logarithmic, staged design** that decomposes any shift amount into a combination of small, power-of-two shifts. Each stage doubles the shift capacity, making the circuit both elegant and efficient.
+
+To add support for `sll` and `sra`, the easiest way is to implement a 3-to-1 multiplexer, controlled by the shift type info from the instruction.
+
+{% code overflow="wrap" lineNumbers="true" %}
+```verilog
+module shiftByNPowerOf2
+//module Shifter
+#(
+    parameter i = 0
+)  // exponent
+(
+    input [1:0] Sh,
+    input flagShift,
+    input [31:0] ShTempIn,
+    output reg [31:0] ShTempOut
+);
+
+    always @(Sh, ShTempIn, flagShift) begin
+        if (flagShift)
+            case (Sh)
+                2'b00:   ShTempOut = {ShTempIn[31-2**i:0], {2 ** i{1'b0}}};  // SLL
+                2'b10:   ShTempOut = {{2 ** i{1'b0}}, ShTempIn[31:2**i]};  // SRL    
+                2'b11:   ShTempOut = {{2 ** i{ShTempIn[31]}}, ShTempIn[31:2**i]};  // SRA
+                //2'b01: ShTempOut = { ShTempIn[2**i-1:0], ShTempIn[31:2**i] } ;  	// ROR is not supported by RISC-V
+                default: ShTempOut = ShTempIn;  // invalid
+            endcase
+        else ShTempOut = ShTempIn;
+    end
+
+endmodule
+
+```
+{% endcode %}
+
+However, more efficient ways to combine the shifts exist though. For example, when $$\text{shamt5}_4=1$$, the input can be from another small "multiplexer[^5]" that gives
+
+* $$\{16\{0\},~\text{ShIn}_{31:16}\}$$ for `srl`
+* $$\{16\{\text{ShIn}_{31}\},~\text{ShIn}_{31:16}\}$$ for `sra`
+
+```verilog
+// Improved code for uploading!
+```
 
 ## Multiplication
 
 In the [previous part](https://wenbo-notes.gitbook.io/ddca-notes/textbook/from-zero-to-one/number-systems#multiplication), we have seen that multiplication is nothing but shift then add, by shift, we form the _partial products_.
 
-In general, a NxN multiplier multiplies two N-bit numbers and produces a 2N-bit result. Multiplication of 1-bit binary numbers is equivalent to the AND operation, so AND gates are used to form the partial products.
+In general, a $$N$$x$$N$$ multiplier multiplies two $$N$$-bit numbers and produces a 2$$N$$-bit result. Multiplication of 1-bit binary numbers is equivalent to the AND operation, so AND gates are used to form the partial products.
 
-Figure 5.18 shows the symbol, function, and implementation of a 4x4 multiplier.
+### Array Multiplier
+
+Figure 5.18 shows the symbol, function, and implementation of an **unsigned** 4x4 multiplier.
 
 <figure><img src="../../.gitbook/assets/4x4-multiplier.png" alt=""><figcaption></figcaption></figure>
+
+The unsigned multiplier receives the multiplicand and multiplier, $$A$$ and $$B$$, and produces the product $$P$$. Figure 5.18(b) shows how partial products are formed. Each partial product is a single multipler bit ($$B_3,B_2,B_1,\text{ or }B_0$$) AND the mutiplicand bits ($$A_3,A_2,A_1,A_0$$). With $$N$$-bit operands, there are $$N$$ partial products and $$N-1$$ stages of 1-bit adders. For example, for a 4x4 multiplier, the partial product of the first row is $$B_0$$ AND ($$A_3,A_2,A_1,A_0$$). This partial product is added to the shifted second partial product, $$B_1$$ AND ($$A_3,A_2,A_1,A_0$$). Subsequent rows of AND gates and adders form and add the remaining partial products.
+
+This array multiplier is **combinational** because the whole multiplication (all ANDs and adds) happens in **one clock cycle**. Maybe [this video](https://www.youtube.com/watch?v=lf8wcTRb8NY) will be good on explaining the critical path and hardware analysis of the array multiplier.
+
+### Sequential Multiplier
+
+Suppose that we may not want to do the mutiplication in one single cycle, we can use the **sequential multiplier**. Its workflow is given as follows,
+
+<figure><img src="../../.gitbook/assets/cg3207-lec04-sequential-multiplier.png" alt=""><figcaption></figcaption></figure>
+
+To understand it better, let's step through an example. Let `S=000000, A=011, B=101` (initial values)
+
+1. $$B_0=1$$ (original $$B_0=1$$)
+   1. add: `S = S + A = 000000 + 000011 = 000011`
+   2. `A = A << 1;` Thus `A = 000110`
+   3. `B = B >> 1;` Thus `B = 010`
+2. $$B_0=0$$ (original $$B_1=0$$)
+   1. no addition required here
+   2. `A = A << 1;` Thus `A = 001100`
+   3. `B = B >> 1;` Thus `B = 001`
+3. $$B_0=1$$ (original $$B_2=1$$)
+   1. add: `S = S + A = 000011 + 001100 = 001111`
+
+#### Improved Sequential Multiplier
+
+The idea is to always align $$A$$ to the "high-side" (3 most significant bits of S in 3-bit multiplication) and then perform the addition. Then shift S to the right and do not shift A. And the least significant bits of S populated with B, which keeps getting shifted to the right with S (avoids the need for an extra register for B). Its workflow is shown as follows,
+
+<figure><img src="../../.gitbook/assets/cg3207-lec04-improved-sequential-multiplier.png" alt="" width="563"><figcaption></figcaption></figure>
+
+Again, stepping through an example will make it easier to understand. Let `S = 0000101 (000B), A = 011` (initial values)
+
+1. $$S_0=1$$ (original $$B_0=1$$)
+   1. add `S = S + A000 = 000101 + 011000 = 011101`
+   2. `S = S >> 1;` Thus `S = 001110`
+2. $$S_0=0$$ (original $$B_1=0$$)
+   1. no addition required
+   2. `S = S >> 1;` Thus `S = 000111`
+3. $$S_0=1$$ (original $$B_2=1$$)
+   1. add `S = S + A000 = 000111 + 011000 = 011111`
+   2. `S = S >> 1;` Thus `S = 001111`, which is the final result
+
+{% hint style="warning" %}
+But ther e is a problem with the improved sequential multiplier, what if the 32-bit ALU generates a carry out? Where should the carry out go?
+{% endhint %}
+
+### HDL Implementation
 
 The HDL for a multiplier is in HDL Example 5.4. As with adders, the synthesis tools may pick the most appropriate design given the timing constraints.
 
@@ -514,3 +634,7 @@ endmodule
 [^2]: Here, the “carry-in” refers to the **initial** carry input of the adder. Each adder has only one carry-in signal; for multi-bit adders, this single carry-in propagates through the stages of the adder to produce carries for subsequent bits.
 
 [^3]: This means, when there is a carry in, the column will always produce a carry out, which **propagates** the carry in it receives.
+
+[^4]: Input and output of the shifter is a 32-bit number, and thus the select line `shamt` will be $$\log_232=5$$ bits.
+
+[^5]: the actual implementation is to use AND gates.
