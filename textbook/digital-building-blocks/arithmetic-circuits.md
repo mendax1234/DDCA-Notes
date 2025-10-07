@@ -627,7 +627,66 @@ endmodule
 
 ## Division
 
-> **TODO:** FYI part first.
+{% hint style="success" %}
+Before continue this section, let's make some convention. Given $$A\div B = Q+R$$, we say
+
+* $$A$$ is the dividend
+* $$B$$ is the divisor
+* $$Q$$ is the quotient
+* $$R$$ is the remainder
+{% endhint %}
+
+Binary division can be performed using the following algorithm for $$N$$-bit unsigned numbers in the range $$[0,~2^N-1]$$.
+
+{% code lineNumbers="true" %}
+```c
+R' = 0
+for i = N-1 to 0
+    R = {R' << 1, A_i}
+    D = R - B
+    if D < 0 then Q_i = 0, R' = R // R < B
+    else          Q_i = 1, R' = D // R >= B
+R = R'
+```
+{% endcode %}
+
+1. The _partial remainder_ $$R$$ is initialized to 0 ($$R'=0$$), and the most significant bit of the **dividend** `A` becomes the least significant bit of $$R$$ ($$R=\{R'<<1,~ A_i\}$$).
+2. The **divisor** `B` is subtracted from this partial remainder to determine whether it fits ($$D = R-B$$).
+   1. If the difference $$D$$ is negative (e.g., the sign bit of $$D$$ is 1), then the quotient bit $$Q_i$$ is 0 and the difference is discarded. In any event, the partial remainder is then doubled (left-shited by one column), the next most significant bit of $$A$$ becomes the least significant bit of $$R$$, and the process repeats.
+   2. Else, the difference $$D$$ is positive. Then the quotient bit $$Q_i$$ is 1 and the remainder $$R$$ becomes $$D$$.
+3. The process (step 2) repeats and the result satisfies $$\frac{A}{B}=Q+\frac{R}{B}$$.
+
+{% hint style="success" %}
+$$N$$-bit operands yield $$N$$-bit quotient and remainder. Here, we want to show that the divisor and quotient and remainder shares the same bit-width, but your dividend can have $$2N$$ bits.
+{% endhint %}
+
+Below a more straight-forward example,
+
+<figure><img src="../../.gitbook/assets/cg3207-lec04-division-example.png" alt="" width="365"><figcaption></figcaption></figure>
+
+This approach is called **long division approach**, which is basically similar to what we have seen above. But in a more straight-forward way
+
+1. If divisor $$\leq$$ dividend bits
+   1. 1 bit in quotient, subtract
+2. Otherwise
+   1. 0 bit in quotient, bring down next dividend bit
+
+{% hint style="warning" %}
+This illustration is more straight-forward, but less complete. Thus it is good for doing the hand-by-hand calculation. But for the systematic approach to implement in the hardware, please go review the first pseudocode.
+{% endhint %}
+
+### Array Divider
+
+Figure 5.22 shows a schematic of a 4-bit array divider. The divider computes $$A/B$$ and produces a quotient $$Q$$ and a remainder $$R$$. The legend shows the symbol and schematic for each block in the array divider.
+
+<figure><img src="../../.gitbook/assets/array-divider.png" alt=""><figcaption></figcaption></figure>
+
+1. Each row performs one iteration of the division algorithm. Specifically, each row calculates the difference $$D = R-B$$. (Recall that $$R+\bar B+1=R-B$$).
+2. The multiplexer select signal, $$N$$ ( for **N**egative), receives 1 when a row's difference $$D$$ is negative. So $$N$$ is driven bby the most significant bit of $$D$$, which is 1 when the difference is negative.
+3. Each quotient bit ($$Q_i$$) is 0 when $$D$$ is negative and 1 otherwise. The multiplexer passes $$R$$ to the next row if the difference is negative and $$D$$ otherwise. (In the legend)
+4. The following row shifts the new partial remainder left by one bit, appends the next most significant bit of $$A$$, and then repeats the process.
+
+The delay of an $$N$$-bit array divider increases proportionally to $$N^2$$ because the carry must ripple through all $$N$$ stages in a row before the sign is determined and the multiplexer can select $$R$$ or $$D$$. This repeats for all $$N$$ rows.
 
 [^1]: Here, one block is a one-bit full adder.
 
