@@ -848,7 +848,7 @@ When we want to do a long multiplication,
 
 ### Floating-Point Number Systems
 
-Floating-point numbers are analogous to scientific notation. They circumvent the limitation of having a constant number of integer and&#x20;fraction bits, allowing the representation of very large and very small&#x20;numbers. Like scientific notation, floating-point numbers have a _sign_,&#x20;_mantissa_ (M), _base_ (B), and _exponent_ (E), as shown below
+Floating-point numbers are analogous to scientific notation. They circumvent the limitation of having a constant number of integer and&#x20;fraction bits, allowing the representation of very large and very small&#x20;numbers. Like scientific notation, floating-point numbers have a _sign_, _mantissa_ (M), _base_ (B), and _exponent_ (E), as shown below
 
 $$
 \pm M\times B^E
@@ -856,7 +856,7 @@ $$
 
 For example, the number $$4.1\times10^3$$ is the decimal scientific notation for 4100. It has a mantissa of 4.1, a base of 10, and an exponent of 3. The&#x20;decimal point _floats_ to the position right after the most significant digit. Floating-point numbers are base 2 with a binary mantissa. 32 bits are&#x20;used to represent 1 sign bit, 8 exponent bits, and 23 mantissa bits.
 
-The exponent&#x20;needs to represent both positive and negative exponents. To do so, floating point uses a _biased_ exponent, which is the original exponent plus a constant bias. 32-bit floating-point uses a bias of 127. For example, for the&#x20;exponent 7, the biased exponent is 7 + 127 = 134 = 10000110<sub>2</sub>. For&#x20;the exponent −4, the biased exponent is: −4 + 127 = 123 = 01111011<sub>2</sub>.
+The exponent&#x20;needs to represent both positive and negative exponents. To do so, floating point uses a _biased_ exponent, which is the original exponent plus a constant bias. 32-bit floating-point uses a bias of 127. For example, for the&#x20;exponent 7, the biased exponent is 7 + 127 = 134 = 10000110<sub>2</sub>. For&#x20;the exponent -4, the biased exponent is: -4 + 127 = 123 = 01111011<sub>2</sub>.
 
 {% hint style="success" %}
 This notation conforms to the IEEE 754 floating-point standard. In this notation, the first bit of the fraction/mantissa is **always** 1.
@@ -894,7 +894,7 @@ The IEEE floating-point standard has special cases to represent numbers&#x20;su
 
 #### More formats
 
-So far, we have examined 32-bit floating-point numbers. This format is&#x20;also called _single-precision_, _single,_ or _float_. The IEEE 754 standard also defines 64-bit _double-precision_ numbers (also called _doubles_) and 128-bit _quadruple-precision_ numbers (also called _quads_) that provide greater&#x20;precision and greater range. Table 5.5 shows the number of bits used for&#x20;the fields in each format.
+So far, we have examined 32-bit floating-point numbers. This format is also called _single-precision_, _single_, or _float_. The IEEE 754 standard also defines 64-bit _double-precision_ numbers (also called _doubles_) and 128-bit _quadruple-precision numbers_ (also called _quads_) that provide greater precision and greater range. Table 5.5 shows the number of bits used for the fields in each format.
 
 <figure><img src="../../.gitbook/assets/floating-point-format.png" alt=""><figcaption></figcaption></figure>
 
@@ -904,11 +904,10 @@ Arithmetic results that fall outside of the available precision must round&#x20
 
 1. round down,
 2. round   &#x20;up,
-3. [round toward zero](#user-content-fn-6)[^6]
-4. /, and
-5. round to nearest.
+3. [round toward zero](#user-content-fn-6)[^6], and
+4. round to nearest.
 
-The default rounding&#x20;mode is round to nearest. In the round-to-nearest mode, if two numbers&#x20;are equally near, the one with a 0 in the least significant position of the&#x20;fraction is chosen.
+The default rounding mode is round to nearest. In the round-to-nearest mode, if two numbers are equally near, the one with a 0 in the least significant position of the fraction is chosen.
 
 For example, we want to round 1.100101 (1.578125) to only 3 fraction bits
 
