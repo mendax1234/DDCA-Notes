@@ -639,7 +639,7 @@ Before continue this section, let's make some convention. Given $$A\div B = Q+R$
 Binary division can be performed using the following algorithm for $$N$$-bit unsigned numbers in the range $$[0,~2^N-1]$$.
 
 {% code lineNumbers="true" %}
-```c
+```
 R' = 0
 for i = N-1 to 0
     R = {R' << 1, A_i}
@@ -650,21 +650,22 @@ R = R'
 ```
 {% endcode %}
 
-1. The _partial remainder_ $$R$$ is initialized to 0 ($$R'=0$$), and the most significant bit of the **dividend** `A` becomes the least significant bit of $$R$$ ($$R=\{R'<<1,~ A_i\}$$).
-2. The **divisor** `B` is subtracted from this partial remainder to determine whether it fits ($$D = R-B$$).
-   1. If the difference $$D$$ is negative (e.g., the sign bit of $$D$$ is 1), then the quotient bit $$Q_i$$ is 0 and the difference is discarded. In any event, the partial remainder is then doubled (left-shited by one column), the next most significant bit of $$A$$ becomes the least significant bit of $$R$$, and the process repeats.
+1. The _partial remainder_ $$R$$ is initialized to 0 ($$R'=0$$), and the most significant bit of the **dividend** $$A$$ becomes the least significant bit of $$R$$ ($$R=\{R'<<1,~ A_i\}$$).
+2. The **divisor** $$B$$ is subtracted from this partial remainder to determine whether it fits ($$D = R-B$$).
+   1. If the difference $$D$$ is negative (e.g., the sign bit of $$D$$ is 1), then the quotient bit $$Q_i$$ is 0 and the difference is discarded.
    2. Else, the difference $$D$$ is positive. Then the quotient bit $$Q_i$$ is 1 and the remainder $$R$$ becomes $$D$$.
+   3. In any event, the partial remainder is then doubled (left-shited by one column), the next most significant bit of $$A$$ becomes the least significant bit of $$R$$, and the process repeats.
 3. The process (step 2) repeats and the result satisfies $$\frac{A}{B}=Q+\frac{R}{B}$$.
 
 {% hint style="success" %}
-$$N$$-bit operands yield $$N$$-bit quotient and remainder. Here, we want to show that the divisor and quotient and remainder shares the same bit-width, but your dividend can have $$2N$$ bits.
+$$N$$-bit operands yield $$N$$-bit quotient and remainder. Here, we want to show that the divisor and quotient and remainder shares the same bit-width, but actually the dividend can have $$2N$$ bits.
 {% endhint %}
 
 Below a more straight-forward example,
 
 <figure><img src="../../.gitbook/assets/cg3207-lec04-division-example.png" alt="" width="365"><figcaption></figcaption></figure>
 
-This approach is called **long division approach**, which is basically similar to what we have seen above. But in a more straight-forward way
+This approach is called **long division approach**, which is basically similar to what we have seen above. But it is in a more straight-forward way
 
 1. If divisor $$\leq$$ dividend bits
    1. 1 bit in quotient, subtract
@@ -684,9 +685,288 @@ Figure 5.22 shows a schematic of a 4-bit array divider. The divider computes $$A
 1. Each row performs one iteration of the division algorithm. Specifically, each row calculates the difference $$D = R-B$$. (Recall that $$R+\bar B+1=R-B$$).
 2. The multiplexer select signal, $$N$$ ( for **N**egative), receives 1 when a row's difference $$D$$ is negative. So $$N$$ is driven bby the most significant bit of $$D$$, which is 1 when the difference is negative.
 3. Each quotient bit ($$Q_i$$) is 0 when $$D$$ is negative and 1 otherwise. The multiplexer passes $$R$$ to the next row if the difference is negative and $$D$$ otherwise. (In the legend)
-4. The following row shifts the new partial remainder left by one bit, appends the next most significant bit of $$A$$, and then repeats the process.
+4. The following row shifts the new partial remainder left by one bit (a good example to show that "shifting is just rewiring"), appends the next most significant bit of $$A$$, and then repeats the process.
 
 The delay of an $$N$$-bit array divider increases proportionally to $$N^2$$ because the carry must ripple through all $$N$$ stages in a row before the sign is determined and the multiplexer can select $$R$$ or $$D$$. This repeats for all $$N$$ rows.
+
+### Sequential Divider
+
+Similar to the [#sequential-multiplier](arithmetic-circuits.md#sequential-multiplier "mention"), we can also do the divider sequentially,
+
+<figure><img src="../../.gitbook/assets/cg3207-lec04-sequential-divider.png" alt=""><figcaption></figcaption></figure>
+
+To understand it better, again, let's step through an example. For example, 00000111 (dividend) is divided by 0010 (divisor).
+
+<figure><img src="../../.gitbook/assets/cg3207-lec04-sequential-divider-example.png" alt=""><figcaption></figcaption></figure>
+
+### Signed Multiplication/Division
+
+{% stepper %}
+{% step %}
+#### Signed vs. Unsigned Multiplication
+
+When you multiply two **n-bit numbers**,
+
+* the **lowest n bits** (the _least significant half_) of the product are **identical** whether the numbers are interpreted as signed or unsigned.
+* Only the **upper n bits** differ (because sign extension affects those).
+
+That’s why:
+
+* `MUL` (in RISC-V) gives just the _lower n bits_.
+* `MULH` / `MULHU` (RISC-V) give the _upper n bits_, for signed/unsigned respectively.
+{% endstep %}
+
+{% step %}
+#### Macro-op fusion
+
+“Macro-op fusion” means the processor can **fuse** `mul` and `mulh` internally and perform **a single 64-bit multiply**, returning both halves if needed.
+
+We know that RISC-V has **separate instructions** for multiplication:
+
+* `mul` → lower 32 bits of product
+* `mulh` → upper 32 bits (signed × signed)
+* `mulhu` → upper 32 bits (unsigned × unsigned)
+* `mulhsu` → upper 32 bits (signed × unsigned)
+
+If we implement them _literally_, it looks like three separate multipliers are needed. But **in hardware**, we don’t have to do three full multiplications. Instead, we can compute _one 64-bit result_ internally and just output different parts or interpret sign bits differently.
+
+So, even though RISC-V has multiple `mul` variants, we don’t necessarily perform multiple physical multiplications.
+{% endstep %}
+
+{% step %}
+#### Signed/Unsigned always matters in Division
+
+**Unlike multiplication**, signed and unsigned division _don’t share any bits_ of result. We can’t reuse the same division result for both. For example,
+
+| Dividend | Divisor | Signed?            | Result                                                                       | Notes           |
+| -------- | ------- | ------------------ | ---------------------------------------------------------------------------- | --------------- |
+| 6        | 3       | signed or unsigned | 2                                                                            | Same either way |
+| 6        | -3      | signed             | -2                                                                           | (because sign)  |
+| 6        | -3      | unsigned           | invalid (divisor interpreted as 4294967293 if 32-bit!)                       |                 |
+| -6       | 3       | signed             | -2                                                                           | okay            |
+| -6       | 3       | unsigned           | big number ≈ 0x55555554 (because -6 -> 0xFFFFFFFA interpreted as 4294967290) |                 |
+
+So **division results** sometimes **completely change** depending on whether you treat numbers as signed or unsigned — even if you use the same bit pattern.
+{% endstep %}
+
+{% step %}
+#### Simple trick for signed multiplication/division
+
+Signed division (and signed multiplication) can be done using the same _unsigned_ operation unit if you:
+
+1. Record the sign of both operands.
+2. Take their absolute values (convert negatives to positives).
+3. Perform **unsigned division** (or multiplication).
+4. If exactly one operand was negative, negate the result.
+
+But there are some wierd scenarios. For example, if we want to do the following multiplication,
+
+$$
+-2^{31}\times-1=2^{31}
+$$
+
+The result cannot fit into a 32-bit register. This is an overflow (same trick to detect overflow as we have discussed in [signed addition/subtraction](arithmetic-circuits.md#signed-addition))!
+{% endstep %}
+{% endstepper %}
+
+## Number Systems
+
+Computers operate on both integers and fractions. So far, we have only considered representing signed or unsigned integers. This section introduces fixed- and floating-point number systems that can represent **rational numbers**.
+
+* [Fixed-point numbers](arithmetic-circuits.md#fixed-point-number-systems) are analogous to decimals; some of the bits represent the integer part, and the rest represent the fraction
+* Floating-point numbers are analogous to scientific notation, with a mantissa and an exponent.
+
+### Fixed-Point Number Systems
+
+_Fixed-point notation_ has an implied _binary point_ between the integer and fraction bits, analogus to the decimal point between the integer and fraction digits of an ordinary decimal number. For example, Figure 5.23(a) shows a fixed-point number with four integer bits and four fraction bits. Figure 5.23(b) shows the implied binary point in blue, and Figure 5.23(c) shows the equivalent decimal value.
+
+<figure><img src="../../.gitbook/assets/fixed-point-number-system-example.png" alt=""><figcaption></figcaption></figure>
+
+{% hint style="success" %}
+#### Notes
+
+1. This notation is not so standard.
+2. The position of the binary point affects the _arnge_ (difference between the largest and smallest representable numbers) and _precision_ (smallest possible difference between any two numbers)
+{% endhint %}
+
+#### Signed Fixed-Point
+
+Signed fixed-point numbers can use either two's complement or sign/magnitude notation. Figure 5.24 shows the fixed-point representation of $$-2.375$$ using both notations with four integer and four fraction bits.
+
+<figure><img src="../../.gitbook/assets/signed-fixed-point-example.png" alt=""><figcaption></figcaption></figure>
+
+The implicit binary point is shown in <mark style="color:blue;">blue</mark> for clarity.
+
+* In **sign/magnitude form**, the most significant bit is used to indicate the sign.
+* The **two's complement representation** is formed by inverting the bits of the **absolute value** and adding 1 to the least significant (righmost) bit. In this case, the least significant bit position is in the $$2^{-4}$$ column.
+  * In this example, we have: 00100110 -> 11011001 -> 11011010
+
+{% hint style="success" %}
+In general, we use _Ua.b_ to denote an **unsigned fixed-point number** with _a_ integer bits and _b_ fraction bits. _Qa.b_ denotes a **signed** (two's complement) fixed point number with _a_ integer bits (including the sign bit) and _b_ fractional bits.
+{% endhint %}
+
+<details>
+
+<summary>A trick to quickly find the binary representation of a fraction using fixed-point notation</summary>
+
+1. First, write the fraction is to $$\frac{A}{B}$$, where $$A$$ is any integer, and $$B$$ is an integer which is $$2^n$$.
+2. Use binary to represent $$A$$ and find out $$n$$.
+3. Move the binary point from behind the rightmost bit $$n$$ bits forward.
+
+For example, we want to calculate $$0.625$$,
+
+1. $$0.625=\frac{5}{8}=\frac{5}{2^3}$$
+2. $$5=101$$
+3. $$0.625=0.101$$
+4. Fit into eight bit representation, it will become 0000.1010
+
+</details>
+
+#### Fixed-Point Calculation
+
+> Fixed-point **addition** and **subtraction** is simple because the position of the binary point won't change. But **multiplication** and **division** are a bit tedious. So, here we will only talk about the fixed-point number **multiplication** and **division**.
+
+Actually, from the small [trick](arithmetic-circuits.md#a-trick-to-quickly-find-the-binary-representation-of-a-fraction-using-fixed-point-notation) we mentioned above, we see that fixed-point notation has an implicit **scale factor**, which is $$2^{\text{number of fraction bits}}$$.
+
+For example, If we have **2 fractional bits**, the scale factor is $$2^2=4$$. That means every stored integer actually represents $$\text{stored/4}$$. So, `00000110₂ = 6` actually means $$6/4=1.5$$.
+
+Knowing this, we can clearly see that when we multiply two numbers in fixed-point, both are _already scaled_. For example, let's compute
+
+| Variable | Actual value | Stored (binary) | Decimal equivalent (stored) |
+| -------- | ------------ | --------------- | --------------------------- |
+| a        | 1.5          | 00000110        | 6                           |
+| b        | 2.5          | 00001010        | 10                          |
+
+When we do `a*b`, we will have `00111100₂`. Since we scaled each input by $$2^2=4$$, the product is scaled by $$4*4=16=2^4$$. So to get back to the same scalor factor, which is 2 fractional bits, we must divide the product by 4 (shift right by 2 bits). Thus, we have `00111100₂ >> 2 = 00001111₂`. This gives our stored value to be 15 and our actual value to be $$15/4=3.75$$.
+
+> But, in the above scenario, we assumed a short multiply, e.g., n-bit × n-bit = n-bit.
+
+When we want to do a long multiplication,
+
+* an **overflow** may happen, which basically is that our result bits cannot fit the multiplication result.
+* an **underflow** may also happen, which means the multiplication result is representable, but **not accurately**, because our fractional bits are too few.
+
+### Floating-Point Number Systems
+
+Floating-point numbers are analogous to scientific notation. They circumvent the limitation of having a constant number of integer and&#x20;fraction bits, allowing the representation of very large and very small&#x20;numbers. Like scientific notation, floating-point numbers have a _sign_,&#x20;_mantissa_ (M), _base_ (B), and _exponent_ (E), as shown below
+
+$$
+\pm M\times B^E
+$$
+
+For example, the number $$4.1\times10^3$$ is the decimal scientific notation for 4100. It has a mantissa of 4.1, a base of 10, and an exponent of 3. The&#x20;decimal point _floats_ to the position right after the most significant digit. Floating-point numbers are base 2 with a binary mantissa. 32 bits are&#x20;used to represent 1 sign bit, 8 exponent bits, and 23 mantissa bits.
+
+The exponent&#x20;needs to represent both positive and negative exponents. To do so, floating point uses a _biased_ exponent, which is the original exponent plus a constant bias. 32-bit floating-point uses a bias of 127. For example, for the&#x20;exponent 7, the biased exponent is 7 + 127 = 134 = 10000110<sub>2</sub>. For&#x20;the exponent −4, the biased exponent is: −4 + 127 = 123 = 01111011<sub>2</sub>.
+
+{% hint style="success" %}
+This notation conforms to the IEEE 754 floating-point standard. In this notation, the first bit of the fraction/mantissa is **always** 1.
+{% endhint %}
+
+To put it all together, let's examine two examples:
+
+{% stepper %}
+{% step %}
+#### Represent unsigned number in IEEE 754
+
+Suppose we want to represent 228<sub>2</sub> = 11100100<sub>2</sub> = 1.11001<sub>2</sub> x 2<sup>7</sup> using floating point system, it will be as follows,
+{% endstep %}
+
+{% step %}
+<figure><img src="../../.gitbook/assets/floating-point-system-example.png" alt="" width="544"><figcaption></figcaption></figure>
+
+#### Represent signed number in IEEE 754
+
+Suppose we want to write -58.25<sub>2</sub> in floating point (IEEE 754)
+
+1. Convert decimal to binary: 58.25<sub>2</sub> = 11101001<sub>2</sub>
+2. Write in binary scientific notation: 1.1101001 x 2<sup>5</sup>
+3. Fill in fields: Sign bit = 1, Biased Expoenent = 5 + 127 = 10000100<sub>2</sub>, 23 fraction bits = 110 1001 0000 0000 0000 0000.
+
+<figure><img src="../../.gitbook/assets/floating-point-example-2.png" alt=""><figcaption></figcaption></figure>
+{% endstep %}
+{% endstepper %}
+
+#### Special Cases
+
+The IEEE floating-point standard has special cases to represent numbers&#x20;such as zero, infinity, and illegal results.
+
+<figure><img src="../../.gitbook/assets/ieee754-special-cases.png" alt=""><figcaption></figcaption></figure>
+
+#### More formats
+
+So far, we have examined 32-bit floating-point numbers. This format is&#x20;also called _single-precision_, _single,_ or _float_. The IEEE 754 standard also defines 64-bit _double-precision_ numbers (also called _doubles_) and 128-bit _quadruple-precision_ numbers (also called _quads_) that provide greater&#x20;precision and greater range. Table 5.5 shows the number of bits used for&#x20;the fields in each format.
+
+<figure><img src="../../.gitbook/assets/floating-point-format.png" alt=""><figcaption></figcaption></figure>
+
+#### Rounding
+
+Arithmetic results that fall outside of the available precision must round&#x20;to a neighboring number. The rounding modes are
+
+1. round down,
+2. round   &#x20;up,
+3. [round toward zero](#user-content-fn-6)[^6]
+4. /, and
+5. round to nearest.
+
+The default rounding&#x20;mode is round to nearest. In the round-to-nearest mode, if two numbers&#x20;are equally near, the one with a 0 in the least significant position of the&#x20;fraction is chosen.
+
+For example, we want to round 1.100101 (1.578125) to only 3 fraction bits
+
+1. round down: 1.100
+2. round up: 1.101
+3. round toward zero: 1.100
+4. round to nearest: 1.101 (1.625 is close to 1.578125 than 1.5 is)
+
+{% hint style="success" %}
+#### Notes
+
+1. A number _overflows_ when its magnitude is too large to   &#x20;be represented.
+2. A number _underflows_ when it is too tiny to be   &#x20;represented.
+
+In round-to-nearest mode, **overflows** are rounded up to $$\pm\infty$$&#x20;and **underflows** are rounded down to 0.
+{% endhint %}
+
+#### Floating-Point Calculation
+
+{% stepper %}
+{% step %}
+#### Addition
+
+The steps for adding floating-point numbers with the same sign are as follows:
+
+1. Extract exponent and fraction bits.
+2. Prepend leading 1 to form the mantissa.
+3. Compare exponents.
+4. Shift smaller mantissa if necessary.
+5. Add mantissas.
+6. Normalize mantissa and adjust exponent if necessary.
+7. Round result.
+8. Assemble exponent and fraction back into floating-point number.
+
+For example,
+
+<figure><img src="../../.gitbook/assets/floating-point-addition-example.png" alt="" width="563"><figcaption></figcaption></figure>
+{% endstep %}
+
+{% step %}
+#### Multiplication
+
+1. Unpack the numbers
+   1. Assume A=0\_0111\_110 and B= 0\_1001\_010, we want to calculate A x B.
+2. Sign of result = xor of signs of the numbers
+   1. 0 xor 0 = 0.
+3. Add the two exponents using integer math. Subtract the   &#x20;bias **once** from the result.
+   1. E = 0111 + 1001 - 0111 = 1001
+4. Multiply significands (mantissas) via integer math
+   1. S = 1.110 x 1.010 = 10.001100
+5. Normalize the significand and adjust exponent if necessary
+   1. S = 1.00011, E = 1001 + 1 = 1010
+6. Round the significand (mantissa)
+   1. S = 1.000 (assuming rounding mode is round toward zero)
+7. Pack it back
+   1. Result = 0\_1010\_000
+{% endstep %}
+{% endstepper %}
 
 [^1]: Here, one block is a one-bit full adder.
 
@@ -697,3 +977,5 @@ The delay of an $$N$$-bit array divider increases proportionally to $$N^2$$ beca
 [^4]: Input and output of the shifter is a 32-bit number, and thus the select line `shamt` will be $$\log_232=5$$ bits.
 
 [^5]: the actual implementation is to use AND gates.
+
+[^6]: It's just simply _chop off_ (truncate) the extra fraction bits. No rounding up at all, no matter whether it’s positive or negative.
