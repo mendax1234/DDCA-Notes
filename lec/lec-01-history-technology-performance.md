@@ -316,7 +316,7 @@ This formula is very very important!
 {% endstep %}
 {% endstepper %}
 
-### CPI in more detail
+#### CPI in more detail
 
 If different instruction classes take different numbers of cycles
 
@@ -347,6 +347,11 @@ $$
 \end{align*}
 $$
 
+So, from the result, we can say that
+
+1. A is 1.2x / 20% faster than B, or
+2. B is 20% slower than A.
+
 ### Performance Summary
 
 Performance depends on
@@ -355,6 +360,45 @@ Performance depends on
 * Programming language: affects IC, CPI
 * Compiler: affects IC, CPI
 * Instruction Set Architecture (ISA): affects IC, CPI, Cycle Time ($$T_c$$)
+
+### SPEC Benchmark
+
+Programs can be used to measure performance. And **S**tandard **P**erformance **E**valuation **C**orp (SPEC) develops benchmarks for CPU, I/O, Web, ...
+
+#### SPEC CPU Benchmark
+
+Using the CINT2006 standard, the benchmark of a processor can be calculated as
+
+$$
+\sqrt[n]{\prod_{i=1}^{n} \text{Execution time ratio}_i}
+$$
+
+where the Execution time ratio<sub>i</sub> (or SPECratio) is
+
+$$
+\text{Execution time on the actual processor} \div \text{Execution time on the reference machine}
+$$
+
+An example that you will find is as follows,
+
+<figure><img src="../.gitbook/assets/cg3207-lec01-spec-benchmark-example.png" alt=""><figcaption></figcaption></figure>
+
+#### SPEC Power Benchmark
+
+Power consumption of server at different levels:
+
+1. Performance: ssj\_oops[^7]/sec
+2. Power: Watt (Joules/sec)
+
+So, the formula for the power benchmark is
+
+$$
+\text{Overall ssj\_oops per Watt}=\left(\sum^{10}_{i=0}\text{ssj\_oops}\right)\div\left(\sum^{10}_{i=0}\text{power}_i\right)
+$$
+
+And the following is an example,
+
+<figure><img src="../.gitbook/assets/cg3207-lec01-spec-power-benchmark.png" alt=""><figcaption></figcaption></figure>
 
 ### Amdahl's law
 
@@ -428,3 +472,5 @@ From the Amdahl's law, we can deduce a very useful idea — "Make the **common c
 [^5]: A single, individual integrated circuit that has been cut from the wafer and contains the complete electronic circuitry for a specific function. From a "die" to "chip", **packaging** is needed.
 
 [^6]: yield is the proportion of working dies per wafer.
+
+[^7]: server side Java operations

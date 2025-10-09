@@ -24,7 +24,7 @@ A _full adder_ accepts the carry in $$C_{\text{in}}$$ as shown in Figure 5.3. Th
 
 ### Carry Propagate Adder
 
-An N-bit adders sums two N-bit inputs, A and B, and a carry in $$C_{\text{in}}$$ to produce an N-bit result $$S$$ and a carry out $$C_{\text{out}}$$. It is commonly called a _carry propagate adder_ (CPA) because the carry out of one bit propagates into the next bit. The symbol for CPA is shown in Figure 5.4; it is drawn just like a full adder except that A, B, and S are buses rather than single bits. Three common CPA implementations are called
+An $$N$$-bit adders sums two $$N$$-bit inputs, A and B, and a carry in $$C_{\text{in}}$$ to produce an $$N$$-bit result $$S$$ and a carry out $$C_{\text{out}}$$. It is commonly called a _carry propagate adder_ (CPA) because the carry out of one bit propagates into the next bit. The symbol for CPA is shown in Figure 5.4; it is drawn just like a full adder except that A, B, and S are buses rather than single bits. Three common CPA implementations are called
 
 1. [Ripple-carry adders](arithmetic-circuits.md#ripple-carry-adder)
 2. [Carry-lookahead adders](arithmetic-circuits.md#carry-lookahead-adder)
@@ -74,7 +74,11 @@ Let's say we want to build a 32-bit carry-lookahead adder. Doing the above manip
 
 <figure><img src="../../.gitbook/assets/cg3207-lec04-4-bit-carry-lookahead-adder.png" alt="" width="563"><figcaption></figcaption></figure>
 
-Using this fundamental block (4-bit carry-lookahead adder), we can build bigger adders. Figure 5.6 (a) shows a 32-bit carry-lookahead adder composed of **eight** 4-bit blocks. Each block contains a 4-bit ripple-carry adder and some lookahead logic to compute the carry out of the unit given the carry in, as shown in Figure 5.6 (b).&#x20;
+Using this fundamental block (4-bit carry-lookahead adder), we can build bigger adders. Figure 5.6 (a) shows a 32-bit carry-lookahead adder composed of **eight** 4-bit blocks. Each block contains a 4-bit ripple-carry adder and some lookahead logic to compute the carry out of the block given the carry in, as shown in Figure 5.6 (b).&#x20;
+
+{% hint style="success" %}
+C<sub>1</sub>, C<sub>2</sub>, C<sub>3</sub> and C<sub>4</sub> are the four carries that we've looked ahead!
+{% endhint %}
 
 <figure><img src="../../.gitbook/assets/32-bit-carry-lookahead-adder.png" alt=""><figcaption></figcaption></figure>
 
@@ -85,7 +89,7 @@ Using this fundamental block (4-bit carry-lookahead adder), we can build bigger 
 2. The block propagate ($$P_i$$) and generate ($$G_i$$) signals for 4-bit blocks ($$i$$ refers to the block number here),
    1. $$P_0=p_3p_2p_1p_0$$, $$P_0$$ is the same as $$P_{[3:0]}$$ shown in the figure above
    2. $$G_0=g_3+p_3(g2+p2(g1+p1g_0))$$, $$G_0$$ is the same as $$G_{[3:0]}$$ shown in the figure above.
-3. The ripple effect is avoided within a unit, but the ripple carry effect will be present between units. Nevertheless, the delays are significantly lowe than the orginal ripple carry adder.
+3. The ripple effect is avoided within a block, but the ripple carry effect will be present between blocks. Nevertheless, the delays are significantly lower than the orginal ripple carry adder.
 {% endhint %}
 
 ### Putting it all together
@@ -176,7 +180,7 @@ In the signed addition/subtraction, we have four flages, N(egative), Z(ero), C(a
 {% hint style="warning" %}
 Before that, let's make some clarifications or conventions first.
 
-1. We denote the LSB at bit 0 or 0-th bit, so on and so forth for all the remaining bits.
+1. We denote that the LSB is at bit 0 or 0-th bit, so on and so forth for all the remaining bits.
 2. When we add two N-bit numbers, we will get a N+1 bit number. However, we treat the MSB (the N-th bit) as the **carry bit**, and the remaining N bits are the **result**. So, again when we say the MSB of the **result**, we are referring to the (N-1)-th bit actually.
 {% endhint %}
 
@@ -243,7 +247,7 @@ In summary, we know the following points from the human interpretation side,
 
 For RISC-V, NZCV is **irrelevant** only when ALU does the **addition**. But, it is still recommended to go through how each flag of the NZCV is generated during [addition](arithmetic-circuits.md#signed-addition).
 
-Instead, in RISC-V, NZCV is **relevant** when ALU does the **subraction**. Again, it is important to go through how NZCV is generated during [subtraction](arithmetic-circuits.md#signed-subtraction). In RISC-V, the subtraction can be done in
+Instead, in RISC-V, NZCV is **relevant** when ALU does the **subtraction**. Again, it is important to go through how NZCV is generated during [subtraction](arithmetic-circuits.md#signed-subtraction). In RISC-V, the subtraction can be done in
 
 * `sub`
 * branch/slt variants
@@ -291,7 +295,7 @@ For the subtraction, we have,
 sub   t4, t0, t2        # low  word diff
 sltu  t6, t0, t2        # borrow = (t0 < t2)
 sub   t5, t1, t3        # high word diff
-sub   t5, t5, t6        # add carry
+sub   t5, t5, t6        # subtract the borrow
 ```
 {% endcode %}
 
@@ -471,7 +475,7 @@ It rotates number in **circle** such that empty spots are filled with bits shift
 {% endstep %}
 {% endstepper %}
 
-A N-bit shifter can be built from N N:1 multiplexers. This input is shifted by 0 to N-1 bits, depending on the value of the $$\log_2N$$-bit select lines (`shamt`). Figure 5.16 shows the symbol and hardware of 4-bit shifters. The operators `<<`, `>>`, and `>>>` typically indicate shift left, logical shift right, and arithmetic shift right, respectively.
+A N-bit shifter can be built from $$N$$ $$N$$:1 multiplexers. This input is shifted by 0 to $$N-1$$ bits, depending on the value of the $$\log_2N$$-bit select lines (`shamt`). Figure 5.16 shows the symbol and hardware of 4-bit shifters. The operators `<<`, `>>`, and `>>>` typically indicate shift left, logical shift right, and arithmetic shift right, respectively.
 
 <figure><img src="../../.gitbook/assets/4-bit-shifters.png" alt=""><figcaption></figcaption></figure>
 
@@ -484,6 +488,7 @@ A N-bit shifter can be built from N N:1 multiplexers. This input is shifted by 0
    3. `shamt = 10` (srl 2 bits), then output $$Y_{[3:0]}=\{00,~A_{[3:2]}\}$$
    4. `shamt = 11` (srl 3 bits),  then output $$Y_{[3:0]}=\{000,~A_3\}$$
 2. Such a shifter shown in the Figure 5.16 which can combinationally shift an input by an arbitrary amount is called a **barrel shifter**.
+3. Shift by a **fixed amount** (e.g., 1 bit, 2 bits, etc) onlys needs **rewiring**! It doesn't need any multiplexer.
 {% endhint %}
 
 If we want to use this idea to build a [32-bit shifter](#user-content-fn-4)[^4], we need 32 x 32-to-1 multiplexer, which has a very high hardware usage. To solve this problem, let's introduce the [hardware-efficient shifter](arithmetic-circuits.md#hardware-efficient-shifter).
@@ -531,8 +536,12 @@ endmodule
 
 However, more efficient ways to combine the shifts exist though. For example, when $$\text{shamt5}_4=1$$, the input can be from another small "multiplexer[^5]" that gives
 
-* $$\{16\{0\},~\text{ShIn}_{31:16}\}$$ for `srl`
-* $$\{16\{\text{ShIn}_{31}\},~\text{ShIn}_{31:16}\}$$ for `sra`
+* {16{0}. ShIn<sub>31:16</sub>} for `srl`
+* {16{ShIn<sub>31</sub>}. ShIn<sub>31:16</sub>} for `sra`
+
+{% hint style="info" %}
+**Hint:** To implement this, we only need **1** 1-bit 2:1 multiplexer to select whether the MSB should be 0 or ShIn<sub>31</sub>!
+{% endhint %}
 
 ```verilog
 // Improved code for uploading!
@@ -573,6 +582,10 @@ To understand it better, let's step through an example. Let `S=000000, A=011, B=
 3. $$B_0=1$$ (original $$B_2=1$$)
    1. add: `S = S + A = 000011 + 001100 = 001111`
 
+{% hint style="success" %}
+The hardware complexity increases **linearly** as we increase the bits to be multiplied.
+{% endhint %}
+
 #### Improved Sequential Multiplier
 
 The idea is to always align $$A$$ to the "high-side" (3 most significant bits of S in 3-bit multiplication) and then perform the addition. Then shift S to the right and do not shift A. And the least significant bits of S populated with B, which keeps getting shifted to the right with S (avoids the need for an extra register for B). Its workflow is shown as follows,
@@ -592,7 +605,7 @@ Again, stepping through an example will make it easier to understand. Let `S = 0
    2. `S = S >> 1;` Thus `S = 001111`, which is the final result
 
 {% hint style="warning" %}
-But ther e is a problem with the improved sequential multiplier, what if the 32-bit ALU generates a carry out? Where should the carry out go?
+But there is a problem with the improved sequential multiplier, what if the 32-bit ALU generates a carry out? Where should the carry out go?
 {% endhint %}
 
 ### HDL Implementation
@@ -683,7 +696,7 @@ Figure 5.22 shows a schematic of a 4-bit array divider. The divider computes $$A
 <figure><img src="../../.gitbook/assets/array-divider.png" alt=""><figcaption></figcaption></figure>
 
 1. Each row performs one iteration of the division algorithm. Specifically, each row calculates the difference $$D = R-B$$. (Recall that $$R+\bar B+1=R-B$$).
-2. The multiplexer select signal, $$N$$ ( for **N**egative), receives 1 when a row's difference $$D$$ is negative. So $$N$$ is driven bby the most significant bit of $$D$$, which is 1 when the difference is negative.
+2. The multiplexer select signal, $$N$$ ( for **N**egative), receives 1 when a row's difference $$D$$ is negative. So $$N$$ is driven by the most significant bit of $$D$$.
 3. Each quotient bit ($$Q_i$$) is 0 when $$D$$ is negative and 1 otherwise. The multiplexer passes $$R$$ to the next row if the difference is negative and $$D$$ otherwise. (In the legend)
 4. The following row shifts the new partial remainder left by one bit (a good example to show that "shifting is just rewiring"), appends the next most significant bit of $$A$$, and then repeats the process.
 
@@ -774,7 +787,11 @@ The result cannot fit into a 32-bit register. This is an overflow (same trick to
 Computers operate on both integers and fractions. So far, we have only considered representing signed or unsigned integers. This section introduces fixed- and floating-point number systems that can represent **rational numbers**.
 
 * [Fixed-point numbers](arithmetic-circuits.md#fixed-point-number-systems) are analogous to decimals; some of the bits represent the integer part, and the rest represent the fraction
-* Floating-point numbers are analogous to scientific notation, with a mantissa and an exponent.
+* [Floating-point numbers](arithmetic-circuits.md#floating-point-number-systems) are analogous to scientific notation, with a mantissa and an exponent.
+
+{% hint style="warning" %}
+If we have $$N$$ bits, we can only 2<sup>N</sup> patterns. Using different number systems won't change the number of patterns, but can change the distribution of the numbers it represents.
+{% endhint %}
 
 ### Fixed-Point Number Systems
 
@@ -856,7 +873,7 @@ $$
 
 For example, the number $$4.1\times10^3$$ is the decimal scientific notation for 4100. It has a mantissa of 4.1, a base of 10, and an exponent of 3. The&#x20;decimal point _floats_ to the position right after the most significant digit. Floating-point numbers are base 2 with a binary mantissa. 32 bits are&#x20;used to represent 1 sign bit, 8 exponent bits, and 23 mantissa bits.
 
-The exponent&#x20;needs to represent both positive and negative exponents. To do so, floating point uses a _biased_ exponent, which is the original exponent plus a constant bias. 32-bit floating-point uses a bias of 127. For example, for the&#x20;exponent 7, the biased exponent is 7 + 127 = 134 = 10000110<sub>2</sub>. For&#x20;the exponent -4, the biased exponent is: -4 + 127 = 123 = 01111011<sub>2</sub>.
+The exponent needs to represent both positive and negative exponents. To do so, floating point uses a biased exponent, which is the original exponent plus a constant bias. In 32-bit floating-point representation, the bias is 127. For example, for the exponent 7, the biased exponent is 7 + 127 = 134 = 10000110₂. For the exponent -4, the biased exponent is -4 + 127 = 123 = 01111011₂.
 
 {% hint style="success" %}
 This notation conforms to the IEEE 754 floating-point standard. In this notation, the first bit of the fraction/mantissa is **always** 1.
@@ -954,9 +971,9 @@ For example,
    1. Assume A=0\_0111\_110 and B= 0\_1001\_010, we want to calculate A x B.
 2. Sign of result = xor of signs of the numbers
    1. 0 xor 0 = 0.
-3. Add the two exponents using integer math. Subtract the   &#x20;bias **once** from the result.
+3. **Add** the two exponents using integer math. Subtract the   &#x20;bias **once** from the result.
    1. E = 0111 + 1001 - 0111 = 1001
-4. Multiply significands (mantissas) via integer math
+4. **Multiply** significands (mantissas) via integer math
    1. S = 1.110 x 1.010 = 10.001100
 5. Normalize the significand and adjust exponent if necessary
    1. S = 1.00011, E = 1001 + 1 = 1010
