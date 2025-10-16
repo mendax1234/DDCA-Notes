@@ -103,6 +103,74 @@ We didn't include the case when divisor is 0 because it is specified clearly tha
 
 ## Task 2: Incorporate MCycle into our CPU
 
-The whole idea here is that our processor is still **single cycle**!
+The whole idea here is that our processor is still **single cycle**! However, our multiplier and divider (`MCycle`) are **not single cycle**. So to maintain this single cycle property, we have a signal called `Busy` coming out from our `MCycle` to the `WE` (Write Enable) of the PC register indicating that if the `MCycle` is working, our PC won't be updated!
 
 ### Implementation Details
+
+As for now, you may wonder how we incorporate the `MCycle` into our processor, and below is the updated microarchitecture diagram!
+
+<figure><img src="../.gitbook/assets/cg3207-lab03-updated-microarchitecture.PNG" alt="" width="563"><figcaption></figcaption></figure>
+
+Based on this updated microarchitecture, we can know for sure what to modify in our processor:
+
+1. Decoder: to generate `Start`, `MCycleOp[1:0]` and `MulDiv` signal.
+2. RV: there are two things here
+   1. Assign `WE_PC = ~busy`
+   2. Add a multiplexer in the RV datapath to enable select from `ALUResult` or `MCycleResult` (which is just `Result1` in our microarchitecture)
+3. Wrapper: to remain readability, you can change `ALUResult` to `ComputeResult`.
+
+## Task 3: Enhancement
+
+In Lab 03, we are required to improve the performance of the **signed multiplier**. In the example code, it is intended to be written in a very **inefficient** way, just to give us more space to improve its efficiency.
+
+### Why it sucks
+
+Below is part of the example code,
+
+{% code overflow="wrap" lineNumbers="true" %}
+```verilog
+if (~MCycleOp[1]) begin  // Multiply
+    // if( ~MCycleOp[0] ), takes 2*'width' cycles to execute, returns signed(Operand1)*signed(Operand2)
+    // if( MCycleOp[0] ), takes 'width' cycles to execute, returns unsigned(Operand1)*unsigned(Operand2)        
+    if (shifted_op2[0])  // add only if b0 = 1
+        temp_sum = temp_sum + shifted_op1;  // partial product for multiplication
+
+    shifted_op2 = {1'b0, shifted_op2[2*width-1 : 1]};
+    shifted_op1 = {shifted_op1[2*width-2 : 0], 1'b0};
+
+    if( (MCycleOp[0] & count == width-1) | (~MCycleOp[0] & count == 2*width-1) ) // last cycle?
+        done <= 1'b1;
+
+    count = count + 1;
+end
+```
+{% endcode %}
+
+In Line 2 or Line 10, you can see that the teaching team intentionally to make **signed** multiplication taken `2 * width` cycles, which is to intentionally make the **signed** multiplication inefficient.
+
+### Improvement Details
+
+#### Use the [simple trick](https://wenbo-notes.gitbook.io/ddca-notes/textbook/digital-building-blocks/arithmetic-circuits#simple-trick-for-signed-multiplication-division) from lec 04
+
+As for the partial sum method, you at most will shift `width - 1` times and perform `width` times addition. The idea of this trick is also what we use to implement our division.
+
+#### Booth Algorithm
+
+> There are a lot of resources online introducing what is Booth Algorithm, the ones I am watching are [this video](https://youtu.be/meSn0UXmgac?si=9_poEOU5aRmgtZXc) and [this video](https://youtu.be/tnLKU07b-HA?si=sTvtnN7rcf-Y6gFO). (The sequence matters)
+
+The improvements and trade-off analysis of Booth Algorithm are as follows
+
+{% stepper %}
+{% step %}
+#### Advantages
+
+We can reduce the number of **addition** performed depending on the operand's bit pattern. For example, we want more continuous 1s to appear.
+{% endstep %}
+
+{% step %}
+#### Disadvantages
+
+1. We cannot reduce the number of **shifts**. It will always be `width-1`.
+2. If the bit pattern of our operands is `0101...`, then Booth Algorithm will actually perform slower than the [method above](lab-03-multiply-and-divide.md#use-the-simple-trick-from-lec-04). As, for half of the "addition", we will do the **subtraction** instead.
+{% endstep %}
+{% endstepper %}

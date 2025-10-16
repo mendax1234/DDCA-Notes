@@ -23,6 +23,7 @@
   * [FPGA Design Tips](lab/resources/fpga-design-tips.md)
   * [RISC-V Resources](lab/resources/risc-v-resources.md)
   * [Verilog LifeSaver](lab/resources/verilog-lifesaver.md)
+  * [Lab Demo Resources](lab/resources/lab-demo-resources.md)
 
 ## Textbook
 
