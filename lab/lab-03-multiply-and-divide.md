@@ -33,7 +33,73 @@ From the table above, we can clearly see that to do the **signed division**, we 
 * Quotient is **positive** if and only if the sign of the dividend and divisor are **the same**. Otherwise, quotient is **negative**.
 * The sign of the remainder **follows** the sign of the **dividend**.
 
-After knowing this, I believe this task will become much easier!
+And to test whether our signed/unsigned multiplication/division works normally or not, we craft the following test cases:
+
+{% tabs %}
+{% tab title="Unsigned Mulciplication" %}
+| Test | Operand A  | Operand B  | Expected 64-bit Product | Notes            |
+| :--: | ---------- | ---------- | ----------------------- | ---------------- |
+|   1  | 0x00000000 | 0x00000000 | 0x0000000000000000      | Zero × Zero      |
+|   2  | 0x00000001 | 0xFFFFFFFF | 0x00000000FFFFFFFF      | Identity × Max   |
+|   3  | 0xFFFFFFFF | 0xFFFFFFFF | 0xFFFFFFFE00000001      | Max × Max        |
+|   4  | 0x0000FFFF | 0x0000FFFF | 0x00000000FFFE0001      | 16-bit check     |
+|   5  | 0x7FFFFFFF | 0x00000002 | 0x00000000FFFFFFFE      | Near sign bit    |
+|   6  | 0x80000000 | 0x00000002 | 0x0000000100000000      | 2³¹ × 2          |
+|   7  | 0xFFFFFFFF | 0x00000002 | 0x00000001FFFFFFFE      | Max × 2          |
+|   8  | 0xAAAAAAAA | 0x00000002 | 0x0000000155555554      | Alternating bits |
+|   9  | 0x12345678 | 0x9ABCDEF0 | 0x0B00EA4E242D2080      | Random case      |
+|  10  | 0x0000ABCD | 0x00001234 | 0x000000000C35F3F4      | Mid-range test   |
+{% endtab %}
+
+{% tab title="Signed Multiplication" %}
+| Test | Operand A  | Operand B  | Expected 64-bit Product (signed) | Notes                |
+| :--: | ---------- | ---------- | -------------------------------- | -------------------- |
+|   1  | 0x00000000 | 0x00000000 | 0x0000000000000000               | Zero                 |
+|   2  | 0x00000001 | 0xFFFFFFFF | 0xFFFFFFFFFFFFFFFF               | +1 × −1 = −1         |
+|   3  | 0xFFFFFFFF | 0xFFFFFFFF | 0x0000000000000001               | −1 × −1 = +1         |
+|   4  | 0x7FFFFFFF | 0x00000002 | 0x00000000FFFFFFFE               | (2³¹−1) × 2          |
+|   5  | 0x80000000 | 0x00000002 | 0xFFFFFFFF00000000               | −2³¹ × 2             |
+|   6  | 0x80000000 | 0xFFFFFFFF | 0x0000000080000000               | −2³¹ × −1 (overflow) |
+|   7  | 0x00000010 | 0xFFFFFFF0 | 0xFFFFFFFFFFFFFF00               | 16 × −16 = −256      |
+|   8  | 0x7FFFFFFF | 0xFFFFFFFF | 0xFFFFFFFF80000001               | (2³¹−1) × −1         |
+|   9  | 0xFFFFFFFE | 0xFFFFFFFE | 0x0000000000000004               | (−2) × (−2)          |
+|  10  | 0x00001234 | 0xFFFFABCD | 0xFFFFFFFFEC2E678C               | Mixed signs          |
+{% endtab %}
+
+{% tab title="Unsigned Division" %}
+| Test | Dividend   | Divisor    | Quotient   | Remainder  | Notes              |
+| :--: | ---------- | ---------- | ---------- | ---------- | ------------------ |
+|   1  | 0x00000000 | 0x00000001 | 0x00000000 | 0x00000000 | Zero ÷ Nonzero     |
+|   2  | 0xFFFFFFFF | 0x00000001 | 0xFFFFFFFF | 0x00000000 | ÷ 1                |
+|   3  | 0xFFFFFFFF | 0x00000002 | 0x7FFFFFFF | 0x00000001 | Max ÷ 2            |
+|   4  | 0x80000000 | 0x00000002 | 0x40000000 | 0x00000000 | 2³¹ ÷ 2            |
+|   5  | 0x00000007 | 0x00000003 | 0x00000002 | 0x00000001 | Small remainder    |
+|   6  | 0xFFFFFFFF | 0x7FFFFFFF | 0x00000002 | 0x00000001 | Large divisor      |
+|   7  | 0xFFFFFFFF | 0xFFFFFFFF | 0x00000001 | 0x00000000 | Equal operands     |
+|   8  | 0x00000005 | 0x00000007 | 0x00000000 | 0x00000005 | Dividend < Divisor |
+|   9  | 0x0000000A | 0x00000003 | 0x00000003 | 0x00000001 | Nonzero remainder  |
+|  10  | 0xFFFFFFFE | 0xFFFFFFFD | 0x00000001 | 0x00000001 | Max-1 ÷ Max-2      |
+{% endtab %}
+
+{% tab title="Signed Division" %}
+| Test | Dividend   | Divisor    | Quotient   | Remainder  | Notes                        |
+| :--: | ---------- | ---------- | ---------- | ---------- | ---------------------------- |
+|   1  | 0x00000000 | 0x00000001 | 0x00000000 | 0x00000000 | Zero ÷ Positive              |
+|   2  | 0x00000001 | 0xFFFFFFFF | 0xFFFFFFFF | 0x00000000 | +1 ÷ −1 = −1                 |
+|   3  | 0xFFFFFFFF | 0xFFFFFFFF | 0x00000001 | 0x00000000 | −1 ÷ −1 = 1                  |
+|   4  | 0x7FFFFFFF | 0x00000002 | 0x3FFFFFFF | 0x00000001 | Positive half division       |
+|   5  | 0x80000000 | 0xFFFFFFFF | 0x80000000 | 0x00000000 | Overflow case (−2³¹ ÷ −1)    |
+|   6  | 0x80000000 | 0x00000002 | 0xC0000000 | 0x00000000 | Negative ÷ Positive          |
+|   7  | 0x00000010 | 0xFFFFFFF0 | 0xFFFFFFFF | 0x00000000 | 16 ÷ −16 = −1                |
+|   8  | 0xFFFFFFF6 | 0x00000005 | 0xFFFFFFFE | 0xFFFFFFFC | −10 ÷ 5 = −2 r 0             |
+|   9  | 0x12345678 | 0x0000F00F | 0x00000135 | 0x000026B5 | Random signed                |
+|  10  | 0x80000000 | 0x00000003 | 0xD5555555 | 0xFFFFFFFD | −2³¹ ÷ 3 = floor-toward-zero |
+{% endtab %}
+{% endtabs %}
+
+{% hint style="warning" %}
+We didn't include the case when divisor is 0 because it is specified clearly that the divisor won't be 0 in the lab manual.
+{% endhint %}
 
 ## Task 2: Incorporate MCycle into our CPU
 
