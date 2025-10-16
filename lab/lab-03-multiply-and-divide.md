@@ -63,7 +63,7 @@ And to test whether our signed/unsigned multiplication/division works normally o
 | 0x00000010 | 0xFFFFFFF0 | 0xFFFFFFFFFFFFFF00               | 16 × −16 = −256      |
 | 0x7FFFFFFF | 0xFFFFFFFF | 0xFFFFFFFF80000001               | (2³¹−1) × −1         |
 | 0xFFFFFFFE | 0xFFFFFFFE | 0x0000000000000004               | (−2) × (−2)          |
-| 0x00001234 | 0xFFFFABCD | 0xFFFFFFFFEC2E678C               | Mixed signs          |
+| 0x00001234 | 0xFFFFABCD | 0x00001233FA034FA4               | Mixed signs          |
 {% endtab %}
 
 {% tab title="Unsigned Division" %}
