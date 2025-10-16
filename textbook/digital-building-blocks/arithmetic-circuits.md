@@ -704,6 +704,8 @@ The delay of an $$N$$-bit array divider increases proportionally to $$N^2$$ beca
 
 ### Sequential Divider
 
+> The sequential divider here just follows the pseudocode mentioned [above](arithmetic-circuits.md#division), which is about **unsigned division**. To convert it to **signed**, only minor changes are needed. (For more information on this, can got to [Lab 03](../../lab/lab-03-multiply-and-divide.md#implementation-details))
+
 Similar to the [#sequential-multiplier](arithmetic-circuits.md#sequential-multiplier "mention"), we can also do the divider sequentially,
 
 <figure><img src="../../.gitbook/assets/cg3207-lec04-sequential-divider.png" alt=""><figcaption></figcaption></figure>
