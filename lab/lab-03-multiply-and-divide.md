@@ -2,7 +2,7 @@
 
 ## Introduction
 
-In this lab, we are still using the [single cycle RISC-V processor](preparation-from-cs2100de/lab-02.md) which we have designed in Lab 02. The only difference is that, we will incorporate the **multiply** and **divide** into our processor. So, to set up for this lab, you can just copy all the design files from your lab 02 and then copy the `MCycle.v` into your design files and `text_MCycle.v` into your testbench from [here](https://github.com/NUS-CG3207/labs/blob/main/docs/asst_manuals/Asst_03/lab3_Verilog_design.zip)!
+In this lab, we are still using the [single cycle RISC-V processor](preparation-from-cs2100de/lab-02.md) which we have designed in Lab 02. The only difference is that, we will incorporate the **multiply** and **divide** into our processor. So, to set up for this lab, you can just copy all the design files from your lab 02 and then copy the `MCycle.v` into your design files and `test_MCycle.v` into your testbench from [here](https://github.com/NUS-CG3207/labs/blob/main/docs/asst_manuals/Asst_03/lab3_Verilog_design.zip)!
 
 ## Task 1: Implement Division
 
@@ -16,7 +16,7 @@ For this task, what we do is to **strictly** follow the [sequential divider](htt
 
 At the start, we find out that as per RISC-V register is 32-bit long, that means our **dividend** is **always** 32-bit long. So, we think that we don't need to align the **divisor** into 64-bit (2x32=64). Instead, we can just don't do any alignment of the divisor and use its original value.
 
-However, this is proved to be a bad decision. As another purpose of aligning the divisor is to get the **first correct** subtraction from the remainder. In other words, **start at a correct starting position**. If you just use the original divisor, the first subtraction from the remainder (which is just your dividend at start) using the original divisor will lead you to the **wrong result** of division in the end.
+However, this is proved to be a bad decision. As another purpose of aligning the divisor is to get the **first correct** subtraction from the remainder. In other words, the divisor should **start at a correct starting position**. If you just use the original divisor, the first subtraction from the remainder (which is just your dividend at start) using the original divisor will lead you to the **wrong result** of division in the end.
 
 This doesn't mean the finding that there is only 32-bit dividend in the RISC-V `div`-related instruction is useless. Maybe we can have **efficient** divide algorithm based on that?
 
@@ -152,7 +152,7 @@ In Line 2 or Line 10, you can see that the teaching team intentionally to make *
 
 #### Use the [simple trick](https://wenbo-notes.gitbook.io/ddca-notes/textbook/digital-building-blocks/arithmetic-circuits#simple-trick-for-signed-multiplication-division) from lec 04
 
-As for the partial sum method, you at most will shift `width - 1` times and perform `width` times addition. The idea of this trick is also what we use to implement our division.
+As for the partial sum method, you will at most shift `width - 1` times and perform `width` times addition. The idea of this trick is also what we use to implement our division.
 
 #### Booth Algorithm
 
