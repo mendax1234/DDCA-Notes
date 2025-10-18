@@ -175,6 +175,8 @@ We can reduce the number of **addition** performed depending on the operand's bi
 {% endstep %}
 {% endstepper %}
 
-Here, we improve the booth's algorithm as a **sequential multiplier**. Can we make it **combinational**? In other words, can we implement the booth's algorithm using the idea from the **array multiplier?** (This is to use the increased hardware cost to trade off for the improvement of the speed of multiplication)
+Here, we improve the booth's algorithm as a **sequential multiplier**. Can we make it **combinational**? In other words, can we implement the booth's algorithm using the idea from the **array multiplier?** (This is to use the increased hardware cost to trade off for the improvement of the speed of multiplication. See more from the [trade-off between array multiplier and sequential multiplier](https://wenbo-notes.gitbook.io/ddca-notes/textbook/digital-building-blocks/arithmetic-circuits#the-trade-off-between-array-multiplier-and-sequential-multipler).)
 
 > This is asked by the GA, I think it is a quite good food for thought.
+
+By right, we can achieve **even less cycles** if we implement the booth's algorithm **combinationally**. But the trade-off here will be maybe more hardware usage and slower clock speed.

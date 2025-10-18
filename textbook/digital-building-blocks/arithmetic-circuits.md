@@ -631,6 +631,8 @@ But there is a problem with the improved sequential multiplier, what if the 32-b
 1. **Clock speed**: As we have seen from above, the array multiplier uses only **one cycle** but likely the cycle will take longer time, thus slowering the clock speed while the sequential multiplier uses **more cycles** but likely each cycle takes a shorter time and thus the clock speed is faster.
 2. **Hardware cost**: The array multiplier usually uses **more hardware** than the sequential multiplier.
 
+As a hardware designer, we need to always think about this kind of **trade-off** to achieve what we want.
+
 </details>
 
 ### HDL Implementation
