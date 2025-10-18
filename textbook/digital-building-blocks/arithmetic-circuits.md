@@ -563,6 +563,22 @@ The unsigned multiplier receives the multiplicand and multiplier, $$A$$ and $$B$
 
 This array multiplier is **combinational** because the whole multiplication (all ANDs and adds) happens in **one clock cycle**. Maybe [this video](https://www.youtube.com/watch?v=lf8wcTRb8NY) will be good on explaining the critical path and hardware analysis of the array multiplier.
 
+<details>
+
+<summary>The pros and cons of using array multiplier</summary>
+
+In the array multiplier, we have the following two **advantages**
+
+1. the multiplication is done in **one cycle**, thus it uses less cycle.
+2. the bits are constructed in **parallel** by using the AND gates and then "ripple" through the adder. Thus it provides better parallelizability.
+
+However, an array multiplier has the following **disadvantages**
+
+1. The clock cycle depends on the **critical path**, which may thus slower the clock speed.
+2. The hardware usage is **high** and increases in O(n<sup>2</sup>).
+
+</details>
+
 ### Sequential Multiplier
 
 Suppose that we may not want to do the mutiplication in one single cycle, we can use the **sequential multiplier**. Its workflow is given as follows,
@@ -607,6 +623,15 @@ Again, stepping through an example will make it easier to understand. Let `S = 0
 {% hint style="warning" %}
 But there is a problem with the improved sequential multiplier, what if the 32-bit ALU generates a carry out? Where should the carry out go?
 {% endhint %}
+
+<details>
+
+<summary>The trade-off between array multiplier and sequential multipler</summary>
+
+1. **Clock speed**: As we have seen from above, the array multiplier uses only **one cycle** but likely the cycle will take longer time, thus slowering the clock speed while the sequential multiplier uses **more cycles** but likely each cycle takes a shorter time and thus the clock speed is faster.
+2. **Hardware cost**: The array multiplier usually uses **more hardware** than the sequential multiplier.
+
+</details>
 
 ### HDL Implementation
 

@@ -174,3 +174,7 @@ We can reduce the number of **addition** performed depending on the operand's bi
 2. If the bit pattern of our operands is `0101...`, then Booth Algorithm will actually perform slower than the [method above](lab-03-multiply-and-divide.md#use-the-simple-trick-from-lec-04). As, for half of the "addition", we will do the **subtraction** instead.
 {% endstep %}
 {% endstepper %}
+
+Here, we improve the booth's algorithm as a **sequential multiplier**. Can we make it **combinational**? In other words, can we implement the booth's algorithm using the idea from the **array multiplier?** (This is to use the increased hardware cost to trade off for the improvement of the speed of multiplication)
+
+> This is asked by the GA, I think it is a quite good food for thought.
