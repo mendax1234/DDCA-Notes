@@ -8,6 +8,7 @@
 * [Lec 02 - Digital System Design and Verilog](lec/lec-02-digital-system-design-and-verilog.md)
 * [Lec 03 - RISC-V ISA and Microarchitecture](lec/lec-03-risc-v-isa-and-microarchitecture.md)
 * [Lec 04 - Arithmetic for Computers](textbook/digital-building-blocks/arithmetic-circuits.md)
+* [Lec 05 - The Pipelined Processor](lec/lec-05-the-pipelined-processor.md)
 
 ## Lab
 

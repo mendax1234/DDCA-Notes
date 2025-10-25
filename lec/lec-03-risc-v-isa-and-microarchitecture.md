@@ -588,4 +588,4 @@ This is the whole content to build a simple single-cycle RISC-V processor. And w
   * **Separate memories**: because fetch and load/store both need memory at the same time.
   * **Two adders**: because PC+4 and normal ALU addition both need addition in the same cycle.
 
-> So, how can we make it faster? The answer is wait for Lec 04 😉!
+> So, how can we make it faster? The answer is wait for Lec 05 😉!
