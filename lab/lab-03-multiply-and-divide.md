@@ -63,7 +63,7 @@ And to test whether our signed/unsigned multiplication/division works normally o
 | 0x00000010 | 0xFFFFFFF0 | 0xFFFFFFFFFFFFFF00               | 16 × −16 = −256      |
 | 0x7FFFFFFF | 0xFFFFFFFF | 0xFFFFFFFF80000001               | (2³¹−1) × −1         |
 | 0xFFFFFFFE | 0xFFFFFFFE | 0x0000000000000004               | (−2) × (−2)          |
-| 0x00001234 | 0xFFFFABCD | 0x00001233FA034FA4               | Mixed signs          |
+| 0x00001234 | 0xFFFFABCD | 0x0000FFFFFA034FA4               | Mixed signs          |
 {% endtab %}
 
 {% tab title="Unsigned Division" %}
@@ -91,7 +91,7 @@ And to test whether our signed/unsigned multiplication/division works normally o
 | 0x80000000 | 0xFFFFFFFF | 0x80000000 | 0x00000000 | Overflow case (−2³¹ ÷ −1)    |
 | 0x80000000 | 0x00000002 | 0xC0000000 | 0x00000000 | Negative ÷ Positive          |
 | 0x00000010 | 0xFFFFFFF0 | 0xFFFFFFFF | 0x00000000 | 16 ÷ −16 = −1                |
-| 0xFFFFFFF6 | 0x00000005 | 0xFFFFFFFE | 0xFFFFFFFC | −10 ÷ 5 = −2 r 0             |
+| 0xFFFFFFF6 | 0x00000005 | 0xFFFFFFFE | 0x00000000 | −10 ÷ 5 = −2 r 0             |
 | 0x12345678 | 0x0000F00F | 0x00000135 | 0x000026B5 | Random signed                |
 | 0x80000000 | 0x00000003 | 0xD5555555 | 0xFFFFFFFD | −2³¹ ÷ 3 = floor-toward-zero |
 {% endtab %}
