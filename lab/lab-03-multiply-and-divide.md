@@ -180,3 +180,7 @@ Here, we improve the booth's algorithm as a **sequential multiplier**. Can we ma
 > This is asked by the GA, I think it is a quite good food for thought.
 
 By right, we can achieve **even less cycles** if we implement the booth's algorithm **combinationally**. But the trade-off here will be maybe more hardware usage and slower clock speed.
+
+{% hint style="warning" %}
+The booth's algorithm implemented in our Lab 03 doesn't support the `mulhu`, you will need to make some trivial changes to make it support the `mulhu`, or you can refer to our Lab 04 code directly.
+{% endhint %}
