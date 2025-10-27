@@ -225,7 +225,7 @@ This rule applies to every _procedural_ block — `always`, `initial`, `task`, a
 Clocked always blocks create a blob of combinational logic just like combinational always blocks, but also creates a set of [flip-flops](https://wenbo-notes.gitbook.io/ddca-notes/textbook/sequential-logic-design/latches-and-flip-flops#d-flip-flop) (or "[registers](https://wenbo-notes.gitbook.io/ddca-notes/textbook/sequential-logic-design/latches-and-flip-flops#register)") at the output of the blob of combinational logic. Instead of the outputs of the blob of logic being visible immediately, the outputs are visible only immediately after the next (`posedge` clk).
 
 {% hint style="success" %}
-The second sentence (Staring from "Instead") is goated!!!
+The second sentence (Starting from "Instead") is goated!!!
 {% endhint %}
 
 <details>

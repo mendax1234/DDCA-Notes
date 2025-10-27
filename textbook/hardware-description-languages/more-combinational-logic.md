@@ -267,3 +267,24 @@ The following guidelines explain when and how to use each type of assignment. If
 4. Do not make assignments to the **same signal** in more than one `always` statement or **continuous assignment statement**.
 {% endtab %}
 {% endtabs %}
+
+{% hint style="success" %}
+Inside an `always @ (posedge clk)` block, it is possible to use the `if/case` statements, but the **signals** inside the `if/case` statements should use **blocking assignment** `=`, but **always keep in mind** which signal you want it to be a real register, then use **nonblocking assignment** `<=` on that signal (it can be assigned anywhere as long as it is in the `always @ (posedge clk)`)
+
+{% code lineNumbers="true" %}
+```verilog
+reg done;
+
+always @(posedge CLK) begin
+    if (...) begin
+        ...
+    end
+    done <= 1;
+    else begin
+        ...
+        done <= 1;
+    end
+ebd
+```
+{% endcode %}
+{% endhint %}
