@@ -17,23 +17,17 @@ For example, let's assume
 
 Then we will have,
 
-| Instr.      | I Mem | Reg Rd | ALU Op | D Mem | Reg Wr | PC Incr | Total |
-| ----------- | ----- | ------ | ------ | ----- | ------ | ------- | ----- |
-| DP          | 200   | 100    | 120    |       | 60     |         | 480   |
-| `lw`        | 200   | 100    | 120    | 200   | 60     |         | 680   |
-| `sw`        | 200   | 100    | 120    | 200   |        |         | 620   |
-| `beq`       | 200   | 100    | 120    |       |        | 75      | 495   |
-| `j`~~`al`~~ | 200   |        |        |       |        | 75      | 275   |
+<table><thead><tr><th width="85.5">Instr.</th><th width="90.5">I Mem</th><th width="94">Reg Rd</th><th width="99">ALU Op</th><th width="95">D Mem</th><th width="95.5">Reg Wr</th><th width="98.5">PC Incr</th><th width="100">Total</th></tr></thead><tbody><tr><td>DP</td><td>200</td><td>100</td><td>120</td><td></td><td>60</td><td></td><td>480</td></tr><tr><td><code>lw</code></td><td>200</td><td>100</td><td>120</td><td>200</td><td>60</td><td></td><td>680</td></tr><tr><td><code>sw</code></td><td>200</td><td>100</td><td>120</td><td>200</td><td></td><td></td><td>620</td></tr><tr><td><code>beq</code></td><td>200</td><td>100</td><td>120</td><td></td><td></td><td>75</td><td>495</td></tr><tr><td><code>j</code><del><code>al</code></del></td><td>200</td><td></td><td></td><td></td><td></td><td>75</td><td>275</td></tr></tbody></table>
 
 {% hint style="success" %}
-`PC_Incr` is done in **parallel**, when things happen in parallel, we take the worst case timing. For branch instructions and the `jal` instructions here, as it needs to fecth the instruction (200ps) and then **decide** whether to increment PC or not, thus you will count `PC_Incr` time into the calculation.
+`PC_Incr` is done in **parallel**, when things happen in parallel, we take the worst case timing. For branch instructions and the `jal` instructions here, as it needs to fecth the instruction (200ps) and then **decide** whether to increment PC or not. Thus you will count `PC_Incr` time into the calculation.
 {% endhint %}
 
 <details>
 
 <summary>Why all these parts take time to execute?</summary>
 
-It is because all the Instruction Memory, Register File, ALU, Data Memory and Adders, they are all implemented using a **lot of logic gate**, thus it confirm will have some propagation delay. So, it takes a certain amount of time for the signal to travel from the input to the output of that certain part.
+It is because all the Instruction Memory, Register File, ALU, Data Memory and Adders, they are implemented using a **lot of logic gates**, thus it confirm will have some propagation delay. So, it takes a certain amount of time for the signal to travel from the input to the output of that certain part.
 
 </details>
 
@@ -103,7 +97,7 @@ We have 5 stages, thus we need 4 "cuts"/registers. By adding registers, we can c
 We name the register by the **target** that it feeds the signal to. For example, the register D is named D because the here the signals coming from the **source** fetch stage go into the **target** dec stage.
 {% endhint %}
 
-The smart you may notice that besides adding 4 registers, we also make some changes to some signals.
+The smart you may notice that besides adding 4 registers, we also made some changes to some signals.
 
 <figure><img src="../.gitbook/assets/cg3207-lec05-signals-change.png" alt=""><figcaption></figcaption></figure>
 
@@ -113,7 +107,7 @@ The smart you may notice that besides adding 4 registers, we also make some chan
 
 Several signals, like `RegWrite`, `MemtoReg` etc are delayed. Their names are also changed at each stage by adding the posfix `F, D, E, M, W` depends on which stage the signals are at.
 
-We can think of this delay as, after we "cut" the microarchitecture, we still need th corresponding Control Unit Signals and the Datapath signals to make sure that the operation done in each stage works correctly.
+We can think of this delay as, after we "cut" the microarchitecture, we still need to "store" the corresponding Control Unit Signals and the Datapath signals to make sure that the operation done in **each stage** works correctly.
 {% endstep %}
 
 {% step %}
@@ -142,4 +136,91 @@ This is because in the fetch stage, the PC will continuing increasing by 4 witho
 {% endstep %}
 {% endstepper %}
 
+### Pipeline Hazards
+
+Pipelining is not perfect, sometimes it can get into troubles. These troubles are called **pipeline hazards**. And normally, we have the following three hazards
+
+1. [Structural Hazards](lec-05-the-pipelined-processor.md#structural-hazards)
+2. [Data Hazards](lec-05-the-pipelined-processor.md#data-hazards)
+3. [Control Hazards](lec-05-the-pipelined-processor.md#control-hazards)
+
+#### Structural Hazards
+
+**Structural harzards** happen when we attempt to use the same resource (usually it is the memory) by two different instructions at the same time.
+
+For example, in the following diagram, at the fourth clock cycle, both the `lw` and `sw` are accessing the same memory as in real life, IROM and DMEM are both in the RAM memory.
+
+<figure><img src="../.gitbook/assets/cg3207-lec05-structural-hazard.png" alt=""><figcaption></figcaption></figure>
+
+#### Data Hazards
+
+**Data harzards** happen when we attempt to use data before it is ready. For example, an instruction's source operand(s) are produced by a prior instruction still in the pipeline. This hazard is also known as _RAW_ (**read after write**) hazard or _true data dependency_ and it occurs very frequently in practice.
+
+For example, in the following diagram, the destination register `rd` of the `add` instruction is needed by the following `sub`, `or` and `and` as a source register `rs`.
+
+<figure><img src="../.gitbook/assets/cg3207-lec05-data-hazard.png" alt=""><figcaption></figcaption></figure>
+
+#### Control Hazards
+
+### Handle Pipeline Hazards
+
+In this part, we will introduce how to handle the 3 types of pipeline harzards we have encountered above. As for the sake of this course, we will focus more on the [handling of the data hazards](lec-05-the-pipelined-processor.md#handle-data-hazards).
+
+#### Handle Structural Hazards
+
+We can simply fix this hazard by using separate instruction and data memory.
+
+#### Handle Data Hazards
+
+To handle data harzards, we will introduce five methods,
+
+#### Use different clock edges
+
+This means that we will write register file and [pipeline registers](#user-content-fn-2)[^2] at different edges of the clock.
+
+For example, in the following diagram, we use `negedge` for register file and `posedge` for the pipeline state registers.
+
+<figure><img src="../.gitbook/assets/cg3207-lec05-use-different-edges-clock.png" alt="" width="563"><figcaption></figcaption></figure>
+
+Following the above convention we made, here's the updated microarchitecture of our processor
+
+<figure><img src="../.gitbook/assets/cg3207-lec05-use-different-edges-microarch.png" alt=""><figcaption></figcaption></figure>
+
+Using this technique to analyze the data hazard example above, we can see from the following graph that the third instruction `and` will successfully read the updated value stored in register `s8`.
+
+<figure><img src="../.gitbook/assets/cg3207-lec05-use-differenc-edges-analysis.png" alt=""><figcaption></figcaption></figure>
+
+Given that, we will summarize the pros and cons of this technique as follows,
+
+* **Pros**:
+  * This technique can help reduce the "troublesome" instructions from 3 to 2 in our example [above](lec-05-the-pipelined-processor.md#data-hazards).
+* **Cons**:
+  * It will use 2 edges from the same block and this is a practice discouraged in [CG3207.](https://wenbo-notes.gitbook.io/ddca-notes/lec/lec-02-digital-system-design-and-verilog#use-one-clock-for-the-entire-design)
+  * The half cycle may not be enough for to write the pipeline state register. In other words, reading the value from the register file and write it to a pipeline state register may take longer than half of a clock cycle.
+
+#### Inserting NOPS
+
+> In RISC-V, we can use `addi x0, x0, 0` as NOP.
+
+The basic idea is that as there exists true data dependency, we can insert NOPs between the instructions that have true data dependency to "delay" the data dependency. So, if we have already implemented the [first technique of using different clock edges](lec-05-the-pipelined-processor.md#use-different-clock-edges), we should make sure the number of NOPs or independent useful instructions is **2** between the two instructions that have true data dependency.
+
+{% hint style="warning" %}
+This magic number 2 is dependent on the microarchitecture of our processor.
+{% endhint %}
+
+For example, in the following diagram, `add` and `sub` have true data dependency. We can either insert two NOPs between `add` and `sub` or replace one of the NOPs with the independent useful instruction `orr` instruction.
+
+<figure><img src="../.gitbook/assets/cg3207-lec05-inserting-nops-example.png" alt=""><figcaption></figcaption></figure>
+
+Now, we can summarize the pros and cons of this technique
+
+* **Pros**:
+  * It is easier to implement as the NOPs are inserted by the compiler during the compile time.
+* **Cons**:
+  * Insert NOPs will **waste code memory**.
+  * As NOPs will do nothing, we won't treat them as real instructions when calculating the CPI. Thus,  with more clock cycles and the same number of useful instructions, the **CPI will increase** and thus increase our CPU Time.
+  * To know the number of NOPs or independant useful instructions to be inserted, the compiler needs to know the microarchitecture, like how many stages are in your pipeline processor and have you used different clock edges to write to register file and pipeline state registers, etc. This will make the code not very **portable**.
+
 [^1]: including the Control Unit and Datapaths
+
+[^2]: Write to pipeline registers can be thought of as **reading** or **updating** the pipelined registers' values.
