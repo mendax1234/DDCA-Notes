@@ -47,7 +47,7 @@ Here, we cannot change IC and CPI, how can we improve the performance? The answe
 
 > In this course, we will use a five-stage pipeline on our processor.
 
-**Pipeling** is to "cut" our microarchitecture[^1] into different **stages** (in our case, it is 5), and each stage takes **one clock cycle** to complete. Thus, the clock cycle time can be decreased largely.
+**Pipelining** is to "cut" our microarchitecture[^1] into different **stages** (in our case, it is 5), and each stage will take **one clock cycle** to complete. Thus, the clock cycle time can be decreased to a large extent.
 
 For example, below is the image showing the fives stages of the `lw` instruction.
 
@@ -69,7 +69,7 @@ After pipelining our processor, the clock cycle diagram to execute the instructi
 
 We can see that after the completion of the clock cycle 5, one instruction is completed every cycle, thus CPI = 1. We also call the first 4 cycles **overhead** as nothing completes during this time.
 
-However, this pipeline isn't perfect, you may notice that **not every instruction** needs the **full 5 stages**. For example, `sw` don't need `WB`, branch and DP Reg/Imm don't need `Mem`, etc. Besides that, there are still some **hazards** we may encouter. (We will see later in this lec)
+However, this pipeline isn't perfect, you may notice that **not every instruction** needs the **full 5 stages**. For example, `sw` doesn't need `WB`, branch and DP Reg/Imm doesn't need `Mem`, etc. Besides, there are still some **hazards** that we may encouter. (We will see later in this lec)
 
 <details>
 
@@ -85,7 +85,7 @@ The reason for this is because in the pipelined processor, your clock cycle time
 
 ## Implement a Pipelined Processor
 
-As we have mentioned above, we need to "cut" our microarchitecture into 5 stages. To do this "cut", we are actually **adding registers** between each stage.
+As we have mentioned above, we need to "cut" our microarchitecture into 5 stages. To do this "cut", we are basically **adding registers** between each stage.
 
 <figure><img src="../.gitbook/assets/cg3207-lec05-implement-cut.jpg" alt=""><figcaption></figcaption></figure>
 
@@ -94,7 +94,7 @@ We have 5 stages, thus we need 4 "cuts"/registers. By adding registers, we can c
 {% hint style="success" %}
 #### Pipeline Register Naming Convention
 
-We name the register by the **target** that it feeds the signal to. For example, the register D is named D because the here the signals coming from the **source** fetch stage go into the **target** dec stage.
+We name the register by the **target** that it feeds the signal to. For example, the register D is named D because the here the signals coming from the **source** fetch stage will go into the **target** dec stage.
 {% endhint %}
 
 The smart you may notice that besides adding 4 registers, we also made some changes to some signals.
@@ -107,7 +107,7 @@ The smart you may notice that besides adding 4 registers, we also made some chan
 
 Several signals, like `RegWrite`, `MemtoReg` etc are delayed. Their names are also changed at each stage by adding the posfix `F, D, E, M, W` depends on which stage the signals are at.
 
-We can think of this delay as, after we "cut" the microarchitecture, we still need to "store" the corresponding Control Unit Signals and the Datapath signals to make sure that the operation done in **each stage** works correctly.
+We can think of this delay as, after we "cut" the microarchitecture, we still need to "store" the corresponding Control Unit signals and the Datapath signals to make sure that the operation done in **each stage** works correctly.
 {% endstep %}
 
 {% step %}
@@ -148,7 +148,7 @@ Pipelining is not perfect, sometimes it can get into troubles. These troubles ar
 
 **Structural harzards** happen when we attempt to use the same resource (usually it is the memory) by two different instructions at the same time.
 
-For example, in the following diagram, at the fourth clock cycle, both the `lw` and `sw` are accessing the same memory as in real life, IROM and DMEM are both in the RAM memory.
+For example, in the following diagram, at the fourth clock cycle, both the `lw` and `sw` are accessing the same memory because in real life, IROM and DMEM are both in the RAM memory.
 
 <figure><img src="../.gitbook/assets/cg3207-lec05-structural-hazard.png" alt=""><figcaption></figcaption></figure>
 
@@ -162,15 +162,15 @@ For example, in the following diagram, the destination register `rd` of the `add
 
 #### Control Hazards
 
-### Handle Pipeline Hazards
+## Handle Pipeline Hazards
 
 In this part, we will introduce how to handle the 3 types of pipeline harzards we have encountered above. As for the sake of this course, we will focus more on the [handling of the data hazards](lec-05-the-pipelined-processor.md#handle-data-hazards).
 
-#### Handle Structural Hazards
+### Handle Structural Hazards
 
 We can simply fix this hazard by using separate instruction and data memory.
 
-#### Handle Data Hazards
+### Handle Data Hazards
 
 To handle data harzards, we will introduce five methods,
 
@@ -196,19 +196,19 @@ Given that, we will summarize the pros and cons of this technique as follows,
   * This technique can help reduce the "troublesome" instructions from 3 to 2 in our example [above](lec-05-the-pipelined-processor.md#data-hazards).
 * **Cons**:
   * It will use 2 edges from the same block and this is a practice discouraged in [CG3207.](https://wenbo-notes.gitbook.io/ddca-notes/lec/lec-02-digital-system-design-and-verilog#use-one-clock-for-the-entire-design)
-  * The half cycle may not be enough for to write the pipeline state register. In other words, reading the value from the register file and write it to a pipeline state register may take longer than half of a clock cycle.
+  * The half cycle may not be enough to write the pipeline state register. In other words, reading the value from the register file and write it to a pipeline state register may take longer than half of a clock cycle.
 
 #### Inserting NOPS
 
 > In RISC-V, we can use `addi x0, x0, 0` as NOP.
 
-The basic idea is that as there exists true data dependency, we can insert NOPs between the instructions that have true data dependency to "delay" the data dependency. So, if we have already implemented the [first technique of using different clock edges](lec-05-the-pipelined-processor.md#use-different-clock-edges), we should make sure the number of NOPs or independent useful instructions is **2** between the two instructions that have true data dependency.
+The basic idea is that when there exists true data dependency between two instructions, we can insert NOPs between the these instructions to "delay" the data "transfer". So, if we have already implemented the [first technique of using different clock edges](lec-05-the-pipelined-processor.md#use-different-clock-edges), we should make sure the number of NOPs or independent useful instructions is **2** between the two instructions that have true data dependency.
 
 {% hint style="warning" %}
-This magic number 2 is dependent on the microarchitecture of our processor.
+This magic number 2 here is dependent on the microarchitecture of the processor. In other words, how many pipline stages you have in your processor.
 {% endhint %}
 
-For example, in the following diagram, `add` and `sub` have true data dependency. We can either insert two NOPs between `add` and `sub` or replace one of the NOPs with the independent useful instruction `orr` instruction.
+For example, in the following diagram, `add` and `sub` have true data dependency. We can either insert two NOPs between `add` and `sub` or replace one of the NOPs with the independent useful instruction `orr`.
 
 <figure><img src="../.gitbook/assets/cg3207-lec05-inserting-nops-example.png" alt=""><figcaption></figcaption></figure>
 
@@ -218,9 +218,75 @@ Now, we can summarize the pros and cons of this technique
   * It is easier to implement as the NOPs are inserted by the compiler during the compile time.
 * **Cons**:
   * Insert NOPs will **waste code memory**.
-  * As NOPs will do nothing, we won't treat them as real instructions when calculating the CPI. Thus,  with more clock cycles and the same number of useful instructions, the **CPI will increase** and thus increase our CPU Time.
+  * As NOPs will do nothing, we won't treat them as real instructions when calculating the CPI. Thus, with more clock cycles and the same number of useful instructions, the **CPI will increase** and thus increase our CPU Time.
   * To know the number of NOPs or independant useful instructions to be inserted, the compiler needs to know the microarchitecture, like how many stages are in your pipeline processor and have you used different clock edges to write to register file and pipeline state registers, etc. This will make the code not very **portable**.
+
+#### Data Forwarding
+
+> This is the most challenging technique when we deal with the data hazard.
+
+The basic idea in data forwarding is that the data is available on some pipeline register before it is written back to the register file (RF). So, we can take that data from where it is present, and pass it to where it is needed.
+
+This kind of forwarding logic can be used in two stages/functional unit:
+
+* Execution Stage, or the two sources or ALU
+* Memory Stage, or the DMEM
+
+{% stepper %}
+{% step %}
+#### Execution Stage
+
+In the execution stage, we can check if register read ([rs1E and rs2E](#user-content-fn-3)[^3]) by the instruction which is currently in Execute stage [**matches**](#user-content-fn-4)[^4] the register written ([rdM or rdW](#user-content-fn-5)[^5]) by the instruction which is currently in Memory or Writeback Stage. If so, we forward the **ready result** (usually is the ALUResult at Memory or Writeback Stage), and now the input to ALU comes from M or W stage rather than the E stage register.
+
+For example, we can see how the above forward logic works in the following graph,
+
+<figure><img src="../.gitbook/assets/cg3207-lec05-data-forwarding-e-stage.png" alt=""><figcaption></figcaption></figure>
+
+Suppose we have applied the [#use-different-clock-edges](lec-05-the-pipelined-processor.md#use-different-clock-edges "mention") technique, now the `add` instruction has true data dependency with the `sub` and `or` instruction.
+
+* In the `sub` instruction's E stage, we notice it needs `rs1E` to be the register `s8`. In the `add` instruction, its `rdM` in the M stage is register `s8` and it mathces with `rs1E`. Thus, we can forward  the ready ALUResult from `add` instruction's M stage to the E stage of the `sub` instruction.
+* Similarly, in the `or` instruction's E stage, it needs `rs2E` to be the register `s8`. In the `add` instruction, its `rdW` in the W stage is register `s8` and it mathces with `rs2E`. Thus, we can forward the ready ALUResult (In W stage, it is ResultW) to the E stage of the `or` instruction.
+
+To implement this fowarding logic, we will add **Hazard Unit** shown as follows in our microarchitecture to handle specifically handle the hazard.
+
+<figure><img src="../.gitbook/assets/cg3207-lec05-data-forwarding-e-stage-unit.png.jpg" alt=""><figcaption></figcaption></figure>
+
+`rs1/2E`, `rdM/W` and `RegWriteM/W` are easy to pass as the **input** to the Hazard Unit, but the **output** `ForwardA/BE` which are used to control the multiplexer for the ALU SrcA and SrcB should follow exactly the following three cases
+
+{% code lineNumbers="true" %}
+```verilog
+// rs1E
+if ((rs1E == rdM) && RegWriteM && (rdM != 0))      // Case 1
+    ForwardAE = 2'b10;
+else if ((rs1E == rdW) && RegWriteW && (rdW != 0)) // Case 2
+    ForwardAE = 2'b01;
+else                                               // Case 3
+    ForwardAE = 2'b00;
+
+// rs2E is similar, just replace rs1E with rs2E
+if ((rs1E == rdM) && RegWriteM && (rdM != 0))
+    ForwardBE = 2'b10;
+else if ((rs1E == rdW) && RegWriteW && (rdW != 0))
+    ForwardBE = 2'b01;
+else
+    ForwardBE = 2'b00;
+```
+{% endcode %}
+
+* Condition 1 is about the **match**.
+* Condition 2 `RegWriteM/W` ensures that the instruction (in our example, `add`) really **writes to the register**. If not (like `sw`, `branch`), there won't be any **data hazard**, thus no need to do data forwarding.
+* Condition 3 `rdM/W ≠ 0` ensures that we are **not forwarding** from the `x0` register as there is no need to do so.
+
+In total, we need 2 x 2 + 2 = 6, 5-bit comparators to do this data forwarding. `rs1/2E` each needs two comparators (2 x 2 = 4) and `rdM/W` needs another 2 but the can share result to another `Forward1/2E` signal.&#x20;
+{% endstep %}
+{% endstepper %}
 
 [^1]: including the Control Unit and Datapaths
 
 [^2]: Write to pipeline registers can be thought of as **reading** or **updating** the pipelined registers' values.
+
+[^3]: `rs` is different from `RD`. `rs` stores the **index** of the register we want to read, e.g., if `rs1 = 1`, means we want to read from `x1` register. However, `RD` stores the **value** that we read from `rs` index register. e.g., If `rs1 = 1`, then `RD1` will store the value in register `x1`.
+
+[^4]: "matches" just means whether `rs1E` or `rs2E` is **equal** to `rdM` or `rdW`.
+
+[^5]: Similar as the `rs1` and `rs2`, `rd` stores the **index** of the register we want to write to. In other words, the destination register. And its correponding `WD` will store the **value** we will write to the `rd` register.
