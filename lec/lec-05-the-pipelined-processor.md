@@ -264,16 +264,16 @@ else                                               // Case 3
     ForwardAE = 2'b00;
 
 // rs2E is similar, just replace rs1E with rs2E
-if ((rs1E == rdM) && RegWriteM && (rdM != 0))
+if ((rs2E == rdM) && RegWriteM && (rdM != 0))      // Case 1
     ForwardBE = 2'b10;
-else if ((rs1E == rdW) && RegWriteW && (rdW != 0))
+else if ((rs2E == rdW) && RegWriteW && (rdW != 0)) // Case 2
     ForwardBE = 2'b01;
-else
+else                                               // Case 3
     ForwardBE = 2'b00;
 ```
 {% endcode %}
 
-* Condition 1 is about the **match**.
+* Condition 1 `rs1/2E == rdM/W` is about the **match**.
 * Condition 2 `RegWriteM/W` ensures that the instruction (in our example, `add`) really **writes to the register**. If not (like `sw`, `branch`), there won't be any **data hazard**, thus no need to do data forwarding.
 * Condition 3 `rdM/W ≠ 0` ensures that we are **not forwarding** from the `x0` register as there is no need to do so.
 
