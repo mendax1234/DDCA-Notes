@@ -223,33 +223,33 @@ Now, we can summarize the pros and cons of this technique
 
 #### Data Forwarding
 
-> This is the most challenging technique when we deal with the data hazard.
+> This is the most challenging technique introduced in hanlding data hazards.
 
 The basic idea in data forwarding is that the data is available on some pipeline register before it is written back to the register file (RF). So, we can take that data from where it is present, and pass it to where it is needed.
 
 This kind of forwarding logic can be used in two stages/functional unit:
 
-* Execution Stage, or the two sources or ALU
+* Execution Stage, or the two sources of ALU
 * Memory Stage, or the DMEM
 
 {% stepper %}
 {% step %}
 #### Execution Stage
 
-In the execution stage, we can check if register read ([rs1E and rs2E](#user-content-fn-3)[^3]) by the instruction which is currently in Execute stage [**matches**](#user-content-fn-4)[^4] the register written ([rdM or rdW](#user-content-fn-5)[^5]) by the instruction which is currently in Memory or Writeback Stage. If so, we forward the **ready result** (usually is the ALUResult at Memory or Writeback Stage), and now the input to ALU comes from M or W stage rather than the E stage register.
+In the execution stage, we can check if the register read ([rs1E and rs2E](#user-content-fn-3)[^3]) by the instruction which is currently in Execute stage [**matches**](#user-content-fn-4)[^4] the register written ([rdM or rdW](#user-content-fn-5)[^5]) by the instruction which is currently in Memory or Writeback Stage. If so, we forward the **ready result** (usually is the ALUResult at Memory or Writeback Stage) to the Execution stage so now the input to ALU will come from M or W stage rather than the E stage register.
 
 For example, we can see how the above forward logic works in the following graph,
 
 <figure><img src="../.gitbook/assets/cg3207-lec05-data-forwarding-e-stage.png" alt=""><figcaption></figcaption></figure>
 
-Suppose we have applied the [#use-different-clock-edges](lec-05-the-pipelined-processor.md#use-different-clock-edges "mention") technique, now the `add` instruction has true data dependency with the `sub` and `or` instruction.
+Suppose we have applied the [#use-different-clock-edges](lec-05-the-pipelined-processor.md#use-different-clock-edges "mention") technique, now the `add` instruction only has true data dependency with the `sub` and `or` instruction.
 
 * In the `sub` instruction's E stage, we notice it needs `rs1E` to be the register `s8`. In the `add` instruction, its `rdM` in the M stage is register `s8` and it mathces with `rs1E`. Thus, we can forward  the ready ALUResult from `add` instruction's M stage to the E stage of the `sub` instruction.
 * Similarly, in the `or` instruction's E stage, it needs `rs2E` to be the register `s8`. In the `add` instruction, its `rdW` in the W stage is register `s8` and it mathces with `rs2E`. Thus, we can forward the ready ALUResult (In W stage, it is ResultW) to the E stage of the `or` instruction.
 
 To implement this fowarding logic, we will add **Hazard Unit** shown as follows in our microarchitecture to handle specifically handle the hazard.
 
-<figure><img src="../.gitbook/assets/cg3207-lec05-data-forwarding-e-stage-unit.png.jpg" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/cg3207-lec05-data-forwarding-e-stage-unit.jpg" alt=""><figcaption></figcaption></figure>
 
 `rs1/2E`, `rdM/W` and `RegWriteM/W` are easy to pass as the **input** to the Hazard Unit, but the **output** `ForwardA/BE` which are used to control the multiplexer for the ALU SrcA and SrcB should follow exactly the following three cases
 
@@ -278,6 +278,31 @@ else                                               // Case 3
 * Condition 3 `rdM/W ≠ 0` ensures that we are **not forwarding** from the `x0` register as there is no need to do so.
 
 In total, we need 2 x 2 + 2 = 6, 5-bit comparators to do this data forwarding. `rs1/2E` each needs two comparators (2 x 2 = 4) and `rdM/W` needs another 2 but the can share result to another `Forward1/2E` signal.&#x20;
+{% endstep %}
+
+{% step %}
+#### Mem-to-Mem Copy
+
+Another situation that we should do the data forwarding is when there is a `lw` followed by a `sw` and the `sw` tries to store the value (`rs2`) that `lw` writes/loads to (`rd`).
+
+In this case, we need to check if the register used in Memory stage by the `sw` instruction (`rs2`) matches register written by the `lw` in Writeback stage (`rd`). If so, we will forward the result.
+
+<figure><img src="../.gitbook/assets/cg3207-lec05-data-forwading-mem-mem-copy.png" alt=""><figcaption></figcaption></figure>
+
+And our Hazard Unit will be updated to the following,
+
+<figure><img src="../.gitbook/assets/cg3207-lec05-data-forwarding-mem-copy-circuit.jpg" alt=""><figcaption></figcaption></figure>
+
+By now, we have added `ForwardM` as one **output** of our Hazard Unit, `rd2M` and `rdW` are two **inputs**. And the logic to derive when to set `ForwardM` will be as follows,
+
+```verilog
+ForwardM = (rs2M == rdW) & MemWriteM & MemtoRegW & (rdW != 0)
+```
+
+* Condition 1: `rs2M == rdW` is the basic match check
+* Condition 2: `MemWriteM` ensures that the instruction at the Memory stage is the `sw`. (See the [Lec 03](https://wenbo-notes.gitbook.io/ddca-notes/lec/lec-03-risc-v-isa-and-microarchitecture#support-for-link-and-jalr), same for above, as only `sw` has `MemWrite == 1`)
+* Condition 3: `MemtoRegW` ensures that the instruction at the Writeback stage is the `lw`
+* Condition 4: `rdW ≠ 0` ensures that the `lw` at the Writeback stage have a non-`x0` destination.
 {% endstep %}
 {% endstepper %}
 
