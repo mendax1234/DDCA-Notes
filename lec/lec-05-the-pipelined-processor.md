@@ -216,6 +216,7 @@ Now, we can summarize the pros and cons of this technique
 
 * **Pros**:
   * It is easier to implement as the NOPs are inserted by the compiler during the compile time.
+  * Inserting NOPs can solve almost **all** the hazards.
 * **Cons**:
   * Insert NOPs will **waste code memory**.
   * As NOPs will do nothing, we won't treat them as real instructions when calculating the CPI. Thus, with more clock cycles and the same number of useful instructions, the **CPI will increase** and thus increase our CPU Time.
@@ -223,7 +224,7 @@ Now, we can summarize the pros and cons of this technique
 
 #### Data Forwarding
 
-> This is the most challenging technique introduced in hanlding data hazards.
+> This is the most challenging technique introduced in hanlding data hazards. In this part, we will see the forwarding circuitry for W -> E and M -> E.
 
 The basic idea in data forwarding is that the data is available on some pipeline register before it is written back to the register file (RF). So, we can take that data from where it is present, and pass it to where it is needed.
 
@@ -278,10 +279,16 @@ else                                               // Case 3
 * Condition 3 `rdM/W ≠ 0` ensures that we are **not forwarding** from the `x0` register as there is no need to do so.
 
 In total, we need 2 x 2 + 2 = 6, 5-bit comparators to do this data forwarding. `rs1/2E` each needs two comparators (2 x 2 = 4) and `rdM/W` needs another 2 but the can share result to another `Forward1/2E` signal.&#x20;
+
+{% hint style="success" %}
+For DP-Reg instructions, the value is available at the Memory stage or at the Writeback stage before it is written back to the register file.
+{% endhint %}
 {% endstep %}
 
 {% step %}
 #### Mem-to-Mem Copy
+
+> In this section, we will see the forwarding circuitry for M -> M.
 
 Another situation that we should do the data forwarding is when there is a `lw` followed by a `sw` and the `sw` tries to store the value (`rs2`) that `lw` writes/loads to (`rd`).
 
@@ -303,6 +310,88 @@ ForwardM = (rs2M == rdW) & MemWriteM & MemtoRegW & (rdW != 0)
 * Condition 2: `MemWriteM` ensures that the instruction at the Memory stage is the `sw`. (See the [Lec 03](https://wenbo-notes.gitbook.io/ddca-notes/lec/lec-03-risc-v-isa-and-microarchitecture#support-for-link-and-jalr), same for above, as only `sw` has `MemWrite == 1`)
 * Condition 3: `MemtoRegW` ensures that the instruction at the Writeback stage is the `lw`
 * Condition 4: `rdW ≠ 0` ensures that the `lw` at the Writeback stage have a non-`x0` destination.
+
+{% hint style="success" %}
+#### Notes
+
+1. For `lw` instruction, the value is ready **only** at the Writeback stage (after the Memory stage).
+2. All the forwarding must be done **vertically**.&#x20;
+   1. For M -> E to be done, the value must be ready at Memory stage and the next instruction must use that value as one of its ALU sources.
+   2. For W -> E to be done, the **next instruction by the next instruction** (2 more instructions) should use that value as one of its ALU sources.
+   3. For W -> M to be done, it only happens for `lw` followed by `sw` which meets the requirements at the beginning of this section.
+{% endhint %}
+{% endstep %}
+
+{% step %}
+#### Load and Use Hazard: Stalling
+
+Suppose we have a `lw` instruction whose `rd` is one of the `rs` of the following instruction, for example, `and` instruction. As `and` is **followed** closely after the `lw`, we have a trouble shown as follows!
+
+<figure><img src="../.gitbook/assets/cg3207-load-use-hazard-example.png" alt=""><figcaption></figcaption></figure>
+
+To solve this hazard, we will stall the Decode stage and Fetch stage for the `and` and `or` instruction in the above example. A result of this is that during the 6-th clock cycle, nothing will complete.
+
+<figure><img src="../.gitbook/assets/cg3207-lec05-load-use-hazard-stall.png" alt=""><figcaption></figcaption></figure>
+
+To implement it out, its circuitry will look like as follows,
+
+<figure><img src="../.gitbook/assets/Screenshot 2025-10-31 140841.png" alt=""><figcaption></figcaption></figure>
+
+We stall the pipeline register F so that whatever in the Fetch stage is still won't change, similar for the pipeline register D and the Decode stage. However, as the clock cycle moves forward by 1, the `lw` instruction will move to the Memory stage, while whatever in the Decode stage (`and` instruction in our example) will move forward to the Execution stage. This is not what we want, thus, we **flush** the pipeline register E at the same time we stall the pipeline register F and D.
+
+The basic condition for detecting it will be
+
+{% code lineNumbers="true" %}
+```verilog
+lwStall = (MemtoRegE & (rs1D == rdE) | (rs2D == rdE))
+// then we do
+StallF = StallD = FlushE = lwStall // pseudo-code here
+```
+{% endcode %}
+
+* Condition 1: `MemtoRegE` is to ensure the instruction at the execution stage is `lw`.
+* Condition 2: `(rs1D == rdE) | (rs2D == rdE)` ensures that the instruction followed actually uses the `lw`'s `rd`. This is the earliest time we can detect such load-use hazard.
+
+After 1 cycle, the forwarding circuitry (W -> E) will take care of delivering the correct data. However, how do we combine it with our Mem-to-Mem copy circuitry ? Below is some pseudo-code provided
+
+{% code overflow="wrap" %}
+```verilog
+// helper predicates (set these based on decode-stage opcode/funct fields)
+isJ_D    = InstrD.isJal()            // J-type (jal)
+isU_D    = InstrD.isLui() || InstrD.isAuipc()  // U-type
+isI_D    = InstrD.isIType()          // I-type (includes lw, ALU-imm, jalr, etc.)
+isR_D    = InstrD.isRType()          // R-type (ALU reg-reg)
+isBranch_D = InstrD.isBranch()       // beq, bne, ...
+isStore_D  = InstrD.isStore()        // sw
+
+// does the decode-stage instruction actually read rs1 or rs2?
+use_rs1D = not (isJ_D or isU_D)          // J and U do not use rs1
+// rs2 is used by R-type, branches and stores; I-type and J/U do not use rs2
+use_rs2D = (isR_D or isBranch_D or isStore_D)
+
+// Exception: if D is a store and E is a load, mem-mem forwarding handles it,
+// so we do NOT need to stall because rs2 (store-data) can be forwarded.
+needs_stall_on_rs2 = use_rs2D and not (isStore_D and MemtoRegE)
+
+// rdE == 0 should never cause a stall
+rdE_nonzero = (rdE != 0)
+
+// final lw stall condition
+lwStall = MemtoRegE and rdE_nonzero and (
+            (use_rs1D and rs1D == rdE) or
+            (needs_stall_on_rs2 and rs2D == rdE)
+          )
+
+// control signals asserted when lwStall is true
+StallF = lwStall
+StallD = lwStall
+FlushE = lwStall
+```
+{% endcode %}
+
+{% hint style="warning" %}
+These extra exceptions are just to improve performance. Not implementing them won't cause any functional issue, but will cause the performance loss.
+{% endhint %}
 {% endstep %}
 {% endstepper %}
 
