@@ -92,9 +92,33 @@ As we have mentioned above, we need to "cut" our microarchitecture into 5 stages
 We have 5 stages, thus we need 4 "cuts"/registers. By adding registers, we can clearly see that now our [**critical path**](https://wenbo-notes.gitbook.io/ddca-notes/lec/lec-02-digital-system-design-and-verilog#critical-path) is shortened significantly! And this practice is the **soul** of pipelining!
 
 {% hint style="success" %}
-#### Pipeline Register Naming Convention
+#### Pipeline Register
 
-We name the register by the **target** that it feeds the signal to. For example, the register D is named D because the here the signals coming from the **source** fetch stage will go into the **target** dec stage.
+1. **Naming convention**: We name the register by the **target** that it feeds the signal to. For example, the register D is named D because the here the signals coming from the **source** fetch stage will go into the **target** dec stage.
+2.  **Real processor design**: In the verilog, we use several register to compose a big pipeline register, like the decode pipeline register\
+
+
+    {% code lineNumbers="true" %}
+    ```verilog
+    always @(posedge CLK) begin
+        PCSE        <= PCSD;
+        RegWriteE   <= RegWriteD;
+        MemtoRegE   <= MemtoRegD;
+        MemWriteE   <= MemWriteD;
+        ALUControlE <= ALUControlD;
+        ALUSrcAE    <= ALUSrcAD;
+        ALUSrcBE    <= ALUSrcBD;
+        RD1E        <= RD1D;
+        RD2E        <= RD2D;
+        ExtImmE     <= ExtImmD;
+        rdE         <= rdD;
+        PCE         <= PCD;
+        Funct3E     <= Funct3D;
+    end
+    ```
+    {% endcode %}
+
+    So, at each posedge of the clock, all the left hand register will copy the value from the right hand side. This will help us understand the [stalling and flushing](lec-05-the-pipelined-processor.md#flushing-vs.-stalling) later.
 {% endhint %}
 
 The smart you may notice that besides adding 4 registers, we also made some changes to some signals.
@@ -161,6 +185,14 @@ For example, in the following diagram, the destination register `rd` of the `add
 <figure><img src="../.gitbook/assets/cg3207-lec05-data-hazard.png" alt=""><figcaption></figcaption></figure>
 
 #### Control Hazards
+
+**Control hazards** happen when we attempt to make a decision about program control flow before the condition has been evaluated and the new PC target address calculated. This usually happens in branch/jump instructions.
+
+For example, in the branch instruction, the BTA (Branch Target Address) can only be known after the Execution stage. In this case, two more instructions will have been already fetched. And if the branch is taken, these two instructions shouldn't be completed.
+
+<figure><img src="../.gitbook/assets/cg3207-lec05-control-hazards.png" alt=""><figcaption></figcaption></figure>
+
+> But why jump instructions can also cause control hazards?
 
 ## Handle Pipeline Hazards
 
@@ -335,9 +367,9 @@ To solve this hazard, we will stall the Decode stage and Fetch stage for the `an
 
 To implement it out, its circuitry will look like as follows,
 
-<figure><img src="../.gitbook/assets/Screenshot 2025-10-31 140841.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/cg3207-lec05-load-use-circuitry.png" alt=""><figcaption></figcaption></figure>
 
-We stall the pipeline register F so that whatever in the Fetch stage is still won't change, similar for the pipeline register D and the Decode stage. However, as the clock cycle moves forward by 1, the `lw` instruction will move to the Memory stage, while whatever in the Decode stage (`and` instruction in our example) will move forward to the Execution stage. This is not what we want, thus, we **flush** the pipeline register E at the same time we stall the pipeline register F and D.
+We stall the pipeline register F so that whatever in the Fetch stage is still there and won't change, similar for the pipeline register D and the Decode stage. However, as the clock cycle moves forward by 1, the `lw` instruction will move to the Memory stage, while whatever in the Decode stage (`and` instruction in our example) will move forward to the Execution stage. This is not what we want, thus, we **flush** the pipeline register E at the same time we stall the pipeline register F and D.
 
 The basic condition for detecting it will be
 
@@ -393,7 +425,90 @@ FlushE = lwStall
 These extra exceptions are just to improve performance. Not implementing them won't cause any functional issue, but will cause the performance loss.
 {% endhint %}
 {% endstep %}
+
+{% step %}
+#### W -> D Forwarding
+
+In the [#use-different-clock-edges](lec-05-the-pipelined-processor.md#use-different-clock-edges "mention"), we use the negedge of the clock to read from the register file. What if we want the use the same posedge of the clock in our processor?
+
+A problem will happen if we have the following instructions
+
+{% code lineNumbers="true" %}
+```armasm
+addi x5, x1, 9
+add  x7, x8, x9
+add  x8, x8, x9
+add  x6, x5, x2
+```
+{% endcode %}
+
+Suppose we denote the clock cycle for when the `addi`'s fetch happens as clock cycle 1. We may notice that after clock cycle 4, we should forward the result that will be stored in `x5` in clock cycle 5 to the Decode stage of the `add x6, x5, x2` so that it can use the upated value.
+
+<figure><img src="../.gitbook/assets/cg3207-lec-05-w2d-forward.png" alt=""><figcaption></figcaption></figure>
+
+To handle this case, we can further modify our hazard unit to add two output signals `Forward1/2D`.
+
+{% code lineNumbers="true" %}
+```verilog
+Forward1D = (rs1D == rdW) & RegWriteW & (rdW != 0)
+Forward2D = (rs2D == rdW) & RegWriteW & (rdW != 0)
+```
+{% endcode %}
+
+* Conidition 1: `rs1/2D == rdW` ensures the Writeback stage `rd` matches with one of the decode stage `rs`.
+* Condition 2: `RegWriteW` ensures that the Writeback stage will write back to the register file.
+* Condition 3: `rdW ≠ 0` ensures that the Writeback stage `rd` is not `x0`.
+
+Our updated circuitry will be as follows,
+
+<figure><img src="../.gitbook/assets/cg3207-lec05-w2d-forward-circuitry.png" alt=""><figcaption></figcaption></figure>
+{% endstep %}
 {% endstepper %}
+
+### Handle Control Hazards
+
+Unlike the data hazards, which can be handled effectively using the techniques like data forwarding. There is no perfect way to handle the control hazards. In this section, we will introducing **flushing** to handle the control hazards.
+
+The key idea of **flushing** is to flush the two fetched instructions if the branch is taken. In our microarchitecture, if `PCSrcE == 1`, it means the branch is taken. Thus, the condition can be written as follows,
+
+{% code lineNumbers="true" %}
+```verilog
+FlushD = FlushE = PCSrcE;
+// If we take care of the stalling
+FlushE = lwstall || PCSrcE;
+```
+{% endcode %}
+
+And its circuitry will be as follows,
+
+<figure><img src="../.gitbook/assets/cg3207-lec05-flush-circuitry.png" alt=""><figcaption></figcaption></figure>
+
+<details>
+
+<summary>Flushing vs. Stalling</summary>
+
+Stalling means **hold still** (instructions waits, waiting) while flushing means **wipe out** (instruction removed). Think of the following example
+
+```verilog
+// Decode pipeline register
+PCSE <= PCSD;
+```
+
+Stalling the decode pipeline register will cause PCSE to keep its previous value (not updating). Flushing the decode pipeline register will cause PCSE to be 0. And as this zero will be passed all the way till the end of the pipeline, we can think of flushing one pipeline statge as inserting one NOP.
+
+{% hint style="success" %}
+In our real processor design, the big register is composed of many many small registers.
+{% endhint %}
+
+If any stage is stalled, (i) the previous stages should also be stalled, and (ii) the following stage should be flushed (think [load and use](https://wenbo-notes.gitbook.io/ddca-notes/lec/lec-05-the-pipelined-processor#load-and-use-hazard-stalling))
+
+</details>
+
+## Complete Hazard Handling Circuitry
+
+The following is the complete hazard handling circuitry we have introduced in this lecture. However, it is not based on the [full microarchitecture in lec 03](https://wenbo-notes.gitbook.io/ddca-notes/lec/lec-03-risc-v-isa-and-microarchitecture#support-for-link-and-jalr).
+
+<figure><img src="../.gitbook/assets/cg3207-lec05-complete-hazard-circuitry.png" alt=""><figcaption></figcaption></figure>
 
 [^1]: including the Control Unit and Datapaths
 
