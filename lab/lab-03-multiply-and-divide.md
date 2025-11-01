@@ -119,6 +119,10 @@ Based on this updated microarchitecture, we can know for sure what to modify in 
    2. Add a multiplexer in the RV datapath to enable select from `ALUResult` or `MCycleResult` (which is just `Result1` in our microarchitecture)
 3. Wrapper: to remain readability, you can change `ALUResult` to `ComputeResult`.
 
+{% hint style="warning" %}
+To derive the `MulDiv`, the `Opcode` must be same of the Opcode of DP Reg instructions **and** the `func7 == 0000001`. Strictly follow this, otherwise you will spend 2 hours debugging your `lb/lbu/lh/lhu/sb/sh` in Lab 04 like me 😭.
+{% endhint %}
+
 ## Task 3: Enhancement
 
 In Lab 03, we are required to improve the performance of the **signed multiplier**. In the example code, it is intended to be written in a very **inefficient** way, just to give us more space to improve its efficiency.
