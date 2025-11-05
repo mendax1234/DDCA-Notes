@@ -106,7 +106,7 @@ $$
 
 > As we have seen from Lec 01, to increase performance, we would like to **speed up the clock** and/or **reduce the CPI**. For the CPI, we know that **stalling** and **flushing** will both increase the CPI.
 
-As we have seen the pipelining in Lec 05, it can reduce the clock cycle time and thus increase the clock speed. In real world, aside from the advances in manufacturing, the easiest way to speed up the clock is to **chop the pipelines into more stages**. Each stage contains less logic, so it can run faster. Nowadays, 8-20 stages are commonly used.
+As we have seen the technique of pipelining in Lec 05, it can reduce the clock cycle time and thus increase the clock speed. In real world, aside from the [advances in manufacturing](#user-content-fn-1)[^1], the easiest way to speed up the clock is to **chop the pipelines into more stages**. Each stage contains less logic, so it can run faster. Nowadays, 8-20 stages are commonly used.
 
 However, the maximum number of pipeline stages is limited by the pipeline hazards, sequencing overhead, and cost.
 
@@ -122,7 +122,7 @@ It means the at run time, more **complex instructions** will be **decomposed** i
 ```armasm
 ; Using ARM Assembly as an example
 ; Complex Op
-LDR R1, [R2], ##4
+LDR R1, [R2], #4
 
 ; Micro-op Sequence
 LDR R1, [R2]
@@ -144,3 +144,144 @@ The decoding process is done by the **hardware** and the micro-operations need n
 ### Macro-op Fusion
 
 This is exactly the opposite of the micro-operations. We have seen this earlier in [Lec 04](https://wenbo-notes.gitbook.io/ddca-notes/textbook/digital-building-blocks/arithmetic-circuits#macro-op-fusion)!
+
+## Multiple Issue Processors
+
+### Superscalar Processors
+
+A **superscalar processor** issues several instructions at a time, each of which operates on one piece of data. Thus it contains multiple copies of the datapath hardware to execute multiple instructions simultaneously. The figure below shows a block diagram of a two-way superscalar processor that fetches and executes two instructions per cycle.&#x20;
+
+<figure><img src="../.gitbook/assets/cg3207-lec06-superscalar-processor-block.png" alt=""><figcaption></figcaption></figure>
+
+#### Ideal Case
+
+The ideal case for a two-way superscalar processor is that it can execute exactly two instructions on each cycle. This is shown in the following figure,
+
+<figure><img src="../.gitbook/assets/cg3207-lec06-superscalar-processor-ideal.png" alt=""><figcaption></figcaption></figure>
+
+For this program, the proecssor has a CPI of 0.5. Designers commonly refer to the reciprocal of the CPI as the **instructions per cycle**, or **IPC**. This processor has an IPC of 2 on this program.
+
+#### Real Case
+
+As we all know, executing many instructions simultaneously is difficult because of dependencies. The following figure shows a pipeline diagram running a a program with [data dependencies](lec-05-the-pipelined-processor.md#data-hazards). The dependencies ni the code are indicated in <mark style="color:blue;">blue</mark>.
+
+<figure><img src="../.gitbook/assets/cg3207-lec06-superscalar-processor-data-hazard.png" alt=""><figcaption></figcaption></figure>
+
+* **Cannot issue simultaneously**: The `add` instruction is dependent on `s8`, which is produced by the `lw` instruction, so it cannot be issued at the same time as `lw`.
+* **Data Forwarding**: Additionally, the `add` instruction stalls for yet another cycle so that `lw` can forward `s8` to `add` in cycle 5.
+* **Data Forwarding**: The other dependencies (between `sub` and `and` based on `s8`, and between `or` and `sw` based on `s11`) are handled by **forwarding** results produced in one cycle to be consumed in the next.
+
+This program requires fives cycles to issue six instructions, for an IPC of $$6\div5=1.2$$.
+
+<details>
+
+<summary>Parallelism in temporal and spatial form</summary>
+
+Recall that parallelism comes in temporal and spatial forms.
+
+* **Pipelining** is a case of temporal parallelism.
+* Using **multiple execution units** is a case of spatial parallelism.
+
+**Superscalar processors** exploit **both** forms of parallelism to squeeze out performance far exceeding that of our single-cycle and multicycle processors
+
+</details>
+
+### Out-of-order Processor
+
+To cope with the problem of dependencies, an **out-of-order processor** looks ahead across many instructions to issue **independent instructions** as rapidly as possible. The instructions can issue in a **different order** than that written by the programmer as long as dependencies[^2] are honored so that the program produces the intended result. This will increase the **Instruction Level Parallelism (ILP)** and thus increasing the **IPC** also.
+
+Consider running the same program [above](lec-06-advanced-processor.md#real-case) on a two-way superscalar out-of-order processor. The processor can issue up to two instructions per cycle from anywhere in the program, as long as dependencies are observed. The following figure shows the data dependencies and the operation of the processor.
+
+<figure><img src="../.gitbook/assets/cg3207-lec06-out-of-order-processor.png" alt=""><figcaption></figcaption></figure>
+
+The constraints on issuing instructions are:
+
+* **Cycle 1**
+  * The `lw` instruction issues.
+  * The `add`, `sub`, and `and` instructions are dependent on `lw` by way of `s8`, so they cannot issue yet. However, the `or` instruction is independent, so it also issues.
+* **Cycle 2**
+  * Remember that a two-cycle latency exists between issuing `lw` and a dependent instruction, so `add` cannot issue yet because of the `s8` dependence. `sub` writes `s8`, so it cannot issue before `add`, lest `add` receive the wrong value of `s8`. `and` is dependent on `sub`.
+  * Only the `sw` instruction issues.
+* **Cycle 3**
+  * On cycle 3, `s8` is available (or, rather, will be when `add` needs it), so the `add` issues. `sub` issues simultaneously, because it will not write `s8` until after `add` consumes (e.g., reads) it.
+* **Cycle 4**
+  * The `and` instruction issues. `s8` is forwarded from `sub` to `and`.
+
+This out-of-order processor issues the six instructions in four cycles, for an IPC of $$6\div4=1.5$$, which is more than the normal superscalar processor we have introduced above. In the real-world out-of-order processor, we will see three data dependencies (we have seen twn in the example above):
+
+{% stepper %}
+{% step %}
+#### Read After Write (RAW)
+
+In the example above, the dependence of `add` on `lw` by way of `s8` is sa **read after write (RAW)** hazard. `add` must not read `s8` until after `lw` has written it. Similarly, the dependence of `sw` on `or` by way of `s11` and of `and` on `sub` by way of `s8` are RAW dependencies.
+
+This is the type of dependency we are accustomed to handling in the [pipelined processor (Lec 05)](lec-05-the-pipelined-processor.md#data-forwarding). To solve it, we can use
+
+1. the **data forwarding logic** and
+2. sometimes the **stalling technique**.
+{% endstep %}
+
+{% step %}
+#### Write After Read (WAR)
+
+The dependence between `sub` and `add` by way of `s8` is called a **write after read (WAR)** hazard or an **antidependence**. `sub` must not write `s8` before `add` reads `s8`, so that `add` receives the correct value according to the original order of the program.
+
+A WAR hazard is not essential to the operation of the program. It is merely an artifact of the programmer’s choice to use the same register for two unrelated instructions. If the `sub` instruction had written `s3` instead of `s8`, then the dependency would disappear and `sub` could be issued before `add`.
+
+To solve it, we can use the register renaming technique which will be introduced later!
+{% endstep %}
+
+{% step %}
+#### Write After Write (WAW)
+
+This hazard is not shown in the example above. It is called a **write afte write (WAW)** hazard or an **output dependence**. A WAW hazard occurs if an instruction attempts to write a register after a subsequent instruction has already written it. The hazard would result in the wrong value being written to the register. For example, in the following code, `lw` and `add` both write `s7`. The final value in `s7` should come from `add` according to the order of the program. If an out-of-order processor attempted to execute `add` first and then `lw`, a WAW hazard would occur.
+
+{% code lineNumbers="true" %}
+```armasm
+lw  s7, 0(t3)
+add s7, s1, t2
+```
+{% endcode %}
+
+WAW hazards are not essential either; again, they are artifacts caused by the programmer using the same destination register for two unrelated instructions.
+
+To solve it, we can just **discard** the result of the unwanted instruction. For example, if the `add` instruction were issued first, then the program could eliminate the WAW hazard by discarding the result of the `lw` instead of writing it to `s7`. This is called **squashing** the `lw`.
+
+> If we discard the value of `s7` in the `lw` instruction, why do we still need to execute the `lw`? This is because we want to make sure there won't be a **load access fault**!
+
+Besides discarding, we can also use register renaming to solve this hazard.
+{% endstep %}
+{% endstepper %}
+
+> TODO: Prof Rajesh's Out-of-order execution slides 23-24 (Chapter 06) are awesome! Go back understand that!
+
+### Register Renaming
+
+Actually, the out-of-order processors use a technique called **register renaming** to eliminate WAR and WAW hazards. **Register renaming** adds some nonarchitectural renaming registers to the processor. For example, a processor might add 20 renaming registers, called `r0` to `r19`. The programmer cannot use these registers directly, because they are not part of the architecture. However, the processor is free to use them to eliminate hazards.
+
+For example, in the example above, a WAR hazard occurred between the `sub s8, t2, t3` and `add s9, s8, t1` instructions based on reusing `s8`. The out-of-order processor could rename `s8` to `r0` for the `sub` instruction. Then, `sub` could be executed sooner, because `r0` has no dependency on the `add` instruction. The processor keeps a table of which registers were renamed so that it can consistently rename registers in subsequent dependent instructions. In this example, `s8` must also be renamed to `r0` in the `and` instruction, because it refers to the result of `sub`. The following figure shows the same program from [above](lec-06-advanced-processor.md#out-of-order-processor) on an out-of-order processor with register renaming.
+
+<figure><img src="../.gitbook/assets/cg3207-lec06-register-renaming.png" alt=""><figcaption></figcaption></figure>
+
+The constraints on issuing instructions are:
+
+* **Cycle 1**
+  * The `lw` instruction issues.
+  * The `add` instruction is dependent on `lw` by way of `s8`, so it cannot issue yet. However, the `sub` instruction is independent now that its destination has been renamed to `r0`, so `sub` also issues.
+* **Cycle 2**
+  * Remember that a two-cycle latency must exist between issuing `lw` and a dependent instruction, so `add` cannot issue yet because of the `s8` dependence.
+  * The `and` instruction is dependent on `sub`, so it can issue. `r0` is forwarded from `sub` to `and`.
+  * The `or` instruction is independent, so it also issues.
+* **Cycle 3**
+  * On cycle 3, `s8` is available, so the `add` issues.
+  * `s11` is also available, so `sw` issues.
+
+Now the out-of-order processor with register renaming issues the six instructions in three cycles, for an IPC of 2, which achieves the [ideal case](lec-06-advanced-processor.md#ideal-case)!
+
+[^1]: this is mainly to reduce the propagation delay within the logic gates, so the same logic gate that built with the advanced manufacturing technology will have a **smaller** propagation delay.
+
+[^2]: In short, there are three dependencies here:
+
+    1. Read after Write (RAW)
+    2. Write after Read (WAR)
+    3. Write after Write (WAW)
