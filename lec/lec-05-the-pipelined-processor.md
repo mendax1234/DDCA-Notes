@@ -4,7 +4,7 @@
 
 ### Recap of the single cycle processor
 
-In Lec 03, we have introduced how to implement a **single-cycled** RISC-V processor. In our design, we have noticed that different instructions will go through different **parts** of the datapath, thus causing the time taken for each instruction to complete is different.
+In Lec 03, we have introduced how to implement a **single-cycled** RISC-V processor. In our design, we have noticed that different instructions will go through different **parts** of the datapath, thus causing the time taken for each instruction to complete to be different.
 
 <figure><img src="../.gitbook/assets/cg3207-lec03-support-for-link-jalr.png" alt=""><figcaption><p>A single cycle processor that we designed at Lec 03</p></figcaption></figure>
 
@@ -20,28 +20,28 @@ Then we will have,
 <table><thead><tr><th width="85.5">Instr.</th><th width="90.5">I Mem</th><th width="94">Reg Rd</th><th width="99">ALU Op</th><th width="95">D Mem</th><th width="95.5">Reg Wr</th><th width="98.5">PC Incr</th><th width="100">Total</th></tr></thead><tbody><tr><td>DP</td><td>200</td><td>100</td><td>120</td><td></td><td>60</td><td></td><td>480</td></tr><tr><td><code>lw</code></td><td>200</td><td>100</td><td>120</td><td>200</td><td>60</td><td></td><td>680</td></tr><tr><td><code>sw</code></td><td>200</td><td>100</td><td>120</td><td>200</td><td></td><td></td><td>620</td></tr><tr><td><code>beq</code></td><td>200</td><td>100</td><td>120</td><td></td><td></td><td>75</td><td>495</td></tr><tr><td><code>j</code><del><code>al</code></del></td><td>200</td><td></td><td></td><td></td><td></td><td>75</td><td>275</td></tr></tbody></table>
 
 {% hint style="success" %}
-`PC_Incr` is done in **parallel**, when things happen in parallel, we take the worst case timing. For branch instructions and the `jal` instructions here, as it needs to fecth the instruction (200ps) and then **decide** whether to increment PC or not. Thus you will count `PC_Incr` time into the calculation.
+`PC_Incr` is done in **parallel**, when things happen in parallel, we take the worst case timing. For branch instructions and the `jal` instructions here, as it needs to fecth the instruction (200ps) and then **decide** whether to increment PC or not. Thus we will count `PC_Incr` time into the calculation.
 {% endhint %}
 
 <details>
 
 <summary>Why all these parts take time to execute?</summary>
 
-It is because all the Instruction Memory, Register File, ALU, Data Memory and Adders, they are implemented using a **lot of logic gates**, thus it confirm will have some propagation delay. So, it takes a certain amount of time for the signal to travel from the input to the output of that certain part.
+It is because for all the Instruction Memory, Register File, ALU, Data Memory and Adders, they are implemented using a **lot of logic gates**, thus it confirm will have some propagation delay. So, it takes a certain amount of time for the signal to travel from the input to the output of that certain part.
 
 </details>
 
-And our single cycle processor's clock cycle time **must be** at least **larger than** the slowest instruction's execution time. (usually, it is the `lw` that takes the longest time to complete) This will create some unwanted waste in the resources, like adders.
+And our single cycle processor's clock cycle time **must be** at least **larger than** the slowest instruction's execution time (usually, it is the `lw` that takes the longest time to complete). This will create some unwanted waste in resources, like adders.
 
 ### Make it Faster
 
-Recall that the performance equation we introduced in [Lec 01](https://wenbo-notes.gitbook.io/ddca-notes/lec/lec-01-history-technology-performance#instruction-count-ic-and-cpi) is,
+Recall that the performance equation we have introduced in [Lec 01](https://wenbo-notes.gitbook.io/ddca-notes/lec/lec-01-history-technology-performance#instruction-count-ic-and-cpi) is,
 
 $$
 \text{CPU Time} = \text{Instruction Count} \times \text{CPI} \times \text{Clock Cycle Time}
 $$
 
-Here, we cannot change IC and CPI, how can we improve the performance? The answer will be easy, that is to **decrease the** Clock Cycle Time by using **pipelining**.
+Here, since we cannot change IC and CPI, how can we improve the performance? The answer will be easy, that is to **decrease the** Clock Cycle Time by using **pipelining**.
 
 #### Five Stage Pipeline
 
@@ -63,23 +63,27 @@ To see clearly how we do this "cut", we can reuse the microarchitecture in Lec 0
 
 <figure><img src="../.gitbook/assets/cg3207-lec05-5-cut.jpg" alt=""><figcaption></figcaption></figure>
 
+{% hint style="warning" %}
+This is just an illustration, the real section may be a bit different. For example, in the first version of the design, PC Logic is in the Execute Stage.
+{% endhint %}
+
 After pipelining our processor, the clock cycle diagram to execute the instructions will look like as follows
 
 <figure><img src="../.gitbook/assets/cg3207-lec05-clock-cycle-diagram.png" alt=""><figcaption></figcaption></figure>
 
 We can see that after the completion of the clock cycle 5, one instruction is completed every cycle, thus CPI = 1. We also call the first 4 cycles **overhead** as nothing completes during this time.
 
-However, this pipeline isn't perfect, you may notice that **not every instruction** needs the **full 5 stages**. For example, `sw` doesn't need `WB`, branch and DP Reg/Imm doesn't need `Mem`, etc. Besides, there are still some **hazards** that we may encouter. (We will see later in this lec)
+However, this pipeline isn't perfect, you may notice that **not every instruction** needs the **full 5 stages**. For example, `sw` doesn't need `WB`, branch and DP Reg/Imm doesn't need `Mem`, etc. Besides, there are still some **hazards** that we may encouter. (We will see them later in this lec)
 
 <details>
 
 <summary>Is the speed-up of the pipelined processor always same as the number of stages?</summary>
 
-Not exactly. For example, a 5-stage pipelined processor doesn't necessarily have a 5x speed-up comparing to the single-cycle processor as you can see from below,
+Not exactly. For example, a 5-stage pipelined processor doesn't necessarily have a 5x speed-up comparing to the single-cycle processor. As you can see from the following image,
 
 <figure><img src="../.gitbook/assets/cg3207-lec05-speedup-of-pipelined-processor.png" alt=""><figcaption></figcaption></figure>
 
-The reason for this is because in the pipelined processor, your clock cycle time accommodates the **slowest stage**, while in the single-cycle processor, your clock cycle time accommodates the **slowest instruction**. But the **slowest instruction** isn't composed of 5x the **slowest stage**!
+The reason for this is because that in the pipelined processor, our clock cycle time accommodates the **slowest stage**, while in the single-cycle processor, our clock cycle time accommodates the **slowest instruction**. But the **slowest instruction** isn't necessarily composed of 5x the **slowest stage**!
 
 </details>
 
@@ -94,7 +98,7 @@ We have 5 stages, thus we need 4 "cuts"/registers. By adding registers, we can c
 {% hint style="success" %}
 #### Pipeline Register
 
-1. **Naming convention**: We name the register by the **target** that it feeds the signal to. For example, the register D is named D because the here the signals coming from the **source** fetch stage will go into the **target** dec stage.
+1. **Naming convention**: We name the register by the **target** that it feeds the signal to. For example, the register D is named D because the here the signals coming from the **source** (fetch stage) will go into the **target** (decode stage).
 2.  **Real processor design**: In the verilog, we use several register to compose a big pipeline register, like the decode pipeline register\
 
 
@@ -129,7 +133,7 @@ The smart you may notice that besides adding 4 registers, we also made some chan
 {% step %}
 #### Delayed Signals
 
-Several signals, like `RegWrite`, `MemtoReg` etc are delayed. Their names are also changed at each stage by adding the posfix `F, D, E, M, W` depends on which stage the signals are at.
+Several signals, like `RegWrite`, `MemtoReg` etc are delayed. Their names are also changed at each stage by adding the posfix `F, D, E, M, W` depending on which stage the signals are at.
 
 We can think of this delay as, after we "cut" the microarchitecture, we still need to "store" the corresponding Control Unit signals and the Datapath signals to make sure that the operation done in **each stage** works correctly.
 {% endstep %}
@@ -139,7 +143,7 @@ We can think of this delay as, after we "cut" the microarchitecture, we still ne
 
 In the Fetch stage, the `rd` is no longer connected directly to the instruction decoder. Instead, we delay the `rd` signal by 3 stages and connect it to `rdW`, which means after the `WD` stage, we connect the `rd` back to the register file.
 
-This is because we are using pipeline! Suppose we have the following instructions
+This is because we are using pipelining! Suppose we have the following instructions
 
 {% code lineNumbers="true" %}
 ```armasm
@@ -227,7 +231,7 @@ Given that, we will summarize the pros and cons of this technique as follows,
 * **Pros**:
   * This technique can help reduce the "troublesome" instructions from 3 to 2 in our example [above](lec-05-the-pipelined-processor.md#data-hazards).
 * **Cons**:
-  * It will use 2 edges from the same block and this is a practice discouraged in [CG3207.](https://wenbo-notes.gitbook.io/ddca-notes/lec/lec-02-digital-system-design-and-verilog#use-one-clock-for-the-entire-design)
+  * It will use 2 edges from the same clock and this is a practice discouraged in [CG3207.](https://wenbo-notes.gitbook.io/ddca-notes/lec/lec-02-digital-system-design-and-verilog#use-one-clock-for-the-entire-design)
   * The half cycle may not be enough to write the pipeline state register. In other words, reading the value from the register file and write it to a pipeline state register may take longer than half of a clock cycle.
 
 #### Inserting NOPS
@@ -369,7 +373,7 @@ To implement it out, its circuitry will look like as follows,
 
 <figure><img src="../.gitbook/assets/cg3207-lec05-load-use-circuitry.png" alt=""><figcaption></figcaption></figure>
 
-We stall the pipeline register F so that whatever in the Fetch stage is still there and won't change, similar for the pipeline register D and the Decode stage. However, as the clock cycle moves forward by 1, the `lw` instruction will move to the Memory stage, while whatever in the Decode stage (`and` instruction in our example) will move forward to the Execution stage. This is not what we want, thus, we **flush** the pipeline register E at the same time we stall the pipeline register F and D.
+We stall the PC update register so that whatever in the Fetch stage is still there and won't change, similar for the pipeline register D and the Decode stage. However, as the clock cycle moves forward by 1, the `lw` instruction will move to the Memory stage, while whatever in the Decode stage (`and` instruction in our example) will move forward to the Execution stage. This is not what we want, thus, we **flush** the pipeline register E at the same time we stall the pipeline register F and D.
 
 The basic condition for detecting it will be
 
@@ -442,7 +446,7 @@ add  x6, x5, x2
 ```
 {% endcode %}
 
-Suppose we denote the clock cycle for when the `addi`'s fetch happens as clock cycle 1. We may notice that after clock cycle 4, we should forward the result that will be stored in `x5` in clock cycle 5 to the Decode stage of the `add x6, x5, x2` so that it can use the upated value.
+Suppose we denote the clock cycle when the `addi`'s fetch happens as clock cycle 1. We may notice that after clock cycle 4, we should forward the result that will be stored in `x5` in clock cycle 5 to the Decode stage of the `add x6, x5, x2` so that it can use the upated value.
 
 <figure><img src="../.gitbook/assets/cg3207-lec-05-w2d-forward.png" alt=""><figcaption></figcaption></figure>
 
@@ -494,7 +498,7 @@ Stalling means **hold still** (instructions waits, waiting) while flushing means
 PCSE <= PCSD;
 ```
 
-Stalling the decode pipeline register will cause PCSE to keep its previous value (not updating). Flushing the decode pipeline register will cause PCSE to be 0. And as this zero will be passed all the way till the end of the pipeline, we can think of flushing one pipeline statge as inserting one NOP.
+Stalling the decode pipeline register E will cause PCSE to keep its previous value (not updating). Flushing the decode pipeline register E will cause PCSE to be 0. And as this zero will be passed all the way till the end of the pipeline, we can think of flushing one pipeline statge as inserting one NOP.
 
 {% hint style="success" %}
 In our real processor design, the big register is composed of many many small registers.
