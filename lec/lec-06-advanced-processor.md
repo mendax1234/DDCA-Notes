@@ -278,6 +278,72 @@ The constraints on issuing instructions are:
 
 Now the out-of-order processor with register renaming issues the six instructions in three cycles, for an IPC of 2, which achieves the [ideal case](lec-06-advanced-processor.md#ideal-case)!
 
+### VLIW Processor
+
+> TODO: As this part is not covered in DDCA, please understand Prof's Rajesh's slides once have time.
+
+## Multithreading
+
+Multithreading starts from two problems:
+
+1. Because the ILP of real programs tends to be fairly low, adding more execution units to a superscalar or out-of-order processor gives diminishing returns.
+2. Memory is much slower than the processor. Most `lw` and `sw` instructions access a much smaller and faster memory called _cache_. However, when the instructions or data are not available in the cache, the processor may stall for 100 or more cycles while retrieving the information from the main memory.
+
+**Multithreading** is a technique that helps keep a processor with many execution units busy even if
+
+1. the ILP of a program is low or
+2. the program is stalled waiting for memory
+
+To explain multithreading, we need to define two new terms
+
+{% stepper %}
+{% step %}
+#### Process
+
+A program running on a computer is called a **process**. Computers can run **multiple processes simultaneously**. For example, you can play music on a PC while surfing the web and running a virus checker.
+{% endstep %}
+
+{% step %}
+#### Thread
+
+Each _process_ consists of one or more **threads** that also run simultaneously. For example, a word processor may have one thread handling the user typing, a second thread spell-checking the document while the user works, and a third thread printing the document. In this way, the user does not have to wait, for example, for a document to finish printing before being able to type again.
+
+The degree to which a process can be split into multiple threads that can run simultaneously defines its level of **thread-level parallelism (TLP)**.
+{% endstep %}
+{% endstepper %}
+
+### Software Multithread
+
+In a conventional processor, the threads only give the illusion of running simultaneously. The threads actually take turns being executed on the processor under control of the operating system (OS). When one thread’s turn ends, the OS saves its architectural state, loads the architectural state of the next thread, and starts executing that next thread. This procedure is called **context switching**. As long as the processor switches through all threads fast enough, the user perceives all of the threads as running at the same time.
+
+{% hint style="info" %}
+This describes the **software-based concurrency** on a **single-core CPU**.
+{% endhint %}
+
+### Hardware Multithread
+
+A **hardware multithreaded** processor contains more than one copy of its architectural state so that more than one thread can be active at a time.
+
+For example, if we extended a processor to have four program counters and 128 registers, four threads could be available at one time. If one thread stalls while waiting for data from main memory, then the processor could context switch to another thread without any delay, because the program counter and registers are already available. Moreover, if one thread lacks sufficient parallelism to keep all execution units busy in a superscalar design, then another thread could issue instructions to the idle units.
+
+Swithcing between threads can either be **fine-grained** or **coarse-grained**.
+
+{% stepper %}
+{% step %}
+#### Fine-grained multithreading
+
+**Fine-grained multithreading** switches between threads on each instruction and must be supported by hardware multithreading.
+{% endstep %}
+
+{% step %}
+#### Coarse-grained multithreading
+
+**Coarse-grained multithreading** switches out a thread only on expensive stalls, such as long memory accesses due to cache misses.
+{% endstep %}
+{% endstepper %}
+
+Multithreading does not improve the performance of an individual thread, because it does not increase the ILP. However, it does improve the overall **throughput** of the processor, because multiple threads can use processor resources that would have been idle when executing a single thread.
+
 [^1]: this is mainly to reduce the propagation delay within the logic gates, so the same logic gate that built with the advanced manufacturing technology will have a **smaller** propagation delay.
 
 [^2]: In short, there are three dependencies here:
