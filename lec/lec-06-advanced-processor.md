@@ -316,7 +316,7 @@ The degree to which a process can be split into multiple threads that can run si
 
 In a conventional processor, the threads only give the illusion of running simultaneously. The threads actually take turns being executed on the processor under control of the operating system (OS). When one thread’s turn ends, the OS saves its architectural state, loads the architectural state of the next thread, and starts executing that next thread. This procedure is called **context switching**. As long as the processor switches through all threads fast enough, the user perceives all of the threads as running at the same time.
 
-{% hint style="info" %}
+{% hint style="success" %}
 This describes the **software-based concurrency** on a **single-core CPU**.
 {% endhint %}
 
@@ -343,6 +343,46 @@ Swithcing between threads can either be **fine-grained** or **coarse-grained**.
 {% endstepper %}
 
 Multithreading does not improve the performance of an individual thread, because it does not increase the ILP. However, it does improve the overall **throughput** of the processor, because multiple threads can use processor resources that would have been idle when executing a single thread.
+
+## Multiprocessors
+
+Modern processors have enormous numbers of transistors available. Using them to increase the pipeline depth or to add more execution units to a [superscalar processor](lec-06-advanced-processor.md#superscalar-processors) gives little performance benefit and wastes power. Around the year 2005, computer architects made a major shift to building multiple copies of the processor on the same chip; these copies are called **cores**.
+
+A multiprocessor system consists of multiple processors and a method for communication between the processors. Three common classes of multiprocessors include
+
+1. [Symmetric (or homogeneous) multiprocessors](lec-06-advanced-processor.md#symmetric-multiprocessors),
+2. [Heterogeneous multiprocessors](lec-06-advanced-processor.md#heterogeneous-multiprocessors), and
+3. [Clusters](lec-06-advanced-processor.md#clusters)
+
+### Symmetric Multiprocessors
+
+**Symmetric multiprocessors** include two or more identical processors sharing a single main memory. The multiple processors may be separate chips or multiple cores on the same chip.
+
+Multiprocessors can be used to
+
+1. run more threads simultaneously, or
+2. run a particular thread faster
+
+{% hint style="success" %}
+Symmetric multiprocessors are good for situations like large data centers that have lots of thread-level parallelism available.
+{% endhint %}
+
+### Heterogeneous multiprocessors
+
+**Heterogeneous multiprocessors** incorporate different types of cores and/or specialized hardware in a single system. And it can take the following two forms:
+
+1. a heterogeneous system can incorporate cores with the same architecture but different microarchitectures, each with different power, performance, and area trade-offs.
+2. another heterogeneous strategy is **accelerators**, in which a system contains special-purpose hardware optimized for performance or energy efficiency on specific types of tasks.
+
+{% hint style="success" %}
+Heterogeneous systems are good for systems that have more varying or special-purpose workloads, such as mobile devices.
+{% endhint %}
+
+### Clusters
+
+In a **clustered multiprocessor** system, each processor have its own local memory system instead of sharing memory.
+
+One type of cluster is a group of personal computers connected on a network and running software to jointly solve a large problem.
 
 [^1]: this is mainly to reduce the propagation delay within the logic gates, so the same logic gate that built with the advanced manufacturing technology will have a **smaller** propagation delay.
 
