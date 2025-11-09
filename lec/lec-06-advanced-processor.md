@@ -284,6 +284,8 @@ Now the out-of-order processor with register renaming issues the six instruction
 
 ## Multithreading
 
+> Here, all the stuff will still use one processor!
+
 Multithreading starts from two problems:
 
 1. Because the ILP of real programs tends to be fairly low, adding more execution units to a superscalar or out-of-order processor gives diminishing returns.
@@ -301,20 +303,42 @@ To explain multithreading, we need to define two new terms
 #### Process
 
 A program running on a computer is called a **process**. Computers can run **multiple processes simultaneously**. For example, you can play music on a PC while surfing the web and running a virus checker.
+
+Also, if you click the icon to run a program on your PC. After clicking, the programming is running. And after the program is loaded into the memory, it is called **process**.
 {% endstep %}
 
 {% step %}
 #### Thread
 
-Each _process_ consists of one or more **threads** that also run simultaneously. For example, a word processor may have one thread handling the user typing, a second thread spell-checking the document while the user works, and a third thread printing the document. In this way, the user does not have to wait, for example, for a document to finish printing before being able to type again.
+Each **process** consists of one or more **threads** that also run simultaneously. For example, a word processor may have one thread handling the user typing, a second thread spell-checking the document while the user works, and a third thread printing the document. In this way, the user does not have to wait, for example, for a document to finish printing before being able to type again.
 
 The degree to which a process can be split into multiple threads that can run simultaneously defines its level of **thread-level parallelism (TLP)**.
+
+> TODO: **All threads** are independent from each other?
 {% endstep %}
 {% endstepper %}
+
+**Multithreading** (whether software or hardware) lets **one processor** appear to do **multiple things at once**.
 
 ### Software Multithread
 
 In a conventional processor, the threads only give the illusion of running simultaneously. The threads actually take turns being executed on the processor under control of the operating system (OS). When one thread’s turn ends, the OS saves its architectural state, loads the architectural state of the next thread, and starts executing that next thread. This procedure is called **context switching**. As long as the processor switches through all threads fast enough, the user perceives all of the threads as running at the same time.
+
+Usually, there are ways for the context switching to happen in this scenario:
+
+{% stepper %}
+{% step %}
+#### Co-operative Multitasking
+
+In this case, the context switch happens when **one thread stalls**. The next thread to be run is determined by the OS scheduler.
+{% endstep %}
+
+{% step %}
+#### Preemptive Multitasking
+
+The context switch can be initiated through **timer interrupts**, without having to wait for the thread to stall.
+{% endstep %}
+{% endstepper %}
 
 {% hint style="success" %}
 This describes the **software-based concurrency** on a **single-core CPU**.
@@ -324,7 +348,7 @@ This describes the **software-based concurrency** on a **single-core CPU**.
 
 A **hardware multithreaded** processor contains more than one copy of its architectural state so that more than one thread can be active at a time.
 
-For example, if we extended a processor to have four program counters and 128 registers, four threads could be available at one time. If one thread stalls while waiting for data from main memory, then the processor could context switch to another thread without any delay, because the program counter and registers are already available. Moreover, if one thread lacks sufficient parallelism to keep all execution units busy in a superscalar design, then another thread could issue instructions to the idle units.
+For example, if we extended a processor to have four program counters and 128 registers, four threads could be available at one time. If one thread stalls while waiting for data from main memory, then the processor could context switch to another thread **without any delay**, because the program counter and registers are already available. Moreover, if one thread lacks sufficient parallelism to keep all execution units busy in a superscalar design, then another thread could issue instructions to the idle units.
 
 Swithcing between threads can either be **fine-grained** or **coarse-grained**.
 
@@ -333,12 +357,30 @@ Swithcing between threads can either be **fine-grained** or **coarse-grained**.
 #### Fine-grained multithreading
 
 **Fine-grained multithreading** switches between threads on each instruction and must be supported by hardware multithreading.
+
+{% hint style="success" %}
+This is **temporal**.
+{% endhint %}
 {% endstep %}
 
 {% step %}
 #### Coarse-grained multithreading
 
 **Coarse-grained multithreading** switches out a thread only on expensive stalls, such as long memory accesses due to cache misses.
+
+{% hint style="success" %}
+This is **temporal**.
+{% endhint %}
+{% endstep %}
+
+{% step %}
+#### Simultaneous multithreading
+
+This is also know as SMT or hyperthreading (called by Intel). If one thread can't keep all execution units busy, another thread can use them, so instructions from different threads execute at the same time, without duplication of functional units.
+
+{% hint style="success" %}
+This is both **temporal** and **spatial**.
+{% endhint %}
 {% endstep %}
 {% endstepper %}
 
