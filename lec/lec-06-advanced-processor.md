@@ -386,6 +386,40 @@ This is both **temporal** and **spatial**.
 
 Multithreading does not improve the performance of an individual thread, because it does not increase the ILP. However, it does improve the overall **throughput** of the processor, because multiple threads can use processor resources that would have been idle when executing a single thread.
 
+### Flynn's Taxonomy
+
+There are four types of computer architectures in the Flynn's Taxonomy, we will introduce them one by one and give you some concrete examples for each of them.
+
+#### Single Instruction stream Single Data stream (SISD)
+
+It's essentially a sequential computer which exploits no parallelism in either the instruction or data stream.
+
+One example is a single-thread or single-core processor.
+
+#### Single Instruction stream Multiple Data streams (SIMD)
+
+It's a computer which exploits multiple data streams against a single instruction stream to perform operations which may be naturally parallelized.
+
+* Exploits **data parallelism**
+
+The examples are **hardware accelerators** and **GPU**s.
+
+#### Multiple Instruction streams Single Data stream (MISD)
+
+As its name suggests, it's multiple instructions operating on one data stream.
+
+This is an uncommon architecture and the examples are **autopilot** system of teh aeroplane, and the **systolic arrays** which are the heart of Google TPUs.
+
+#### Multiple Instruction streams Multiple Data streams (MIMD)
+
+Multiple autonomous processors simultaneously executing different instructions on different data.
+
+* Exploits thread-level/task parallelism
+
+The examples of MIMD architectures include **parallel /** **distributed systems**, using either one shared memory space or a distributed memory space.
+
+> Why multithreading is MIMD?
+
 ## Multiprocessors
 
 Modern processors have enormous numbers of transistors available. Using them to increase the pipeline depth or to add more execution units to a [superscalar processor](lec-06-advanced-processor.md#superscalar-processors) gives little performance benefit and wastes power. Around the year 2005, computer architects made a major shift to building multiple copies of the processor on the same chip; these copies are called **cores**.
