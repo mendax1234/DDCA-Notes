@@ -102,6 +102,33 @@ $$
 \text{accuracy}=\frac{N-1}{N}\times100\%
 $$
 
+### Speculative Execution
+
+**Speculative execution** is a performance optimization technique where a computer system or CPU performs tasks ahead of time based on a guess, in order to avoid delays.
+
+One good example is the branch prediction we have seen above. Another example will be the **load speculation**.
+
+<details>
+
+<summary>Self-Diagnostic Quiz</summary>
+
+{% hint style="warning" %}
+To better understand this quesiton, you may need to read the [out-of-order processor](lec-06-advanced-processor.md#out-of-order-processor) part first.
+{% endhint %}
+
+The instruction `sw x1, (x2)` followed by `lw x4, (x3)` can be unconditionally reordered, as there is no dependency between them.
+
+***
+
+**Ans**: False. This is because if `x2` and `x3` has the same value, then there will be a dependency between these two instructions and they cannot be reordered unconditionally. But if they don't have the same value, then the `lw` instruction can be scheduled before the store, this is what we called **load speculation**.
+
+</details>
+
+Speculative execution must have (hardware/software) mechanisms for
+
+* Checking to see if the guess was correct
+* Recovering from the effects of the instructions that were executed speculatively if the guess was incorrect.
+
 ## Deep Pipelining
 
 > As we have seen from Lec 01, to increase performance, we would like to **speed up the clock** and/or **reduce the CPI**. For the CPI, we know that **stalling** and **flushing** will both increase the CPI.
@@ -280,7 +307,11 @@ Now the out-of-order processor with register renaming issues the six instruction
 
 ### VLIW Processor
 
-> TODO: As this part is not covered in DDCA, please understand Prof's Rajesh's slides once have time.
+In the above sections, we try to increase the parallelism from the hardware perspective. However, there is a technique that shifts the burden of identifying parallelism from hardware to the compiler. This technique is called **VLIW**.
+
+In the VLIW processor, the **compiler** packs groups of independent instructions into the bundle, and the bundle can be thought of as one very long instruction. Hence the name.
+
+Since determining the order of execution of operations (including which operations can execute simultaneously) is handled by the compiler, the processor does not need the scheduling hardware that the three methods described above require. Thus, VLIW CPUs offer more computing with **less hardware complexity** (but **greater compiler complexity**) than do most superscalar CPUs.
 
 ## Multithreading
 
@@ -394,6 +425,8 @@ There are four types of computer architectures in the Flynn's Taxonomy, we will 
 
 It's essentially a sequential computer which exploits no parallelism in either the instruction or data stream.
 
+<figure><img src="../.gitbook/assets/cg3207-lec06-SISD.png" alt="" width="284"><figcaption></figcaption></figure>
+
 One example is a single-thread or single-core processor.
 
 #### Single Instruction stream Multiple Data streams (SIMD)
@@ -402,11 +435,15 @@ It's a computer which exploits multiple data streams against a single instructio
 
 * Exploits **data parallelism**
 
+<figure><img src="../.gitbook/assets/cg3207-lec06-SIMD.png" alt="" width="296"><figcaption></figcaption></figure>
+
 The examples are **hardware accelerators** and **GPU**s.
 
 #### Multiple Instruction streams Single Data stream (MISD)
 
 As its name suggests, it's multiple instructions operating on one data stream.
+
+<figure><img src="../.gitbook/assets/cg3207-lec06-MISD.png" alt="" width="312"><figcaption></figcaption></figure>
 
 This is an uncommon architecture and the examples are **autopilot** system of teh aeroplane, and the **systolic arrays** which are the heart of Google TPUs.
 
@@ -416,6 +453,8 @@ Multiple autonomous processors simultaneously executing different instructions o
 
 * Exploits thread-level/task parallelism
 
+<figure><img src="../.gitbook/assets/cg3207-lec06-MIMD.png" alt="" width="309"><figcaption></figcaption></figure>
+
 The examples of MIMD architectures include **parallel /** **distributed systems**, using either one shared memory space or a distributed memory space.
 
 > Why multithreading is MIMD?
@@ -424,15 +463,62 @@ The examples of MIMD architectures include **parallel /** **distributed systems*
 
 Modern processors have enormous numbers of transistors available. Using them to increase the pipeline depth or to add more execution units to a [superscalar processor](lec-06-advanced-processor.md#superscalar-processors) gives little performance benefit and wastes power. Around the year 2005, computer architects made a major shift to building multiple copies of the processor on the same chip; these copies are called **cores**.
 
-A multiprocessor system consists of multiple processors and a method for communication between the processors. Three common classes of multiprocessors include
+A multiprocessor system consists of multiple processors and a method for communication between the processors. This system can be divided into two categories based on whether it has a shared memory at any level:
 
-1. [Symmetric (or homogeneous) multiprocessors](lec-06-advanced-processor.md#symmetric-multiprocessors),
-2. [Heterogeneous multiprocessors](lec-06-advanced-processor.md#heterogeneous-multiprocessors), and
-3. [Clusters](lec-06-advanced-processor.md#clusters)
+1. [Loosely Coupled Multiprocessor Systems](lec-06-advanced-processor.md#loosely-coupled-mutiprocessor-systems), and
+2. [Tightly Coupled Multiprocessor Systems](lec-06-advanced-processor.md#tightly-coupled-mutiprocessor-systems)
 
-### Symmetric Multiprocessors
+### Loosely Coupled Mutiprocessor Systems
 
-**Symmetric multiprocessors** include two or more identical processors sharing a single main memory. The multiple processors may be separate chips or multiple cores on the same chip.
+In this system, each node runs different OS instances and communicate by **passing messages** rather than through a shared memory. In this kind of system, we have two concrete examples
+
+1. [Computer Clusters](lec-06-advanced-processor.md#clusters)
+2. [Grid Computers](lec-06-advanced-processor.md#grid-computers)
+
+#### Clusters
+
+In a **clustered multiprocessor** system, each processor have its own local memory system instead of sharing memory.
+
+It has nodes set to perform the same task, controlled and scheduled by software. These nodes are typically **hemogenous in hardware and software** and are housed in the same building / geography, interconnected using a dedicated network, have shared resources. This systme is often viewed as a single computer from outside, but it actually has a lot of noes (small computers) inside.
+
+One example is the **supercomputer**.
+
+#### Grid Computers
+
+This system is **very loosely coupled**, which means **diverse computers/nodes** are connected via internet and they are geographically dispersed.
+
+Within this system, each node performs a different task to reach a common goal. The nodes are typically heterogenous in hardware and autonomous in software.
+
+One example is the **cryptocurrency mining tools**.
+
+### Tightly Coupled Mutiprocessor Systems
+
+Tightly coupled multiprocessor systems are usually mounted on the same mother board or within the same silicon die, communicates via **shared memory** and usually controlled by a single OS.
+
+<figure><img src="../.gitbook/assets/cg3207-lec06-tightly-coupled-multiprocessor.png" alt="" width="563"><figcaption></figcaption></figure>
+
+In this system, as you can see from the image above
+
+* Each processor executes different programs and works on different data
+* Each processor usually has one or more levels of private cache
+* The processors share many resouces (e.g., higher level caches, memory, I/O device, interrupt system, etc.)
+* All processors connected using a system bus.
+
+However, for all the processors to communicate smoothly via the share memory, some mechanisms are needed to handle the conflict
+
+1. **Arbitration mechanisms**: It two processors attempt to use the same resource **simultaneously**, this mechanism needs to deal with this situation.
+2. **Mutual exclusion mechanisms**: This is used to protect resources (or a range of memory) which should not be used in a **concurrent** manner.
+3. **Cache coherence ensurance mechanisms**: This is to ensure the cache coherence across all levels.
+   1. **Bus snooping** and **directory-based mechanisms** are two examples.
+
+In the tightly coupled multiprocessor system, we have two small parts
+
+1. [Symmetric Multiprocessors](lec-06-advanced-processor.md#symmetric-multiprocessors)
+2. [Heterogeneous Multiprocessors](lec-06-advanced-processor.md#heterogeneous-multiprocessors)
+
+#### Symmetric Multiprocessors
+
+**Symmetric multiprocessors** include two or more **identical processors** sharing a single main memory. The multiple processors may be separate chips or multiple cores on the same chip.
 
 Multiprocessors can be used to
 
@@ -443,7 +529,7 @@ Multiprocessors can be used to
 Symmetric multiprocessors are good for situations like large data centers that have lots of thread-level parallelism available.
 {% endhint %}
 
-### Heterogeneous multiprocessors
+#### Heterogeneous Multiprocessors
 
 **Heterogeneous multiprocessors** incorporate different types of cores and/or specialized hardware in a single system. And it can take the following two forms:
 
@@ -453,12 +539,6 @@ Symmetric multiprocessors are good for situations like large data centers that h
 {% hint style="success" %}
 Heterogeneous systems are good for systems that have more varying or special-purpose workloads, such as mobile devices.
 {% endhint %}
-
-### Clusters
-
-In a **clustered multiprocessor** system, each processor have its own local memory system instead of sharing memory.
-
-One type of cluster is a group of personal computers connected on a network and running software to jointly solve a large problem.
 
 [^1]: this is mainly to reduce the propagation delay within the logic gates, so the same logic gate that built with the advanced manufacturing technology will have a **smaller** propagation delay.
 
