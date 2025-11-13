@@ -90,7 +90,7 @@ The accuracy of 80% doesn't apply to all cases! It is the accuracy only when the
 
 #### Two-bit Dynamic Branch Predictor
 
-A **two-bit dynamic branch predictor** can decrease the number of misprediction by having four states: Strongly taken, weakly takne, weakly not taken, and strongly not taken.
+A **two-bit dynamic branch predictor** can decrease the number of misprediction by having four states: Strongly taken, weakly taken, weakly not taken, and strongly not taken.
 
 <figure><img src="../.gitbook/assets/cg3207-lec06-2-bit-dynamic-branch-predictor.png" alt=""><figcaption></figcaption></figure>
 
@@ -101,6 +101,22 @@ In summary, **two-bit dynamic branch predictor** mispredicts **only the last bra
 $$
 \text{accuracy}=\frac{N-1}{N}\times100\%
 $$
+
+#### Branch Delay Slot
+
+In computer architecture, a **delay slot** is an **instruction slot** being executed without the effects of a preceding branch. The instruction in the delay slot will execute even if the preceding branch is taken. The insertion of the **independent instruction** which is safe to execute irrespective of branch outcome into the branch delay slot is done by the **compiler**.
+
+<details>
+
+<summary>Self-Diagnostic Quiz</summary>
+
+If 5-stage pipelined processor has a branch delay slot of 2, but it commits the branch at WB stage. How many instructions will be flushed if the branch is taken.
+
+***
+
+**Ans**: 2. When branch is commited at the WB stage, in a 5-stage pipelined processor, 4 instructions would have been fetched already. Among these four instructions, 2 are independent instructions inserted into the branch delay slot, which will be executed anyways. Thus, if the branch is taken, 2 instructions will be flushed.
+
+</details>
 
 ### Speculative Execution
 
@@ -190,7 +206,7 @@ For this program, the proecssor has a CPI of 0.5. Designers commonly refer to th
 
 #### Real Case
 
-As we all know, executing many instructions simultaneously is difficult because of dependencies. The following figure shows a pipeline diagram running a a program with [data dependencies](lec-05-the-pipelined-processor.md#data-hazards). The dependencies ni the code are indicated in <mark style="color:blue;">blue</mark>.
+As we all know, executing many instructions simultaneously is difficult because of dependencies. The following figure shows a pipeline diagram running a a program with [data dependencies](lec-05-the-pipelined-processor.md#data-hazards). The dependencies in the code are indicated in <mark style="color:blue;">blue</mark>.
 
 <figure><img src="../.gitbook/assets/cg3207-lec06-superscalar-processor-data-hazard.png" alt=""><figcaption></figcaption></figure>
 
@@ -345,7 +361,13 @@ Each **process** consists of one or more **threads** that also run simultaneousl
 
 The degree to which a process can be split into multiple threads that can run simultaneously defines its level of **thread-level parallelism (TLP)**.
 
-> TODO: **All threads** are independent from each other?
+<details>
+
+<summary>How to create threads from a process?</summary>
+
+The threads are usually created by the programmer himself. In C, you may use `pthread` (this has appeared in the [CG2111A project](https://github.com/mendax1234/CG2111A-Final-Project/blob/1c5f6b52bcfc5b8db2f738e75056d1e6061ed927/RPi/alex-pi.cpp#L494)) to create a thread manually. In Java, we can do so using the `Thread` class (this has appeared in [CS2030S](https://wenbo-notes.gitbook.io/cs2030s-notes/lec-rec-lab-exes/lecture/lec-11-parallelization-and-asynchronous#create-a-thread)). In whichever way, the spirit is that threads are usually created by the programmer.
+
+</details>
 {% endstep %}
 {% endstepper %}
 
@@ -381,13 +403,15 @@ A **hardware multithreaded** processor contains more than one copy of its archit
 
 For example, if we extended a processor to have four program counters and 128 registers, four threads could be available at one time. If one thread stalls while waiting for data from main memory, then the processor could context switch to another thread **without any delay**, because the program counter and registers are already available. Moreover, if one thread lacks sufficient parallelism to keep all execution units busy in a superscalar design, then another thread could issue instructions to the idle units.
 
-Swithcing between threads can either be **fine-grained** or **coarse-grained**.
+Switching between threads can either be **fine-grained** or **coarse-grained**.
 
 {% stepper %}
 {% step %}
 #### Fine-grained multithreading
 
 **Fine-grained multithreading** switches between threads on each instruction and must be supported by hardware multithreading.
+
+The advantage for fine-grained multithreading is that there will be less control and data hazards. As each thread is independent and now the total number of stages is splited into two threads running, thus having less control and data hazards overall.
 
 {% hint style="success" %}
 This is **temporal**.
@@ -457,7 +481,13 @@ Multiple autonomous processors simultaneously executing different instructions o
 
 The examples of MIMD architectures include **parallel /** **distributed systems**, using either one shared memory space or a distributed memory space.
 
-> Why multithreading is MIMD?
+<details>
+
+<summary>Why multithreading is considered as MIMD?</summary>
+
+Whenever a thread is created by the programmer, a **new instruction stream** is created. Usually, threads are independent from each other except that they may share the same memory. As each thread operates on its own data, thus we have multiple instruction streams and multiple data streams in multithreading.
+
+</details>
 
 ## Multiprocessors
 
@@ -479,7 +509,7 @@ In this system, each node runs different OS instances and communicate by **passi
 
 In a **clustered multiprocessor** system, each processor have its own local memory system instead of sharing memory.
 
-It has nodes set to perform the same task, controlled and scheduled by software. These nodes are typically **hemogenous in hardware and software** and are housed in the same building / geography, interconnected using a dedicated network, have shared resources. This systme is often viewed as a single computer from outside, but it actually has a lot of noes (small computers) inside.
+It has the nodes set to perform the same task, controlled and scheduled by software. These nodes are typically **hemogenous in hardware and software** and are housed in the same building / geography, interconnected using a dedicated network, have shared resources. This system is often viewed as a single computer from outside, but it actually has a lot of nodes (small computers) inside.
 
 One example is the **supercomputer**.
 
@@ -539,6 +569,17 @@ Symmetric multiprocessors are good for situations like large data centers that h
 {% hint style="success" %}
 Heterogeneous systems are good for systems that have more varying or special-purpose workloads, such as mobile devices.
 {% endhint %}
+
+<details>
+
+<summary>Multithread and multiprocessor in real world</summary>
+
+In real world, when the programmner writes a high level program and creates some threads in the program. He doesn't care whether this program will be run on a single processor or a muliprocessor system. The final outcome will be the same. But how it is executed may be different
+
+1. If the process is executed on a single processor, the processor may perform the multithreading techniques to switch between threads to achieve the fact that multiple threads are executed simultaneously.
+2. If the process is executed on a multiprocessor system, the threads can run inherently in parallel as multiple processors are available.
+
+</details>
 
 [^1]: this is mainly to reduce the propagation delay within the logic gates, so the same logic gate that built with the advanced manufacturing technology will have a **smaller** propagation delay.
 
