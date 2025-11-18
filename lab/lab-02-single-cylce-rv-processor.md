@@ -168,19 +168,16 @@ Different from the [Lec 03 microarchitecture](https://wenbo-notes.gitbook.io/ddc
 1. CPU outputs **PC**. This is done in `RV.v` as `PC` is an output from CPU.
 2.  Wrapper uses PC to fetch the `Instr` from instruction memory.&#x20;
 
-    {% code lineNumbers="true" %}
-    ```verilog
-    //----------------------------------------------------------------
+    <pre class="language-verilog" data-line-numbers><code class="lang-verilog">//----------------------------------------------------------------
     // IROM read
     //----------------------------------------------------------------
     always @(*) begin  // @posedge CLK only if using synch read for memory
-        Instr = ( ( PC[31:IROM_DEPTH_BITS] == IROM_BASE[31:IROM_DEPTH_BITS]) && // To check if address is in the valid range
+        Instr = ( ( PC[31:IROM_DEPTH_BITS] == IROM_BASE[31:IROM_DEPTH_BITS]) &#x26;&#x26; // To check if address is in the valid range
         (PC[1:0] == 2'b00) )? // and is word-aligned - we do not support instruction sizes other than 32.
         IROM[PC[IROM_DEPTH_BITS-1:2]] : 32'h00000013 ; // If the address is invalid, the instruction fetched is NOP. 
         // This can be changed to trigger an exception instead if need be.
     end
-    ```
-    {% endcode %}
+    </code></pre>
 3. Wrapper sends `Instr` back into CPU.  This done in `RV.v` as `Instr` is an input to CPU.
 {% endstep %}
 
@@ -197,72 +194,57 @@ The data access path has two parts, one is to load data from either DMEM or MMIO
 * CPU asserts `MemRead = 1`. (`MemRead` is just `MemtoReg` in our microarchitecture)
 *   Wrapper checks `ALUResult` and enable corresponding `dec_*` signal to indicate which memory we want to access (read from here)
 
-    {% code lineNumbers="true" %}
-    ```verilog
-    // Derive the decoded MMIO read signal
+    <pre class="language-verilog" data-line-numbers><code class="lang-verilog">// Derive the decoded MMIO read signal
     assign dec_MMIO_read = MemRead || dec_DIP || dec_PB || dec_UART_RX_VALID || dec_UART_RX || dec_UART_TX_READY || dec_UART_TX || dec_CYCLECOUNT || dec_ACCEL_DATA || dec_ACCEL_DREADY ;
-    ```
-    {% endcode %}
+    </code></pre>
 
     *   If address ∈ **DMEM range** (`dec_DMEM == 1`)-> access (read from) DMEM, and store the read data into `ReadData_DMEM`.
 
-        {% code lineNumbers="true" %}
-        ```verilog
-        //----------------------------------------------------------------
+        <pre class="language-verilog" data-line-numbers><code class="lang-verilog">//----------------------------------------------------------------
         // Asych DMEM read - //Uncomment the following block (3 lines) if NOT using synch read for memory
         //----------------------------------------------------------------
         always @(*) begin
-            ReadData_DMEM <= DMEM[ALUResult[DMEM_DEPTH_BITS-1:2]];  // async read
+            ReadData_DMEM &#x3C;= DMEM[ALUResult[DMEM_DEPTH_BITS-1:2]];  // async read
         end
-        ```
-        {% endcode %}
+        </code></pre>
     *   If address ∈ **MMIO range** (`dec_MMIO_* == 1`) -> access (read from) the MMIO peripheral and store the read data into `ReadData_MMIO`.
 
-        {% code lineNumbers="true" %}
-        ```verilog
-        //----------------------------------------------------------------
+        <pre class="language-verilog" data-line-numbers><code class="lang-verilog">//----------------------------------------------------------------
         // MMIO read
         //----------------------------------------------------------------
         always @(*) begin  // @posedge CLK only if using synch read for memory
-            if (dec_DIP) ReadData_MMIO <= {{31 - N_DIPs + 1{1'b0}}, DIP};
-            else if (dec_PB) ReadData_MMIO <= {{31 - N_PBs + 1{1'b0}}, PB};
-            else if (dec_UART_RX && UART_RX_valid) ReadData_MMIO <= {24'd0, UART_RX};
-            else if (dec_UART_RX_VALID) ReadData_MMIO <= {31'd0, UART_RX_valid};
-            else if (dec_UART_TX_READY) ReadData_MMIO <= {31'd0, UART_TX_ready};
-            else if (dec_CYCLECOUNT) ReadData_MMIO <= cycle_count;
-            else if (dec_ACCEL_DATA) ReadData_MMIO <= ACCEL_Data;
+            if (dec_DIP) ReadData_MMIO &#x3C;= {{31 - N_DIPs + 1{1'b0}}, DIP};
+            else if (dec_PB) ReadData_MMIO &#x3C;= {{31 - N_PBs + 1{1'b0}}, PB};
+            else if (dec_UART_RX &#x26;&#x26; UART_RX_valid) ReadData_MMIO &#x3C;= {24'd0, UART_RX};
+            else if (dec_UART_RX_VALID) ReadData_MMIO &#x3C;= {31'd0, UART_RX_valid};
+            else if (dec_UART_TX_READY) ReadData_MMIO &#x3C;= {31'd0, UART_TX_ready};
+            else if (dec_CYCLECOUNT) ReadData_MMIO &#x3C;= cycle_count;
+            else if (dec_ACCEL_DATA) ReadData_MMIO &#x3C;= ACCEL_Data;
             else  // dec_ACCEL_DREADY // the default else to avoid the statement from being incomplete
-                ReadData_MMIO <= {31'd0, ACCEL_DReady};
+                ReadData_MMIO &#x3C;= {31'd0, ACCEL_DReady};
         end
-        ```
-        {% endcode %}
+        </code></pre>
     *   After that, we delay the decoded signals
 
-        {% code lineNumbers="true" %}
-        ```verilog
-        //----------------------------------------------------------------
+        <pre class="language-verilog" data-line-numbers><code class="lang-verilog">//----------------------------------------------------------------
         // Delaying the decoded signals for multiplexing (delay only if using synch read for memory)
         //----------------------------------------------------------------
         always @(*) begin  // @posedge CLK only if using synch read for memory
-            dec_DMEM_W <= dec_DMEM;
-            dec_MMIO_read_W <= dec_MMIO_read;
+            dec_DMEM_W &#x3C;= dec_DMEM;
+            dec_MMIO_read_W &#x3C;= dec_MMIO_read;
         end
-        ```
-        {% endcode %}
+        </code></pre>
 *   Wrapper puts that value into `ReadData_in`. (This is where the I/O Multiplexing comes into play)
 
-    {% code lineNumbers="true" %}
-    ```verilog
-    //----------------------------------------------------------------
+    <pre class="language-verilog" data-line-numbers><code class="lang-verilog">//----------------------------------------------------------------
     // Input (into RV) multiplexing
     //----------------------------------------------------------------
     always @(*) begin
-        if (dec_DMEM_W) ReadData_in <= ReadData_DMEM;
+        if (dec_DMEM_W) ReadData_in &#x3C;= ReadData_DMEM;
         else  // dec_MMIO_read_W
-            ReadData_in <= ReadData_MMIO;
+            ReadData_in &#x3C;= ReadData_MMIO;
     end
-    ```
-    {% endcode %}
+    </code></pre>
 * CPU reads `ReadData_in` and writes into register file.
 
 {% hint style="success" %}
@@ -281,9 +263,7 @@ The data to be read (either from MMIO or DMEM) is always stored at `ReadData_in`
 * Wrapper checks `ALUResult`:
   *   If address ∈ **DMEM range** -> write `WriteData_out` into DMEM.
 
-      {% code lineNumbers="true" %}
-      ```verilog
-      //----------------------------------------------------------------
+      <pre class="language-verilog" data-line-numbers><code class="lang-verilog">//----------------------------------------------------------------
       // DMEM write
       //----------------------------------------------------------------
       localparam NUM_COL = 4;
@@ -291,33 +271,30 @@ The data to be read (either from MMIO or DMEM) is always stored at `ReadData_in`
       integer i;
       always @(posedge CLK) begin
           if (MemWrite) begin
-              for (i = 0; i < NUM_COL; i = i + 1) begin
+              for (i = 0; i &#x3C; NUM_COL; i = i + 1) begin
                   if (MemWrite_out[i]) begin
                       if (dec_DMEM) begin
-                          DMEM[ALUResult[DMEM_DEPTH_BITS-1:2]][i*COL_WIDTH +: COL_WIDTH] <= WriteData_out[i*COL_WIDTH +: COL_WIDTH];
+                          DMEM[ALUResult[DMEM_DEPTH_BITS-1:2]][i*COL_WIDTH +: COL_WIDTH] &#x3C;= WriteData_out[i*COL_WIDTH +: COL_WIDTH];
                       end
                   end
               end
           end
-          //ReadData_DMEM <= DMEM[ALUResult[DMEM_DEPTH_BITS-1:2]] ; //Uncomment only if only using synch read for memory
+          //ReadData_DMEM &#x3C;= DMEM[ALUResult[DMEM_DEPTH_BITS-1:2]] ; //Uncomment only if only using synch read for memory
       end
-      ```
-      {% endcode %}
+      </code></pre>
   *   If address ∈ **MMIO range** -> forward `WriteData_out` into peripheral (e.g. set LEDs, update 7-seg).
 
-      {% code lineNumbers="true" %}
-      ```verilog
-      //----------------------------------------------------------------
+      <pre class="language-verilog" data-line-numbers><code class="lang-verilog">//----------------------------------------------------------------
       // SevenSeg write
       //----------------------------------------------------------------
       integer j;
       always @(posedge CLK) begin
           if (MemWrite) begin
-              for (j = 0; j < NUM_COL; j = j + 1) begin
+              for (j = 0; j &#x3C; NUM_COL; j = j + 1) begin
                   if (MemWrite_out[j]) begin
-                      if (RESET) SEVENSEGHEX <= 32'd0;
+                      if (RESET) SEVENSEGHEX &#x3C;= 32'd0;
                       else if (dec_SEVENSEG)
-                          SEVENSEGHEX[j*COL_WIDTH+:COL_WIDTH] <= WriteData_out[j*COL_WIDTH+:COL_WIDTH];
+                          SEVENSEGHEX[j*COL_WIDTH+:COL_WIDTH] &#x3C;= WriteData_out[j*COL_WIDTH+:COL_WIDTH];
                   end
               end
           end
@@ -327,11 +304,10 @@ The data to be read (either from MMIO or DMEM) is always stored at `ReadData_in`
       // Memory-mapped LED write
       //----------------------------------------------------------------
       always @(posedge CLK) begin
-          if (RESET) LED_OUT <= 0;
-          else if (MemWrite_out[0] && dec_LED) LED_OUT <= WriteData_out[N_LEDs_OUT-1 : 0];
+          if (RESET) LED_OUT &#x3C;= 0;
+          else if (MemWrite_out[0] &#x26;&#x26; dec_LED) LED_OUT &#x3C;= WriteData_out[N_LEDs_OUT-1 : 0];
       end
-      ```
-      {% endcode %}
+      </code></pre>
 * CPU does not expect anything on `ReadData_in`.
 
 {% hint style="success" %}

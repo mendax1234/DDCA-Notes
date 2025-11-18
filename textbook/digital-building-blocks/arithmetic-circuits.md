@@ -280,7 +280,7 @@ Suppose we want to do 64-bit addition and subtraction in RISC-V. We use `[t0:t1]
 For the addition, we have,
 
 {% code lineNumbers="true" %}
-```armasm
+```riscv
 add   t4, t0, t2        # low  word sum
 sltu  t6, t4, t0        # carry = (sum < t0)
 add   t5, t1, t3        # high word sum
@@ -291,7 +291,7 @@ add   t5, t5, t6        # add carry
 For the subtraction, we have,
 
 {% code lineNumbers="true" %}
-```armasm
+```riscv
 sub   t4, t0, t2        # low  word diff
 sltu  t6, t0, t2        # borrow = (t0 < t2)
 sub   t5, t1, t3        # high word diff

@@ -64,7 +64,7 @@ As we have seen in [previous notes](https://wenbo-notes.gitbook.io/ddca-notes/te
 Using a series of two instructions — one of the "multiply high" instructions followed by the `mul` instruction — will place the entire 64-bit result of the 32-bit multiplication in the two registers designated by the user. For example, the following code multiplies 32-bit signed numbers in `s3` and `s5` and places the 64-bit product in `t1` and `t2`. That is `{t1, t2} = s3 x s5`.
 
 {% code lineNumbers="true" %}
-```armasm
+```riscv
 mulh t1, s3, s5;
 mul  t2, s3, s5;
 ```
@@ -91,7 +91,7 @@ The RISC-V instruction set has six conditional branch instructions, eahc of whic
 Code Example 6.12 illustrates the use of `beq`. When the program reaches the branch if equal instruction (`beq`), the value in `s0` is equal to the value in `s1`, so the branch is taken. Thus, the next instruction executed is the `add` instruction just after the label called `target`. The `addi` and `sub` instructions between the branch and the label are not executed.
 
 {% code title="Example 6.12 Conditional Branching Using beq" lineNumbers="true" %}
-```armasm
+```riscv
  addi s0, zero, 4   # s0 = 0 + 4 = 4
  addi s1, zero, 1   # s1 = 0 + 1 = 1
  slli s1, s1, 2     # s1 = 1 << 2 = 4
@@ -114,7 +114,7 @@ target:
 In Code Example 6.13, the branch is not taken because `s0` is equal to `s1`, and the code continues to execute directly after the `bne` (branch if not equal) instruction. **All** instructions in this code snippet are executed. (Including the instruction under `target`)
 
 {% code title="Example 6.13 Conditional Branch Using bne" lineNumbers="true" %}
-```armasm
+```riscv
  addi s0, zero, 4   # s0 = 0 + 4 = 4
  addi s1, zero, 1   # s1 = 0 + 1 = 1
  slli s1, s1, 2     # s1 = 1 << 2 = 4
@@ -135,7 +135,7 @@ A program can jump — that is, unconditionally branch — using one of three in
 3. _jump register_ (`jr`): will be discussed later in function calls.
 
 {% code title="Example 6.14 Unconditional Branching Using j" lineNumbers="true" %}
-```armasm
+```riscv
  j target          # jump to target
  srai s1, s1, 2    # not executed
  addi s1, s1, 1    # not executed
@@ -172,7 +172,7 @@ apples = oranges - h;
 
 {% tab title="RISC-V Assembly Code" %}
 {% code title="Example 6.15 If Statement" lineNumbers="true" %}
-```armasm
+```riscv
 # s0 = apples, s1 = oranges
 # s2 = f, s3 = g, s4 = h
     bne s0, s1, L1   # skip if (apples != oranges)
@@ -207,7 +207,7 @@ else
 
 {% tab title="RISC-V Assembly Code" %}
 {% code title="Example 6.16 If/else Statement" lineNumbers="true" %}
-```armasm
+```riscv
 # s0 = apples, s1 = oranges
 # s2 = f, s3 = g, s4 = h
     bne s0, s1, L1   # skip if (apples != oranges)
@@ -265,7 +265,7 @@ if (button == 1) {
 
 {% tab title="RISC-V Assembly Code" %}
 {% code title="Example 6.17 Switch/case Statement" lineNumbers="true" %}
-```armasm
+```riscv
 # s0 = button, s1 = amt
 case1:
     addi t0, zero, 1    # t0 = 1
@@ -320,7 +320,7 @@ while (pow != 128) {
 
 {% tab title="RISC-V Assembly Code" %}
 {% code title="Example 6.18 While Loop" lineNumbers="true" %}
-```armasm
+```riscv
 # s0 = pow, s1 = x
     addi s0, zero, 1      # pow = 1
     add s1, zero, zero    # x = 0
@@ -364,7 +364,7 @@ do {
 
 {% tab title="RISC-V Assembly Code" %}
 {% code title="Example 6.19 Do/While Loop" lineNumbers="true" %}
-```armasm
+```riscv
 # s0 = pow, s1 = x
     addi s0, zero, 1      # pow = 1
     add  s1, zero, zero   # x = 0
@@ -406,7 +406,7 @@ for (i = 0; i < 10; i = i + 1) {
 
 {% tab title="RISC-V Assembly Code" %}
 {% code title="Example 6.20 For Loop" lineNumbers="true" %}
-```armasm
+```riscv
 # s0 = i, s1 = sum
     addi s1, zero, 0      # sum = 0
     addi s0, zero, 0      # i = 0
@@ -452,7 +452,7 @@ for (i = 0; i < 200; i += 1) {
 
 {% tab title="RISC-V Assembly Code" %}
 {% code title="Example 6.21 Using a for loop to access an array" lineNumbers="true" %}
-```armasm
+```riscv
 # s0 = scores base address, s1 = i
 
     addi s1, zero, 0   # i = 0
@@ -541,7 +541,7 @@ void simple() {
 
 {% tab title="RISC-V Assembly Code" %}
 {% code title="Example 6.22 simple function call" lineNumbers="true" %}
-```armasm
+```riscv
 0x00000300 main:   jal simple  # call function
 0x00000304 ...
 ...        ...
@@ -586,7 +586,7 @@ int diffofsums(int f, int g, int h, int i) {
 
 {% tab title="RISC-V Assembly Code" %}
 {% code title="Example 6.23 Function calls with arguments and return values" lineNumbers="true" %}
-```armasm
+```riscv
 # s7 = y
 main:
     ...
@@ -666,7 +666,7 @@ int diffofsums(int f, int g, int h, int i) {
 
 {% tab title="RISC-V Assembly Code" %}
 {% code title="Example 6.24 Function that saves registers on the stack" lineNumbers="true" %}
-```armasm
+```riscv
 # s3 = result
 diffofsums:
     addi sp, sp, −12   # make space on stack to
@@ -748,7 +748,7 @@ int diffofsums(int f, int g, int h, int i) {
 
 {% tab title="RISC-V Assembly Code" %}
 {% code title="Example 6.25 Function that saves preserved registers on the stack" lineNumbers="true" %}
-```armasm
+```riscv
 # s3 = result
 diffofsums:
     addi sp, sp, −4    # make space on stack to store one register

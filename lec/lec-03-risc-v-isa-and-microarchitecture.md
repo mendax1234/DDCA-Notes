@@ -220,7 +220,7 @@ Only all **immediates** are MSB-extended. Later we will see, value stored in reg
 
 However, this may become a bit wired with instruction `sltu`. But, let loop at the following example,
 
-```armasm
+```riscv
 sltiu x3, x1, -8
 ```
 
@@ -341,7 +341,7 @@ void fn1() {
 
 {% tab title="RISC-V Assembly Code" %}
 {% code lineNumbers="true" %}
-```armasm
+```riscv
 # Caller function: fn1
 # Calls fn2, increments x and y, and stores results in z1 and z2
 fn1:

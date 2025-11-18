@@ -35,7 +35,7 @@ When the assembler sees `NAME`, it replaces it with `VALUE`.
 This is the **program memory** — where instructions live. It stores the instructions that the CPU fetches and executes. It has the following coding convention,
 
 {% code lineNumbers="true" %}
-```armasm
+```riscv
 .text   ## IROM segment
 main:
     li s0, MMIO_BASE
@@ -62,7 +62,7 @@ halt:
 **Data memory** stores constants, variables, strings, arrays, stack, heap, etc. Its coding convention is as follows,
 
 {% code lineNumbers="true" %}
-```armasm
+```riscv
 .data   ## DMEM segment
 DMEM:
 
@@ -169,7 +169,7 @@ The word is stored using [**little endianess**](https://wenbo-notes.gitbook.io/c
 In Line 47, the instruction is actually implemented by two RISC-V instructions.&#x20;
 
 {% code lineNumbers="true" %}
-```armasm
+```riscv
 auipc x19, 0x0000fc10
 lw    x19, 0xffffffec(x19)
 ```
@@ -250,7 +250,7 @@ This is the setup work. Nothing special.
 This section is also pretty straight-forward. But in Line 75-78, the trick to implement `if A or B` needs our attention,
 
 {% code overflow="wrap" lineNumbers="true" %}
-```armasm
+```riscv
 li t1, '\r'
 beq t0, t1, ACCEPT_CRorLF # if t0 == '\r', go to ACCEPT_CRorLF
 li t1, '\n'

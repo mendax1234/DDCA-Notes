@@ -444,15 +444,12 @@ If you use either [`initial` block](https://wenbo-notes.gitbook.io/ddca-notes/la
   * Initialization to 0 or 1 will connect the wire to a constant 0 or 1 respectively.    &#x20;Further assignment using assign will lead to it having multiple drivers. This is **dangerous** and **not recommended!**
 *   `reg`s that get synthesized as combinational circuits **cannot be    &#x20;meaningfully initialized**.
 
-    {% code lineNumbers="true" %}
-    ```verilog
-    reg z = 1'b1;   // initialization ignored in synthesis
+    <pre class="language-verilog" data-line-numbers><code class="lang-verilog">reg z = 1'b1;   // initialization ignored in synthesis
 
     always @(*) begin
-      z = a & b;    // purely combinational assignment
+      z = a &#x26; b;    // purely combinational assignment
     end
-    ```
-    {% endcode %}
+    </code></pre>
 
     Here, `z` is **not a flip-flop** — it’s just a combinational output of `a & b`. The `= 1'b1` initialization only affects **simulation**; in real hardware it’s ignored. So on power-up, `z` won’t magically start at `1`. It will simply depend on `a & b`.
 
@@ -476,31 +473,25 @@ These are the same as Harris & Harris, besides that, we also recommend that
 
 1.  Every `reg` must be assigned a meaningful value (not something like `Z <= Z;`) for    &#x20;every possible combination of inputs (e.g., all branches of `if/case` statements). Otherwise, that `reg` will become **physical register** and it is no longer a combinational circuit anymore. For example, the following is correct
 
-    {% code lineNumbers="true" %}
-    ```verilog
-    always @(*)
+    <pre class="language-verilog" data-line-numbers><code class="lang-verilog">always @(*)
     begin
         if (x)
             Z = 1'b0;
         else
             Z = Y;
     end
-    ```
-    {% endcode %}
+    </code></pre>
 2. Two cases with blocking and non-blocking statements in `always @(*)`
    1. Blocking executes **immediately, in order**. So if a `reg` is used on both **left-hand side (LHS)** and **right-hand side (RHS)**, you should assign it **first** before you read it. (that `reg` should appear on LHS before RHS)
    2.  Non-blocking executes **in parallel at the end of the clock edge**, so within the same block you’ll **never see the updated value** in the RHS. For example, in the following code snippet, `Z` in Line 5 will hold the old value of `Z`.
 
-       {% code lineNumbers="true" %}
-       ```verilog
-       always @ (*)
+       <pre class="language-verilog" data-line-numbers><code class="lang-verilog">always @ (*)
        begin
            notX = ~X;
-           Z <= notX & Y;
-           A <= Z;
+           Z &#x3C;= notX &#x26; Y;
+           A &#x3C;= Z;
        end
-       ```
-       {% endcode %}
+       </code></pre>
 
 In short, rule 1 and rule 2(a) are important! For the rule 2(b), just never use **non-blocking** statement in `always @(*)`.
 {% endstep %}
@@ -518,16 +509,13 @@ By keeping the above two rules, you should be able to avoid 99% of problems. But
 1. Use **non-blocking** assignments for the outputs of the always block (signals),   &#x20;as well as for any internal physical registers. **But** the updated values are **not available** for use at the **same clock edge**. (See Step 1, rule 2(b) example)
 2.  If you insist on using blocking assignments for internal combinational parts (variables). In this case, the variable should appear on the LHS **before** RHS.
 
-    {% code lineNumbers="true" %}
-    ```verilog
-    always @ (posedge CLK)
+    <pre class="language-verilog" data-line-numbers><code class="lang-verilog">always @ (posedge CLK)
     begin
         tmp = X | Y; // tmp is a combinational variable
-        Z <= tmp; //Z is an output (signal)
-        // Z <= X | Y; is fine as well
+        Z &#x3C;= tmp; //Z is an output (signal)
+        // Z &#x3C;= X | Y; is fine as well
     end
-    ```
-    {% endcode %}
+    </code></pre>
 
     1. However, it is **recommended** to move combinational parts into a separate `always` block or `assign` statement so that the original block just becomes a register.
 {% endstep %}

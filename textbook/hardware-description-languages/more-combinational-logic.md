@@ -202,68 +202,50 @@ The following guidelines explain when and how to use each type of assignment. If
 {% tab title="SystemVerilog" %}
 1.  Use `always_ff @(posedge clk)` and **nonblocking assigments** to model **synchronous sequential logic.**
 
-    {% code lineNumbers="true" %}
-    ```verilog
-    always_ff @(posedge clk) begin
-      n1 <= d;  // nonblocking
-      q  <= n1; // nonblocking
+    <pre class="language-verilog" data-line-numbers><code class="lang-verilog">always_ff @(posedge clk) begin
+      n1 &#x3C;= d;  // nonblocking
+      q  &#x3C;= n1; // nonblocking
     end
-    ```
-    {% endcode %}
+    </code></pre>
 2.  Use **continuous assignments** to model **simple combinational logic**.
 
-    {% code lineNumbers="true" %}
-    ```verilog
-    assign y = s ? d1 : d0;
-    ```
-    {% endcode %}
+    <pre class="language-verilog" data-line-numbers><code class="lang-verilog">assign y = s ? d1 : d0;
+    </code></pre>
 3.  Use `always_comb` and **blocking assignments** to model **more complicated combinational logic** where the `always` statement is helpful.\
 
 
-    {% code lineNumbers="true" %}
-    ```verilog
-    always_comb begin
+    <pre class="language-verilog" data-line-numbers><code class="lang-verilog">always_comb begin
       p    = a ^ b;        // blocking
-      g    = a & b;        // blocking
+      g    = a &#x26; b;        // blocking
       s    = p ^ cin;
-      cout = g | (p & cin);
+      cout = g | (p &#x26; cin);
     end
-    ```
-    {% endcode %}
+    </code></pre>
 4. Do not make assignments to the **same signal** in more than one `always` statement or **continuous assignment statement**.
 {% endtab %}
 
 {% tab title="Verilog" %}
 1.  Use `always @ (posedge clk)` and **nonblocking assigments** to model **synchronous sequential logic.**
 
-    {% code lineNumbers="true" %}
-    ```verilog
-    always @(posedge clk) begin
-      n1 <= d;  // nonblocking
-      q  <= n1; // nonblocking
+    <pre class="language-verilog" data-line-numbers><code class="lang-verilog">always @(posedge clk) begin
+      n1 &#x3C;= d;  // nonblocking
+      q  &#x3C;= n1; // nonblocking
     end
-    ```
-    {% endcode %}
+    </code></pre>
 2.  Use **continuous assignments** to model **simple combinational logic**.
 
-    {% code lineNumbers="true" %}
-    ```verilog
-    assign y = s ? d1 : d0;
-    ```
-    {% endcode %}
+    <pre class="language-verilog" data-line-numbers><code class="lang-verilog">assign y = s ? d1 : d0;
+    </code></pre>
 3.  Use `always @ (*)` and **blocking assignments** to model **more complicated combinational logic** where the `always` statement is helpful.\
 
 
-    {% code lineNumbers="true" %}
-    ```verilog
-    always @ (*)
+    <pre class="language-verilog" data-line-numbers><code class="lang-verilog">always @ (*)
       p    = a ^ b;        // blocking
-      g    = a & b;        // blocking
+      g    = a &#x26; b;        // blocking
       s    = p ^ cin;
-      cout = g | (p & cin);
+      cout = g | (p &#x26; cin);
     end
-    ```
-    {% endcode %}
+    </code></pre>
 4. Do not make assignments to the **same signal** in more than one `always` statement or **continuous assignment statement**.
 {% endtab %}
 {% endtabs %}

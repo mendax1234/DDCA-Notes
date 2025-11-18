@@ -102,25 +102,22 @@ We have 5 stages, thus we need 4 "cuts"/registers. By adding registers, we can c
 2.  **Real processor design**: In Verilog, we use several register to compose a big pipeline register, like the decode pipeline register shown as follows,\
 
 
-    {% code lineNumbers="true" %}
-    ```verilog
-    always @(posedge CLK) begin
-        PCSE        <= PCSD;
-        RegWriteE   <= RegWriteD;
-        MemtoRegE   <= MemtoRegD;
-        MemWriteE   <= MemWriteD;
-        ALUControlE <= ALUControlD;
-        ALUSrcAE    <= ALUSrcAD;
-        ALUSrcBE    <= ALUSrcBD;
-        RD1E        <= RD1D;
-        RD2E        <= RD2D;
-        ExtImmE     <= ExtImmD;
-        rdE         <= rdD;
-        PCE         <= PCD;
-        Funct3E     <= Funct3D;
+    <pre class="language-verilog" data-line-numbers><code class="lang-verilog">always @(posedge CLK) begin
+        PCSE        &#x3C;= PCSD;
+        RegWriteE   &#x3C;= RegWriteD;
+        MemtoRegE   &#x3C;= MemtoRegD;
+        MemWriteE   &#x3C;= MemWriteD;
+        ALUControlE &#x3C;= ALUControlD;
+        ALUSrcAE    &#x3C;= ALUSrcAD;
+        ALUSrcBE    &#x3C;= ALUSrcBD;
+        RD1E        &#x3C;= RD1D;
+        RD2E        &#x3C;= RD2D;
+        ExtImmE     &#x3C;= ExtImmD;
+        rdE         &#x3C;= rdD;
+        PCE         &#x3C;= PCD;
+        Funct3E     &#x3C;= Funct3D;
     end
-    ```
-    {% endcode %}
+    </code></pre>
 
     So, at each **posedge** of the clock, all the left hand register will copy the value from the right hand side. This will help us understand the [stalling and flushing](lec-05-the-pipelined-processor.md#flushing-vs.-stalling) later.
 {% endhint %}
@@ -146,7 +143,7 @@ In the Fetch stage, the `rd` is no longer connected directly to the instruction 
 This is because we are using pipelining! Suppose we have the following instructions
 
 {% code lineNumbers="true" %}
-```armasm
+```riscv
 add x1, x2, x3
 sub x4, x5, x6
 ```
@@ -441,7 +438,7 @@ In the [#use-different-clock-edges](lec-05-the-pipelined-processor.md#use-differ
 A problem will happen if we have the following instructions
 
 {% code lineNumbers="true" %}
-```armasm
+```riscv
 addi x5, x1, 9
 add  x7, x8, x9
 add  x8, x8, x9

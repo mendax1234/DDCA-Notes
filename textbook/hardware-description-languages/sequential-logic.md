@@ -29,12 +29,9 @@ endmodule
 1.  In general, a SystemVerilog `always` statement is written in the form\
 
 
-    {% code lineNumbers="true" %}
-    ```verilog
-    always @(sensitivity list)
+    <pre class="language-verilog" data-line-numbers><code class="lang-verilog">always @(sensitivity list)
       statement;
-    ```
-    {% endcode %}
+    </code></pre>
 2. The `statement` is executed **only when** the event specified in the `sensitivity list` occurs. In this example, the statement is `q <= d` (pronounced "q gets d"). Hence, the flip-flop copies `d` to `q` on the positive edge of the clock and otherwise remembers the old state of `q`. Note that sensitivity lists are also referred to as stimulus lists.
 3. `<=` is called a _nonblocking assignment_. Think of it as a regular `=` sign for now; we'll return to the more subtle points later. Note that `<=` is used instead of `assign` inside an `always` statement.
 4. **(SystemVerilog Specific)** As will be seen in subsequent sections, `always` statements can be used to imply flip-flops, latches, or combinational logic, depending on the **sensitivity list** and **statement**. Because of this flexibility, it is easy to produce the wrong hardware inadvertently. SystemVerilog introduces `always_ff`, `always_latch`, and `always_comb` to reduce the risk of common errors. `always_ff` behaves like `always` but is used exclusively to imply flip-flops and allows tools to produce a warning if anything else is implied.

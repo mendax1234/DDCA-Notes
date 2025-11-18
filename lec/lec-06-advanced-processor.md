@@ -21,7 +21,7 @@ The simplest form of branch prediction checks the **direction** of the branch an
 These are the branches that occur at the **beginning** of a loop to check a condition and **branch past the loop** when the condition is no longer met (e.g., in _for_ and _while_ loops). Loops tend to execute many times, so these forward branches are **usually not taken**.
 
 {% code lineNumbers="true" %}
-```
+```riscv
 Loop: beq s1, s2, Out
       1nd loop instr
            .
@@ -38,7 +38,7 @@ Out:  fall out instr
 These are the branches that occur when a program reaches the **end** of a loop and **branches back to repeat the loop** (e.g., _do-while_ loop). Again, because loops tend to execute many times, these backward branches are **usually taken**.
 
 {% code lineNumbers="true" %}
-```
+```riscv
 Loop: 1st loop instr
       2nd loop instr
             .
@@ -59,7 +59,7 @@ Dynamic branch predictors maintain a table of the last several hundred (or thous
 To see it clearly, consider the following loop. The loop repeats 10 times, and the branch out of the loop (`bge s0, t0, done`) is taken only on the last iteration.
 
 {% code lineNumbers="true" %}
-```armasm
+```riscv
       addi s1, zero, 0  # s1 = sum = 0
       addi s0, zero, 0  # s0 = i = 0
       addi t0, zero, 10 # to = 10
@@ -162,7 +162,7 @@ However, the maximum number of pipeline stages is limited by the pipeline hazard
 It means the at run time, more **complex instructions** will be **decomposed** into a series of simple instructions called **micro-operations** (micro-ops or $$\mu$$-ops). These micro-operations can be executed on **simple datapaths**.
 
 {% code lineNumbers="true" %}
-```armasm
+```
 ; Using ARM Assembly as an example
 ; Complex Op
 LDR R1, [R2], #4
@@ -280,7 +280,7 @@ To solve it, we can use the register renaming technique which will be introduced
 This hazard is not shown in the example above. It is called a **write afte write (WAW)** hazard or an **output dependence**. A WAW hazard occurs if an instruction attempts to write a register after a subsequent instruction has already written it. The hazard would result in the wrong value being written to the register. For example, in the following code, `lw` and `add` both write `s7`. The final value in `s7` should come from `add` according to the order of the program. If an out-of-order processor attempted to execute `add` first and then `lw`, a WAW hazard would occur.
 
 {% code lineNumbers="true" %}
-```armasm
+```riscv
 lw  s7, 0(t3)
 add s7, s1, t2
 ```
@@ -493,23 +493,23 @@ Whenever a thread is created by the programmer, a **new instruction stream** is 
 
 Modern processors have enormous numbers of transistors available. Using them to increase the pipeline depth or to add more execution units to a [superscalar processor](lec-06-advanced-processor.md#superscalar-processors) gives little performance benefit and wastes power. Around the year 2005, computer architects made a major shift to building multiple copies of the processor on the same chip; these copies are called **cores**.
 
-A multiprocessor system consists of multiple processors and a method for communication between the processors. This system can be divided into two categories based on whether it has a shared memory at any level:
+A multiprocessor system consists of multiple processors and a method for communication between the processors. This system can be divided into two categories based on **whether it has a shared memory at any level**:
 
 1. [Loosely Coupled Multiprocessor Systems](lec-06-advanced-processor.md#loosely-coupled-mutiprocessor-systems), and
 2. [Tightly Coupled Multiprocessor Systems](lec-06-advanced-processor.md#tightly-coupled-mutiprocessor-systems)
 
 ### Loosely Coupled Mutiprocessor Systems
 
-In this system, each node runs different OS instances and communicate by **passing messages** rather than through a shared memory. In this kind of system, we have two concrete examples
+In this system, each node runs different OS instances and communicate by **passing messages** rather than through a shared memory. In this kind of system, we have two concrete examples:
 
 1. [Computer Clusters](lec-06-advanced-processor.md#clusters)
 2. [Grid Computers](lec-06-advanced-processor.md#grid-computers)
 
 #### Clusters
 
-In a **clustered multiprocessor** system, each processor have its own local memory system instead of sharing memory.
+In a **clustered multiprocessor** system, each processor has its own local memory system instead of sharing memory.
 
-It has the nodes set to perform the same task, controlled and scheduled by software. These nodes are typically **hemogenous in hardware and software** and are housed in the same building / geography, interconnected using a dedicated network, have shared resources. This system is often viewed as a single computer from outside, but it actually has a lot of nodes (small computers) inside.
+It has the nodes set to perform the same task, controlled and scheduled by software. These nodes are typically **hemogenous in hardware and software,** housed in the same building / geography, interconnected using a dedicated network, and have shared resources. This system is often viewed as a single computer from outside, but it actually has a lot of nodes (small computers) inside.
 
 One example is the **supercomputer**.
 
@@ -532,11 +532,11 @@ In this system, as you can see from the image above
 * Each processor executes different programs and works on different data
 * Each processor usually has one or more levels of private cache
 * The processors share many resouces (e.g., higher level caches, memory, I/O device, interrupt system, etc.)
-* All processors connected using a system bus.
+* All processors are connected using a system bus.
 
 However, for all the processors to communicate smoothly via the share memory, some mechanisms are needed to handle the conflict
 
-1. **Arbitration mechanisms**: It two processors attempt to use the same resource **simultaneously**, this mechanism needs to deal with this situation.
+1. **Arbitration mechanisms**: If two processors attempt to use the same resource **simultaneously**, this mechanism is needed to deal with this situation.
 2. **Mutual exclusion mechanisms**: This is used to protect resources (or a range of memory) which should not be used in a **concurrent** manner.
 3. **Cache coherence ensurance mechanisms**: This is to ensure the cache coherence across all levels.
    1. **Bus snooping** and **directory-based mechanisms** are two examples.
@@ -546,14 +546,18 @@ In the tightly coupled multiprocessor system, we have two small parts
 1. [Symmetric Multiprocessors](lec-06-advanced-processor.md#symmetric-multiprocessors)
 2. [Heterogeneous Multiprocessors](lec-06-advanced-processor.md#heterogeneous-multiprocessors)
 
-#### Symmetric Multiprocessors
-
-**Symmetric multiprocessors** include two or more **identical processors** sharing a single main memory. The multiple processors may be separate chips or multiple cores on the same chip.
-
-Multiprocessors can be used to
+{% hint style="success" %}
+Multiprocessors can be used to do the following two things:
 
 1. run more threads simultaneously, or
 2. run a particular thread faster
+{% endhint %}
+
+#### Symmetric Multiprocessors
+
+**Symmetric multiprocessors** (SMP) include two or more **identical processors** sharing a single main memory. The multiple processors may be separate chips or multiple cores on the same chip. For example, Intel Core i3, i5 (prioir to Alder Lake) etc.
+
+
 
 {% hint style="success" %}
 Symmetric multiprocessors are good for situations like large data centers that have lots of thread-level parallelism available.
@@ -561,7 +565,7 @@ Symmetric multiprocessors are good for situations like large data centers that h
 
 #### Heterogeneous Multiprocessors
 
-**Heterogeneous multiprocessors** incorporate different types of cores and/or specialized hardware in a single system. And it can take the following two forms:
+**Heterogeneous multiprocessors** (HMP) incorporate different types of cores and/or specialized hardware in a single system. And it can take the following two forms:
 
 1. a heterogeneous system can incorporate cores with the same architecture but different microarchitectures, each with different power, performance, and area trade-offs.
 2. another heterogeneous strategy is **accelerators**, in which a system contains special-purpose hardware optimized for performance or energy efficiency on specific types of tasks.
@@ -580,6 +584,92 @@ In real world, when the programmner writes a high level program and creates some
 2. If the process is executed on a multiprocessor system, the threads can run inherently in parallel as multiple processors are available.
 
 </details>
+
+Let's look at some real world examples for the heterogenous multiprocessor system!
+
+#### ARM big.LITTE
+
+ARM **big.LITTLE** is a heterogeneous computing architecture coupling relatively battery-saving and slower processor cores (LITTLE) with relatively more powerful and power-hungry ones (big). It has the following 3 variants:
+
+{% stepper %}
+{% step %}
+#### Clustered switching
+
+This is the simplest implementation that arranges the processor into identically-sized **clusters** of **big** or **LITTLE** cores. The scheduler will pick one cluster and all the processors in that cluster will be enabled.
+
+<figure><img src="../.gitbook/assets/cg3207-lec06-arm-cluster-switching.png" alt="" width="563"><figcaption></figcaption></figure>
+{% endstep %}
+
+{% step %}
+#### In-kernal switcher
+
+In this paradigm, each big core is paired up with a small core into a "virtual core". As these "virtual cores" are the same, thus it forms a Symmetric Multiprocessor system (SMP). The scheduler can assign any thread to any one of the virtual in the SMP.
+
+<figure><img src="../.gitbook/assets/cg3207-lec06-arm-iks.png" alt="" width="563"><figcaption></figcaption></figure>
+{% endstep %}
+
+{% step %}
+#### Global task scheduling
+
+This is the most powerful and popluar paradigm currently, as it can enable all physical cores at the same time. In this paradigm, the "burden" will go to the scheduler.
+
+Within the scheduler, threads with high priority or computational intensity are allocated to the **big** cores, while threads with lower priority or less computational intensity, such as background tasks, can be performed by the **LITTLE** cores.
+
+<figure><img src="../.gitbook/assets/cg3207-lec06-arm-global-task-scheduling.png" alt="" width="563"><figcaption></figcaption></figure>
+
+Apple A14 uses this paradigm and it has 11.8 billion transistors in total!
+{% endstep %}
+{% endstepper %}
+
+## SIMD/Vector Processing
+
+> Our motivation here is the **amortization**.
+
+In standard processors, every instruction incurs significant overhead because fetching and decoding commands consumes both power and time. If a program needs to perform the same operation on multiple data points — such as adding eight pairs of numbers — standard CPU wastes effort by fetching and decoding the "Add" command eight separate times. The solution is SIMD, which allows the processor to fetch and decode the command just once and apply it to all data points simultaneously. This strategy effectively "amortizes," or spreads out, the expensive management costs across many data elements to improve efficiency.
+
+### Packed SIMD
+
+This first option places the control explicitly in the hands of the software. The programmer must intentionally use special vector instructions (e.g., `VEC8_mul`) to define how data is packed and processed. While this course treats them similarly, there is a nuance in terminology:
+
+* **Packed SIMD**: Refers to fixed-width registers (e.g., "Process exactly 4 items at once"). This is common in standard CPUs like Intel AVX or ARM NEON.
+* **Vector Processing**: Often implies variable-length processing (e.g., "Process a list of _n_ items"). This is common in supercomputers or RISC-V Vector extensions.
+
+<figure><img src="../.gitbook/assets/cg3207-lec06-SIMD-vector-processing.png" alt=""><figcaption></figcaption></figure>
+
+### GPU
+
+The second option, used by GPUs, shifts the complexity from the programmer to the hardware. This is often called SIMT (Single Instruction, Multiple Threads). Instead of writing complex vector code, the programmer writes standard scalar instructions (like a simple `mul`) intended for a single thread. The GPU hardware then performs the vectorization automatically:
+
+* **Implicit Grouping**: The hardware dynamically bundles these individual threads into groups (called "Warps" by NVIDIA or "Wavefronts" by AMD).
+* **Lockstep Execution**: These bundles are then executed on the hardware's SIMD units in lockstep.
+
+This allows the programmer to think in terms of simple, single threads, while the hardware ensures the massive throughput of vector processing.
+
+<figure><img src="../.gitbook/assets/cg3207-lec06-gpu.png" alt=""><figcaption></figcaption></figure>
+
+## Systolic Arrays
+
+> Our motivation here is to **eliminate memory bottleneck**.
+
+In standard processors (like the [SIMD](lec-06-advanced-processor.md#simd-vector-processing) examples we discussed), data is frequently read from memory, processed, and written back. This constant access to memory (registers or cache) creates a bottleneck. The **Systolic Array** solves this by mimicking the rhythm of a beating heart ("systole"). Instead of each processor acting independently, they form a tightly coupled network. Data flows from memory into the array once and is then rhythmically passed from neighbor to neighbor.
+
+Its main mechanism is called **Rhythmic Data Flow**. A systolic array consists of a grid of Processing Elements (PEs). Data flows through the array in a wave-like fashion. When a PE finishes a calculation, it passes the data directly to its neighbor rather than writing it back to memory.
+
+<figure><img src="../.gitbook/assets/cg3207-lec06-systolic-array.png" alt="" width="375"><figcaption></figcaption></figure>
+
+* The **Trade-off**: This design sacrifices flexibility (it is hard to do general-purpose logic like "If/Else") and limits available registers.
+* The **Reward**: In exchange, it achieves immense efficiency for specific tasks like Matrix Multiplication. Since operand data and partial results are stored _within_ the passing wave, the system drastically reduces the need to access external buses or caches, saving power and increasing operation density.
+
+### TPU
+
+One application of the **systolic array** is the Google TPU. The Google Tensor Processing Unit (TPU) v1 is a real-world implementation of a systolic array, designed specifically for heavy compute workloads like Machine Learning inference. It is not a standalone CPU; it sits on a PCIe bus and acts as a coprocessor, receiving instructions from a host CPU. Because the TPU runs massive, complex tasks (like multiplying two huge matrices) with a single command, it utilizes a CISC instruction set.
+
+The heart of the TPU is the Matrix Multiply Unit, a massive $$256 \times 256$$ systolic array containing over 65,000 processing units.
+
+* **Data Flow**: It reads in weights and data (activations) into local buffers (Weight FIFO and Unified Buffer). These values flow through the Matrix Unit, performing 8-bit multiply-accumulate operations at a rate of up to 92 Tera-operations per second.
+* **Pipeline**: The results flow out to an Activation Unit (which applies hardwired functions like ReLU) and can be fed back into the Unified Buffer for the next layer of calculation. This design creates a pipeline optimized entirely for the math required by deep neural networks.
+
+<figure><img src="../.gitbook/assets/cg3207-lec06-google-tpu.png" alt="" width="563"><figcaption></figcaption></figure>
 
 [^1]: this is mainly to reduce the propagation delay within the logic gates, so the same logic gate that built with the advanced manufacturing technology will have a **smaller** propagation delay.
 

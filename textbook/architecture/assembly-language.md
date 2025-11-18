@@ -21,7 +21,7 @@ a = b + c;
 
 {% tab title="RISC-V Assembly Code" %}
 {% code title="Example 6.1 Addition" %}
-```armasm
+```riscv
 add a, b, c
 ```
 {% endcode %}
@@ -48,7 +48,7 @@ a = b - c;
 
 {% tab title="RISC-V Assembly Code" %}
 {% code title="Example 6.2 Subtraction" %}
-```armasm
+```riscv
 sub a, b, c
 ```
 {% endcode %}
@@ -72,7 +72,7 @@ a = b + c - d;
 
 {% tab title="RISC-V Assembly Code" %}
 {% code title="Example 6.3 More Complex Code" %}
-```armasm
+```riscv
 add t, b, c # t = b + c
 sub a, t, d # a = t - d
 ```
@@ -98,13 +98,13 @@ A RISC architecture, such as RISC-V, minimizes the hardware complexity and the n
 
 An instruction operates on _operands_. In Code Example 6.2 above, the variables `a`, `b` and `c` are all operands. But computers operate on 1's and 0's, not variable names. The instructions need a physical location from which to retrieve the binary data.
 
-{% hint style="info" %}
+{% hint style="success" %}
 Computers use various locations to hold operands in order to optimize for speed and data capacity.
 {% endhint %}
 
 Operands stored as constants or in registers are accessed quickly, but they hold only a small amount of data. Additional data must be accessed from memory, which is large but slow.
 
-{% hint style="info" %}
+{% hint style="success" %}
 RISC-V is called a 32-bit architecture because it operates on 32-bit data.
 {% endhint %}
 
@@ -127,7 +127,7 @@ a = b + c;
 
 {% tab title="RISC-V Assembly Code" %}
 {% code title="Example 6.4 Register Operands" %}
-```armasm
+```riscv
 # s0 = a, s1 = b, s2 = c
   add  s0, s1, s2      # a = b + c
 ```
@@ -148,7 +148,7 @@ a = b + c - d;
 
 {% tab title="RISC-V Assembly Code" %}
 {% code title="Example 6.5 Temporary Registers" %}
-```armasm
+```riscv
 # s0 = a, s1 = b, s2 = c, s3 = d, t0 = t
   add  t0, s1, s2   # t = b + c
   sub  s0, t0, s3   # a = t - d
@@ -189,7 +189,7 @@ b = a - 12
 
 {% tab title="RISC-V Assembly Code" %}
 {% code title="Example 6.6 Immediate Operands" %}
-```armasm
+```riscv
 # s0 = a, s1 = b
   addi s0, s0, 4    # a = a + 4
   addi s1, s0, -12  # b = a - 12
@@ -219,7 +219,7 @@ y = -78;
 
 {% tab title="RISC-V Assembly Code" %}
 {% code title="Example 6.7 Initializing values using Immediates" %}
-```armasm
+```riscv
 # s4 = i, s5 = x, s6 = y
   addi s4, zero, 0        # i = 0
   addi s5, zero, 2032     # x = 2032
@@ -242,7 +242,7 @@ int a = 0xABCDE123;
 
 {% tab title="RISC-V Assembly Code" %}
 {% code title="Example 6.8 32-Bit Constant Example" %}
-```armasm
+```riscv
 lui s2, 0xABCDE    # s2 = 0xABCDE000
 addi s2, s2, 0x123 # s2 = 0xABCDE123
 ```
@@ -277,7 +277,7 @@ a = mem[2];
 
 {% tab title="RISC-V Assembly Code" %}
 {% code title="Example 6.9 Reading Memory" %}
-```armasm
+```riscv
 # s7 = a
   lw s7, 8(zero)  # s7 = data at memory address (zero + 8)
 ```
@@ -305,7 +305,7 @@ mem[5] = 42;
 
 {% tab title="RISC-V Assembly Code" %}
 {% code title="Example 6.10 Writing Memory" %}
-```armasm
+```riscv
 addi t3, zero, 42   # t3 = 42
 sw   t3, 20(zero)   # data value at memory address 20 = 42
 ```
