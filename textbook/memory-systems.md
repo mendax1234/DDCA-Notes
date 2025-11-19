@@ -287,3 +287,51 @@ The following table summarizes the various **cache organizations**. Each **addre
 **Cache capacity**, **associativity**, **set size**, and **block size** are typically **powers of two**. This makes the **cache fields** (**tag**, **set**, and **block offset bits**) subsets of the **address bits**.
 
 **Increasing the associativity** $$N$$ usually **reduces the miss rate** caused by **conflicts**. But higher associativity requires **more tag comparators**. **Increasing the block size** $$b$$ takes advantage of **spatial locality** to **reduce the miss rate**. However, it **decreases the number of sets** in a fixed-sized cache and, therefore, could lead to **more conflicts**. It also **increases the miss penalty**.
+
+### Replacement
+
+In the cache, when a set is full, the block must be kicked out to be replaced with a new block,
+
+* In a direct-mapped cache, each address maps to a unique block and set, so if a set is full when new data must be loaded, the block in that set is replaced with the new data.
+* In set-associative and fully associative caches, the cache must choose which block to evict when a cache set is full.
+
+There are three replacement algorithms, the first two are based on the history, which are also practical, while the third is optimal but as it needs to predict the future, this is not practical.
+
+#### FIFO
+
+FIFO stands for First-In-First-Out. In this alogrithm, the **oldest block** will be replaced. For example, assuming that we are working with a fully associative cache which has 4 blocks.
+
+<figure><img src="../.gitbook/assets/cg3207-lec07-fifo-replacement-example.png" alt=""><figcaption></figcaption></figure>
+
+FIFO works well if the access follows a sequential pattern.
+
+#### Leat Recently Use (LRU)
+
+The principle of temporal locality suggests that the best choice is to evict the least recently used block because it is least likely to be used again soon. Hence, most associative caches have a **least recently used (LRU)** replacement policy.
+
+In a **two-way set-associative cache**, a **use bit (U)** indicates which way within the set was **least recently used**; each access flips U to point to the other way. For **set-associative caches** with more than two ways, exact tracking of the **least recently used** way is complex, so the ways are typically divided into two groups and U identifies which **group** was least recently used. On replacement, the new block evicts a **random** block from the least recently used group. This approximation, known as **pseudo-LRU**, is sufficiently effective in practice.
+
+<details>
+
+<summary>Self Diagnostic Quiz</summary>
+
+Show the contents of an eight-word two-way set-associative cache after executing the following code, assuming LRU replacement, a block size of one word, and an initially empty cache.
+
+{% code lineNumbers="true" %}
+```riscv
+addi t0, zero, 0
+lw   s1, 0x4(t0)
+lw   s2, 0x24(t0)
+lw   s3, 0x54(t0)
+```
+{% endcode %}
+
+**Solution**: The first two instructions load data from memory addresses 0x4 and 0x24 into set 1 of the cache, shown in the figure below, where U = 0 indicates that data in way 0 was the least recently used.
+
+<figure><img src="../.gitbook/assets/lru-example-1.png" alt="" width="563"><figcaption></figcaption></figure>
+
+The next memory access, to address 0x54, also maps to set 1 and replaces the least recently used data in way 0, as shown in the figure below, after which the use bit U is set to 1 to indicate that data in way 1 was the least recently used.
+
+<figure><img src="../.gitbook/assets/lru-example-2.png" alt="" width="563"><figcaption></figcaption></figure>
+
+</details>

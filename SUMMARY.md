@@ -22,6 +22,7 @@
 * [Lab 01 - Get prepared](lab/lab-01-get-prepared.md)
 * [Lab 02 - Single Cylce RV Processor](lab/lab-02-single-cylce-rv-processor.md)
 * [Lab 03 - Multiply and Divide](lab/lab-03-multiply-and-divide.md)
+* [Lab 03](lab/lab-03.md)
 * [Resources](lab/resources/README.md)
   * [FPGA Design Tips](lab/resources/fpga-design-tips.md)
   * [RISC-V Resources](lab/resources/risc-v-resources.md)
