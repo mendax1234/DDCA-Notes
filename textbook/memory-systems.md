@@ -109,7 +109,7 @@ where $$t_{\text{cache}}$$, $$t_{\text{MM}}$$, and $$t_{\text{VM}}$$ are the **a
 
 <details>
 
-<summary>Self Diagnostics Question</summary>
+<summary>Self Diagnostic Question</summary>
 
 Calculate the Average Memory Access Time (AMAT) for a computer system with a two-level memory hierarchy, given the following specifications:
 
@@ -258,13 +258,13 @@ The time required to load the **missing block** into the **cache** is called the
 {% endstep %}
 
 {% step %}
-#### Direct Mapped Cache Example
+#### Block Offset Bits
 
 The following figure shows the hardware for a **C = 8-word direct-mapped cache** with a **b = 4-word block size**. The cache now has only **B = C/b = 2 blocks**. A **direct-mapped cache** has **one block** in each set, so this cache is organized as **two sets**. Thus, only **log₂2 = 1 bit** is used to select the set. A **multiplexer** is now needed to select the **word within the block**. The multiplexer is controlled by the **log₂4 = 2 block offset bits** of the address. The **most significant 27 address bits** form the **tag**. Only **one tag** is needed for the entire block, because the words in the block are at **consecutive addresses**.
 
 <figure><img src="../.gitbook/assets/direct-mapped-cache-with-4-word-block-size.png" alt=""><figcaption></figcaption></figure>
 
-The following figure shows the **cache fields** for address `0x8000009C` when it maps to the **direct-mapped cache** of the above figure. The **byte offset bits** are always 0 for word accesses. The next **log₂b = 2 block offset bits** indicate the **word within the block** and the next **bit** indicates the **set**. The remaining **27 bits** are the **tag**. Therefore, word `0x8000009C` maps to **set 1**, **word 3** in the cache.
+The following figure shows the **cache fields** for address `0x8000009C` when it maps to the **direct-mapped cache** of the above figure. The **byte offset bits** are always 0 for word accesses. The next log₂b = 2 **block offset bits** indicate the **word within the block** and the next **bit** indicates the **set**. The remaining **27 bits** are the **tag**. Therefore, word `0x8000009C` maps to **set 1**, **word 3** in the cache.
 
 <figure><img src="../.gitbook/assets/cache-field-example-2.png" alt="" width="532"><figcaption></figcaption></figure>
 
@@ -335,3 +335,52 @@ The next memory access, to address 0x54, also maps to set 1 and replaces the lea
 <figure><img src="../.gitbook/assets/lru-example-2.png" alt="" width="563"><figcaption></figcaption></figure>
 
 </details>
+
+### Advanced Cache Design
+
+In this section, we will introduce the multiple-level caches, which are used quite often in modern systems. Then we will discuss the performance of a two-level caching system and examines how block size, associativity, and cache capacity affect **miss rate**. Finally, we will introduce how caches handle stores, or writes, by using a write-through or write-back policy.
+
+#### Multiple-Level Caches
+
+**Large caches** are beneficial because they are more likely to contain the data of interest and thus exhibit **lower miss rates**; however, **large caches** are inherently **slower** than small ones. To balance these trade-offs, modern systems employ **multiple levels of caches**, as illustrated in the figure below.
+
+<figure><img src="../.gitbook/assets/multiple-level-caches.png" alt="" width="301"><figcaption></figcaption></figure>
+
+The **first-level (L1) cache** is designed to be small enough to achieve a **one- or two-cycle access time**, while the **second-level (L2) cache**, also constructed from **SRAM**, is significantly **larger** — and consequently **slower** — than the **L1 cache**.
+
+#### Reducing Miss Rate
+
+The misses can be classified as **compulsory**, **capacity**, and **conflict**.
+
+* **Compulsory Miss**: This happens because the block must be retrieved from memory the first time it is accessed, regardless of the cache design
+* **Capacity Miss**: This occurs when the cache is too small to hold all the data that the program is actively using at the same time.
+* **Conflict Miss**: This arises in **set-associative** or **direct-mapped** caches when multiple addresses map to the same **set**, causing needed blocks to be prematurely evicted even though space may be available in other sets.
+
+Changing cache parameters can affect one or more types of cache miss. For example, increasing **cache capacity** can reduce both **capacity misses** and **conflict misses**, but it has no effect on **compulsory misses**. In contrast, increasing **block size** can reduce **compulsory misses** by exploiting **spatial locality** (bringing in more adjacent data with each miss), yet it may increase **conflict misses** because a larger block size means fewer sets in the cache, causing more addresses to map to the same set and compete for space.
+
+{% stepper %}
+{% step %}
+#### Cache Size vs. Miss Rate
+
+<figure><img src="../.gitbook/assets/cache-size-vs-miss-rate.png" alt="" width="563"><figcaption></figcaption></figure>
+
+As expected, when cache size increases, capacity misses decrease. Increased associativity, especially for small caches, decreases the number of conflict misses shown along the top of the curve.
+{% endstep %}
+
+{% step %}
+#### Block Size vs.Miss Rate
+
+<figure><img src="../.gitbook/assets/cache-size-vs-block-size.png" alt="" width="563"><figcaption></figcaption></figure>
+
+For small caches, such as a 4 KiB cache, increasing the **block size** beyond 64 bytes raises the **miss rate** due to fewer sets and higher **conflict misses**. In larger caches, increasing the block size beyond 64 bytes typically does not further reduce (and may not affect) the miss rate, as capacity and compulsory misses dominate. Nevertheless, **large block sizes** can still increase overall execution time because of the higher **miss penalty —** the longer time required to transfer the larger block from main memory on a miss.
+{% endstep %}
+{% endstepper %}
+
+#### Write Policy
+
+Caches are classified as either **write-through** or **write-back**.
+
+* In a **write-through** cache, every write to a cache block is immediately written to main memory as well.
+* In a **write-back** cache, each cache block has a **dirty bit (D)** that is set to 1 when the block is modified and remains 0 otherwise; a dirty block is written back to main memory only when it is evicted from the cache.
+
+Although a write-through cache needs no dirty bit, it generally performs far more main-memory writes than a write-back cache. Because main-memory access time is very large, modern caches are almost always **write-back**.
