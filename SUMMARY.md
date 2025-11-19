@@ -10,6 +10,7 @@
 * [Lec 04 - Arithmetic for Computers](textbook/digital-building-blocks/arithmetic-circuits.md)
 * [Lec 05 - The Pipelined Processor](lec/lec-05-the-pipelined-processor.md)
 * [Lec 06 - Advanced Processor](lec/lec-06-advanced-processor.md)
+* [Lec 07 - Memory System Principles](textbook/memory-systems.md)
 
 ## Lab
 
