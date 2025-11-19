@@ -63,6 +63,7 @@
 * [Architecture](textbook/architecture/README.md)
   * [Assembly Language](textbook/architecture/assembly-language.md)
   * [Programming](textbook/architecture/programming.md)
+* [Memory Systems](textbook/memory-systems.md)
 
 ## Recap from NTU SC1005
 
