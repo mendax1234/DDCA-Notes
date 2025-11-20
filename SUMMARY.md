@@ -11,6 +11,7 @@
 * [Lec 05 - The Pipelined Processor](lec/lec-05-the-pipelined-processor.md)
 * [Lec 06 - Advanced Processor](lec/lec-06-advanced-processor.md)
 * [Lec 07 - Memory System Principles](textbook/memory-systems.md)
+* [Lec 08 - IO and Exception Handling](lec/lec-08-io-and-exception-handling.md)
 
 ## Lab
 
@@ -22,7 +23,6 @@
 * [Lab 01 - Get prepared](lab/lab-01-get-prepared.md)
 * [Lab 02 - Single Cylce RV Processor](lab/lab-02-single-cylce-rv-processor.md)
 * [Lab 03 - Multiply and Divide](lab/lab-03-multiply-and-divide.md)
-* [Lab 03](lab/lab-03.md)
 * [Resources](lab/resources/README.md)
   * [FPGA Design Tips](lab/resources/fpga-design-tips.md)
   * [RISC-V Resources](lab/resources/risc-v-resources.md)
