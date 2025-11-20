@@ -384,3 +384,149 @@ Caches are classified as either **write-through** or **write-back**.
 * In a **write-back** cache, each cache block has a **dirty bit (D)** that is set to 1 when the block is modified and remains 0 otherwise; a dirty block is written back to main memory only when it is evicted from the cache.
 
 Although a write-through cache needs no dirty bit, it generally performs far more main-memory writes than a write-back cache. Because main-memory access time is very large, modern caches are almost always **write-back**.
+
+## Vitural Memory
+
+Most modern computer systems use a hard drive made of **magnetic** or **solid-state storage** as the lowest level in the **memory hierarchy**. The objective of adding a **hard drive** to the memory hierarchy is to inexpensively give the illusion of a very large memory while still providing the speed of faster memory for most accesses. A computer with only **16 GiB of DRAM**, for example, could effectively provide **128 GiB** of memory using the hard drive.
+
+* This larger **128 GiB** memory is called **virtual memory**,
+* and the smaller **16 GiB** main memory is called **physical memory**.
+
+We will use the term **physical memory** to refer to **main memory** throughout this section.
+
+<details>
+
+<summary>iB vs B</summary>
+
+The "i" stands for binary.
+
+* KB = Kilobyte (standard metric prefix)
+* KiB = Kilo binary byte (binary prefix)
+
+The following table summarizes the difference between 4KiB and 4KB.
+
+| Unit  | Name     | Math Base           | Value in Bytes                        |
+| ----- | -------- | ------------------- | ------------------------------------- |
+| 4 KB  | Kilobyte | Decimal ($$10^3$$)  | $$4 \times 1000 = 4000~\text{bytes}$$ |
+| 4 KiB | Kibibyte | Binary ($$2^{10}$$) | $$4 \times 1024 = 4096~\text{bytes}$$ |
+
+</details>
+
+Programs can access data anywhere in **virtual memory**, so they must use **virtual addresses** that specify the location in virtual memory. The **physical memory** holds a subset of the most recently accessed virtual memory. In this way, physical memory acts as a **cache** for virtual memory. Thus, most accesses **hit** in physical memory at the speed of **DRAM**, yet the program enjoys the capacity of the larger virtual memory.
+
+{% hint style="success" %}
+Think of physical memory as a **cache** (later you will see it's actually a [fully associative cache](memory-systems.md#fully-associative-cache)) for the virtual memory!&#x20;
+{% endhint %}
+
+Given that, we can find the similarities between the **virtual memory** and [**cache**](memory-systems.md#cache-1) we have discussed above. The following table summarizes the analogous terms.
+
+<figure><img src="../.gitbook/assets/virtual-memory-vs-cache.png" alt="" width="410"><figcaption><p>Analogous cache and virtual memory terms</p></figcaption></figure>
+
+**Virtual memory** is divided into **virtual pages**, typically **4 KiB** in size. **Physical memory** is likewise divided into **physical pages** (also called **page frames**) of the same size. A **virtual page** may be located in physical memory (**DRAM**) or on the **hard drive**. The following figure shows a virtual memory that is larger than physical memory.
+
+<figure><img src="../.gitbook/assets/virtual-and-physical-pages.png" alt="" width="563"><figcaption><p>Virtual and physical pages</p></figcaption></figure>
+
+The rectangles indicate **pages**. Some **virtual pages** are present in **physical memory**, and some are located on the **hard drive**. The process of determining the [**physical address**](#user-content-fn-1)[^1] from the **virtual address** is called **address translation**. If the processor attempts to access a virtual address that is not in physical memory, a **page fault** occurs and the **operating system (OS)** loads the page from the hard drive into physical memory.
+
+{% hint style="warning" %}
+The processor can only access **physical memory** (DRAM), not the hard disk directly. If a virtual address maps to a page stored on the disk (Valid Bit = 0), the hardware raises a **Page Fault** exception. The Operating System handles this by retrieving the page from the disk into DRAM and updating the page table, allowing the hardware to **retry** the instruction.
+{% endhint %}
+
+To avoid **page faults** caused by [**conflicts**](memory-systems.md#reducing-miss-rate), any **virtual page** can map to any **physical page**. In other words, **physical memory** behaves as a **fully associative cache** for **virtual memory**. In the cache part, we have seen that a [fully associative cache](memory-systems.md#fully-associative-cache) has the disadvantage of having too many **ways**, thus needing a lot of comparators to determine whether the request hits the block. A realistic **virtual memory** system also has so many **physical pages** that providing a comparator for each page would be excessively expensive. Instead, the virtual memory system uses a **page table** to perform **address translation**. A **page table** contains an **entry** for each **virtual page**, indicating its location in **physical memory** or that it is on the **hard drive**. Each load or store instruction requires a **page table** access followed by a **physical memory** access. The page table access translates the **virtual address** used by the program to a **physical address**. The physical address is then used to actually read or write the data.
+
+The **page table** is usually so large that it is located in **physical memory**. Hence, each load or store involves two physical memory accesses: a page table access and a data access. To speed up **address translation**, a **translation lookaside buffer (TLB)** caches the most commonly used **page table entries**.
+
+### Address Translation
+
+In a system with **virtual memory**, programs use **virtual addresses** so that they can access a large memory. The computer must translate these virtual addresses to either find the address in **physical memory** or take a **page fault** and fetch the data from the **hard drive**.
+
+#### Page number and Page offset
+
+Recall that virtual memory and physical memory are divided into pages.
+
+* The most significant bits of the virtual or physical address specify the **virtual** or **physical page number**.
+* The least significant bits specify the word within the page and are called the **page offset**.
+
+#### How address translation works
+
+The following figure illustrates the page organization of a virtual memory system with **2 GiB** of **virtual memory** and **128 MiB** of **physical memory** divided into **4 KiB** pages.
+
+<figure><img src="../.gitbook/assets/physical-and-virtual-pages.png" alt=""><figcaption><p>Figure 8.21 Physical and virtual pages</p></figcaption></figure>
+
+Because the **page size** is **4 KiB** = 2¹² bytes, there are 2³¹/2¹² = 2¹⁹ **virtual pages** and 2²⁷/2¹² = 2¹⁵ **physical pages**. Thus, the **virtual page number** and **physical page number** are 19 and 15 bits, respectively. Physical memory can only hold up to 1/16th of the virtual pages at any given time. The rest of the virtual pages are kept on the **hard drive**.
+
+The following figure illustrates the translation of a **virtual address** to a **physical address**. The least significant **12 bits** indicate the **page offset** and require no translation. The upper **19 bits** of the virtual address specify the **virtual page number (VPN)** and are translated to a **15-bit physical page number (PPN)**.
+
+<figure><img src="../.gitbook/assets/page-translation.png" alt="" width="375"><figcaption><p>Translation from virtual address to physical address</p></figcaption></figure>
+
+<details>
+
+<summary>Self-Diagnostic Quiz</summary>
+
+Find the **physical address** of **virtual address** 0x247C using the virtual memory system shown in figure 8.21.
+
+***
+
+**Solution.** The **12-bit page offset** (`0x47C`) requires no translation. The remaining **19 bits** of the **virtual address** give the **virtual page number**, so **virtual address** `0x247C` is found in **virtual page** `0x2`. In the figure 8.21, **virtual page** `0x2` maps to **physical page** `0x7FFF`. Thus, **virtual address** `0x247C` maps to **physical address** `0x7FFF47C`.
+
+</details>
+
+### Page Table
+
+The processor uses a **page table** to translate **virtual addresses** to **physical addresses**. The **page table** contains an **entry** for each **virtual page**. This entry contains a **physical page number** and a **valid bit**. If the **valid bit** is 1, the virtual page maps to the physical page specified in the entry. Otherwise, the virtual page is found on the **hard drive**.
+
+Because the **page table** is so large, it is stored in **physical memory**. Let us assume for now that it is stored as a contiguous array, as shown in the following figure.
+
+<figure><img src="../.gitbook/assets/page-table-example.png" alt="" width="271"><figcaption><p>The page table for Figure 8.21</p></figcaption></figure>
+
+This page table contains the mapping of the memory system of the above figure. The **page table** is indexed with the **virtual page number (VPN)**. For example, **entry** 5 specifies that **virtual page** 5 maps to **physical page** 1. **Entry** 6 is invalid (V = 0), so virtual page 6 is located on the **hard drive**.
+
+To perform a load or store, the processor must first translate the **virtual address** to a **physical address** and then access the data at that physical address. The processor extracts the **virtual page number** from the virtual address and adds it to the **page table register** to find the physical address of the **page table entry**. The processor then reads this page table entry from physical memory to obtain the **physical page number**. If the **entry** is **valid**, it merges this physical page number with the **page offset** to create the physical address. Finally, it reads or writes data at this physical address. Because the **page table** is stored in **physical memory**, each load or store involves two physical memory accesses.
+
+<details>
+
+<summary>Self-Diagnostic Quiz</summary>
+
+Find the physical address of virtual address 0x247C using the page table shown in the figure above.
+
+***
+
+**Solution.** The following figure shows the **virtual address** to **physical address** translation for **virtual address** `0x247C`.
+
+<figure><img src="../.gitbook/assets/page-table-hardware.png" alt="" width="375"><figcaption><p>Address translation using the page table</p></figcaption></figure>
+
+The **12-bit page offset** requires no translation. The remaining **19 bits** of the virtual address are the **virtual page number**, `0x2`, and give the index into the **page table**. The page table maps **virtual page** `0x2` to **physical page** `0x7FFF`. So, virtual address `0x247C` maps to **physical address** `0x7FFF47C`. The least significant **12 bits** are the same in both the physical and the virtual address.
+
+</details>
+
+### Translation Lookaside Buffer
+
+**Virtual memory** would have a severe performance impact if it required a **page table** read on every load or store, doubling the delay of loads and stores. To solve this, n general, the processor can keep the last several **page table entries** in a small cache called a **translation lookaside buffer (TLB)**. The processor “looks aside” to find the translation in the **TLB** before having to access the **page table** in **physical memory**.
+
+A **TLB** is organized as a **fully associative cache** and typically holds 16 to 512 **entries**. Each **TLB entry** holds a **virtual page number** and its corresponding **physical page number**. The **TLB** is accessed using the **virtual page number**. If the **TLB** **hits**, it returns the corresponding **physical page number**. Otherwise, the processor must read the **page table** in **physical memory**. The **TLB** is designed to be small enough that it can be accessed in less than one cycle.
+
+<details>
+
+<summary>Self-Diagnostic Quiz</summary>
+
+**Consider** the virtual memory system of the above figure. **Use** a **two-entry TLB** or explain why a **page table** access is necessary to translate **virtual addresses** `0x247C` and `0x5FB0` to **physical addresses**. Suppose that the **TLB** currently holds valid translations of **virtual pages** `0x2` and `0x7FFFD`.
+
+***
+
+**Solution.** The following figure shows the **two-entry TLB** with the request for **virtual address** `0x247C`.
+
+<figure><img src="../.gitbook/assets/tlb-example.png" alt="" width="563"><figcaption><p>Address translation using a two-entry TLB</p></figcaption></figure>
+
+The **TLB** receives the **virtual page number** of the incoming address, `0x2`, and compares it to the **virtual page number** of each **entry**. **Entry** 0 matches and is **valid**, so the request **hits**. The translated **physical address** is the **physical page number** of the matching entry, `0x7FFF`, concatenated with the **page offset** of the virtual address. As always, the **page offset** requires no translation.
+
+The request for **virtual address** `0x5FB0` **misses** in the **TLB**. So, the request is forwarded to the **page table** for translation.
+
+</details>
+
+### Memory Protection
+
+No program should be able to access another program's memory without permission, this is called **memory protection.**
+
+**Virtual memory** systems provide **memory protection** by giving each program its own **virtual address space**. Each program can use as much memory as it wants in that virtual address space, but only a portion of the virtual address space is in **physical memory** at any given time. Each program can use its entire **virtual address space** without having to worry about where other programs are physically located. However, a program can access only those **physical pages** that are mapped in its **page table**. In this way, a program cannot accidentally or maliciously access another program’s physical pages because they are not mapped in its **page table**.
+
+[^1]: **Physical address** means only the address in the physical memory (main memory)!
