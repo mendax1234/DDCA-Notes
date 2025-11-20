@@ -537,4 +537,14 @@ The **dirty bit** is 1 if any store instructions have changed the physical page 
 
 The **use bit** is 1 if the physical page has been accessed recently. As in a cache system, exact **LRU replacement** would be impractically complicated. Instead, the **OS** approximates **LRU replacement** by periodically resetting all of the use bits in the **page table**. When a page is accessed, its use bit is set to 1. Upon a page fault, the OS finds a page with U = 0 to page out of physical memory. Thus, it does not necessarily replace the **least recently used** page, just one of the least recently used pages.
 
+## Put it together
+
+To put the virtual memory and cache together. We have the following diagram:
+
+<figure><img src="../.gitbook/assets/memory-put-it-together.png" alt=""><figcaption></figcaption></figure>
+
+{% hint style="warning" %}
+The **Page** in the virtual address and the index `P` are equivalent to our **Virtual Page Number**. The **Frame** in the physical address is equivalent to our **Physical Page Number**.
+{% endhint %}
+
 [^1]: **Physical address** means only the address in the physical memory (main memory)!
