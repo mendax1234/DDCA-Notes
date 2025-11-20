@@ -436,6 +436,14 @@ To avoid **page faults** caused by [**conflicts**](memory-systems.md#reducing-mi
 
 The **page table** is usually so large that it is located in **physical memory**. Hence, each load or store involves two physical memory accesses: a page table access and a data access. To speed up **address translation**, a **translation lookaside buffer (TLB)** caches the most commonly used **page table entries**.
 
+<details>
+
+<summary>Why doesn't the page table consume all available physical memory?</summary>
+
+The efficiency relies on mapping granularity. Page tables do not map individual bytes; they map fixed-size blocks called pages (typically 4 KiB). Because a single Page Table Entry accounts for an entire block of 4096 bytes, the size of the page table is orders of magnitude smaller than the memory it maps.
+
+</details>
+
 ### Address Translation
 
 In a system with **virtual memory**, programs use **virtual addresses** so that they can access a large memory. The computer must translate these virtual addresses to either find the address in **physical memory** or take a **page fault** and fetch the data from the **hard drive**.

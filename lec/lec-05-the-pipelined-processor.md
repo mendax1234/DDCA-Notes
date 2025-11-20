@@ -87,6 +87,8 @@ The reason for this is because that in the pipelined processor, our clock cycle 
 
 </details>
 
+This lecture utilizes the classic five-stage pipeline as a foundational model. However, the fundamental instruction phases — Fetch, Decode, Execute, Memory Access, and Writeback — remain universal across deeper pipeline architectures. While stage granularity and nomenclature may vary, the underlying architectural principles persist.
+
 ## Implement a Pipelined Processor
 
 As we have mentioned above, we need to "cut" our microarchitecture into 5 stages. To do this "cut", we are basically **adding registers** between each stage.
