@@ -26,8 +26,7 @@ endmodule
 {% hint style="success" %}
 #### Code Explanation
 
-1.  In general, a SystemVerilog `always` statement is written in the form\
-
+1.  In general, a SystemVerilog `always` statement is written in the form<br>
 
     <pre class="language-verilog" data-line-numbers><code class="lang-verilog">always @(sensitivity list)
       statement;

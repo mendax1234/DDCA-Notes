@@ -211,8 +211,7 @@ The following guidelines explain when and how to use each type of assignment. If
 
     <pre class="language-verilog" data-line-numbers><code class="lang-verilog">assign y = s ? d1 : d0;
     </code></pre>
-3.  Use `always_comb` and **blocking assignments** to model **more complicated combinational logic** where the `always` statement is helpful.\
-
+3.  Use `always_comb` and **blocking assignments** to model **more complicated combinational logic** where the `always` statement is helpful.<br>
 
     <pre class="language-verilog" data-line-numbers><code class="lang-verilog">always_comb begin
       p    = a ^ b;        // blocking
@@ -236,8 +235,7 @@ The following guidelines explain when and how to use each type of assignment. If
 
     <pre class="language-verilog" data-line-numbers><code class="lang-verilog">assign y = s ? d1 : d0;
     </code></pre>
-3.  Use `always @ (*)` and **blocking assignments** to model **more complicated combinational logic** where the `always` statement is helpful.\
-
+3.  Use `always @ (*)` and **blocking assignments** to model **more complicated combinational logic** where the `always` statement is helpful.<br>
 
     <pre class="language-verilog" data-line-numbers><code class="lang-verilog">always @ (*)
       p    = a ^ b;        // blocking

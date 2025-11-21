@@ -301,14 +301,12 @@ Verilog allows us to use **number literals** to assign a fixed bit pattern to a 
 {% hint style="warning" %}
 #### Attention
 
-1.  If you assign a literal to a **larger** signal, it is **zero-padded** at the MSB:\
-
+1.  If you assign a literal to a **larger** signal, it is **zero-padded** at the MSB:<br>
 
     ```verilog
     wire [5:0] = 4'b1001; // x = 001001
     ```
-2.  If you assign a literal ot a **smaller** signal, it is **truncated** at the MSB:\
-
+2.  If you assign a literal ot a **smaller** signal, it is **truncated** at the MSB:<br>
 
     ```verilog
     wire[3:0] = 6'b110011; // x = 0011;

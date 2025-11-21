@@ -11,7 +11,7 @@
 * [Lec 05 - The Pipelined Processor](lec/lec-05-the-pipelined-processor.md)
 * [Lec 06 - Advanced Processor](lec/lec-06-advanced-processor.md)
 * [Lec 07 - Memory System Principles](textbook/memory-systems.md)
-* [Lec 08 - IO and Exception Handling](lec/lec-08-io-and-exception-handling.md)
+* [Lec 08a - Embedded I/O Systems](lec/lec-08a-embedded-i-o-systems.md)
 
 ## Lab
 

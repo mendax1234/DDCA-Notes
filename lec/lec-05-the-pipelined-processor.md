@@ -101,8 +101,7 @@ We have 5 stages, thus we need 4 "cuts"/registers. By adding registers, we can c
 #### Pipeline Register
 
 1. **Naming convention**: We name the register by the **target** that it feeds the signal to. For example, the register D is named D because here the signals coming from the **source** (fetch stage) will go into the **target** (decode stage).
-2.  **Real processor design**: In Verilog, we use several register to compose a big pipeline register, like the decode pipeline register shown as follows,\
-
+2.  **Real processor design**: In Verilog, we use several register to compose a big pipeline register, like the decode pipeline register shown as follows,<br>
 
     <pre class="language-verilog" data-line-numbers><code class="lang-verilog">always @(posedge CLK) begin
         PCSE        &#x3C;= PCSD;
