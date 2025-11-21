@@ -10,7 +10,7 @@
 
 #### Generic Computer System Architecture
 
-<figure><img src="../.gitbook/assets/cg3207-lec08a-generic-computer-system.png" alt=""><figcaption><p>Generic Computer System Diagram</p></figcaption></figure>
+<figure><img src="../../.gitbook/assets/cg3207-lec08a-generic-computer-system.png" alt=""><figcaption><p>Generic Computer System Diagram</p></figcaption></figure>
 
 This system is architecturally divided into the internal **Motherboard or System on Chip (SoC)** and the **External Peripherals**. At the core, the **Processor** and **Memory (RAM/Flash)** communicate over a shared **System BUS,** managing high-speed operations alongside critical units like the **Interrupt Controller** and **System Timer**. This internal bus serves as the primary highway for data and instruction movement within the computer.
 
@@ -24,7 +24,7 @@ The generic computer sysmte we see from above is a very good example for the **s
 
 #### Multi-tiered Bus Architecture
 
-<figure><img src="../.gitbook/assets/cg3207-lec08a-multi-tiered-bus-architecture.png" alt=""><figcaption><p>Multi-tiered bus architecture</p></figcaption></figure>
+<figure><img src="../../.gitbook/assets/cg3207-lec08a-multi-tiered-bus-architecture.png" alt=""><figcaption><p>Multi-tiered bus architecture</p></figcaption></figure>
 
 To optimize performance, this architecture splits the system into two hierarchies using a **Bridge** that facilitates communication between them, ensuring that slow peripherals do not bottleneck the high-speed processor and memory.
 
@@ -50,7 +50,7 @@ To optimize performance, this architecture splits the system into two hierarchie
 
 The processor communicates with external hardware (peripherals) using Peripheral Registers. To the software/processor, these peripherals just look like specific memory addresses.
 
-<figure><img src="../.gitbook/assets/cg3207-lec08a-peripheral-registers.png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/cg3207-lec08a-peripheral-registers.png" alt="" width="563"><figcaption></figcaption></figure>
 
 Instead of having complex, dedicated wiring for every single command a device might need, the device exposes a set of "registers" (memory locations). The processor interacts with them using standard memory instructions:
 
@@ -74,7 +74,7 @@ There are two ways that a processor can **address** an I/O device/register.
 
 Port-Mapped I/O (also known as Isolated I/O ) is a method where the processor treats "talking to peripherals" as a completely separate activity from "talking to memory." As a result, a memory location and an I/O device can essentially share the exact same address number because they exist on different "buses".
 
-<figure><img src="../.gitbook/assets/cg3207-lec08a-port-mapped-io.png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/cg3207-lec08a-port-mapped-io.png" alt="" width="563"><figcaption></figcaption></figure>
 
 Because the address space for the Memory and the I/O are separated, the processor cannot use standard "Move" or "Load" instructions to access peripherals. It must use dedicated instructions (like `IN` and `OUT` on Intel x86 chips) specifically designed for I/O.
 
@@ -102,12 +102,12 @@ Software that communicates with an **I/O device** is called a **device driver**.
 
 In a system with **memory-mapped I/O**, a **load** or **store** may access either memory or an **I/O device**. The following figure shows the hardware needed to support two memory-mapped I/O devices.
 
-<figure><img src="../.gitbook/assets/memory-mapped-io-hardware.png" alt=""><figcaption><p> Support hardware for memory-mapped I/O</p></figcaption></figure>
+<figure><img src="../../.gitbook/assets/memory-mapped-io-hardware.png" alt=""><figcaption><p> Support hardware for memory-mapped I/O</p></figcaption></figure>
 
 An **address decoder** determines which device communicates with the processor. It uses the **Address** and **MemWrite** signals to generate control signals for the rest of the hardware. The **ReadData multiplexer** selects between memory and the various **I/O devices**. **Write-enabled registers** hold the values written to the **I/O devices**.
 
 {% hint style="success" %}
-This is technically the working principle of our [`Wrapper.v`](../lab/lab-02-single-cylce-rv-processor.md#purpose-of-wrapper) used in our Labs!
+This is technically the working principle of our [`Wrapper.v`](../../lab/lab-02-single-cylce-rv-processor.md#purpose-of-wrapper) used in our Labs!
 {% endhint %}
 
 While using MMIO may reduce the maximum possible memory as I/O devies will eat into the address space, this is not an issue for the 64-bit systems, but an issue for the 32-bit systems.
@@ -156,7 +156,7 @@ To solve this, we should use the `volatile` keyword. It tells the compiler: "The
 {% step %}
 #### Instruction Ordering
 
-Even if we use `volatile` to stop the _compiler_ from reordering code, high-performance CPUs (hardware) might reorder instructions dynamically to run faster. In an [Out-of-Order processor](lec-06-advanced-processor.md#out-of-order-processor) (OoO), the processor might see two instructions that look independent and swap them to maximize pipeline usage.
+Even if we use `volatile` to stop the _compiler_ from reordering code, high-performance CPUs (hardware) might reorder instructions dynamically to run faster. In an [Out-of-Order processor](../lec-06-advanced-processor.md#out-of-order-processor) (OoO), the processor might see two instructions that look independent and swap them to maximize pipeline usage.
 
 {% code lineNumbers="true" %}
 ```c
@@ -242,7 +242,7 @@ To solve the problem caused by the [#programmed-i-o](lec-08a-embedded-i-o-system
 4. **Parallel Work**: While DMA moves data, the **CPU is free** to perform other computations (as long as they use data in the cache/registers and don't need the system bus).
 5. **Completion**: When finished, the DMA Controller raises an **Interrupt** to tell the CPU the job is done.
 
-<figure><img src="../.gitbook/assets/cg3207-lec08a-dma.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/cg3207-lec08a-dma.png" alt=""><figcaption></figcaption></figure>
 
 ## Communication Protocols
 
@@ -257,7 +257,7 @@ Communication protocols can be classifed into two big categories using its **tra
 2. **Serial protocols**: data is sent through a single wire, one bit at a time
    1. Examples: Serial ATA (SATA), PCIe, I<sup>2</sup>C, SPI, UART, CAN.
 
-<figure><img src="../.gitbook/assets/cg3207-lec08a-communication-protocols.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/cg3207-lec08a-communication-protocols.png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="success" %}
 Device 1 is the **transmitter** and device 2 is the **receiver**.
@@ -270,7 +270,7 @@ Parallel protocols are used more often in **high-speed**, **low distance** trans
 1. **Bus Skew**: Electrical signals travel at slightly different speeds on each wire.
 2. **Cross-talk**: Signals on adjacent wires interfere with each other electromagnetically.
 
-<figure><img src="../.gitbook/assets/cg3207-lec08a-bus-skew-cross-talk.png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/cg3207-lec08a-bus-skew-cross-talk.png" alt="" width="563"><figcaption></figcaption></figure>
 
 ### Timing
 
@@ -280,7 +280,7 @@ A communication protocol can also be classified into two categories based on its
 
 In a synchronous protocol, one of the wires carries Clock. This allows the transmitter and receiver to have a **common time reference**. This kind of protocol is **faster**, but suffers from the same issue as the parallel protocols (cross-talk, bus skew etc).
 
-<figure><img src="../.gitbook/assets/cg3207-lec08-synchronous-protocols.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/cg3207-lec08-synchronous-protocols.png" alt=""><figcaption></figcaption></figure>
 
 The examples for the **synchronous protocols** are **SPI, I**<sup>**2**</sup>**C, AXI,** and **AXI Stream**.
 
@@ -288,7 +288,7 @@ The examples for the **synchronous protocols** are **SPI, I**<sup>**2**</sup>**C
 
 In the asynchronous protocols, only **data** is transmitted, no Clock. As a result, the receiver needs to recover timing info from data, making this kind of protocol **slower** and has **more complicated hardware**.
 
-<figure><img src="../.gitbook/assets/cg3207-lec08a-asynchronous.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/cg3207-lec08a-asynchronous.png" alt=""><figcaption></figcaption></figure>
 
 The examples for the **asynchronous protocols** are **UART, USB,** and **CAN**.
 
@@ -301,7 +301,7 @@ A communication protocol can also be categorized into two groups based on its **
 * **Point-to-point**: two devices have a dedicated link between them, so **no addressing** is needed.
   * Examples are **UART** and **AXI Stream**.
 
-<figure><img src="../.gitbook/assets/cg3207-lec08a-topology.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/cg3207-lec08a-topology.png" alt=""><figcaption></figcaption></figure>
 
 ### Hierarchy
 
@@ -312,7 +312,7 @@ Based on the protocol's **hierarchy** property, the communication protocols can 
 2. **Peer-to-peer**: Any device can initiate communication.
    1. Example is **Ethernet** (configuration dependent)
 
-<figure><img src="../.gitbook/assets/cg3207-lec08a-hierarchy.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/cg3207-lec08a-hierarchy.png" alt=""><figcaption></figcaption></figure>
 
 ### Directionality
 
@@ -325,7 +325,7 @@ A communication protocol can be classified into three groups based on its **dire
 3. **Full-duplex:** At least two links, can transmit and receive at the same time.
    1. Examples are **SPI, UART**, and **USB 3.x**.
 
-<figure><img src="../.gitbook/assets/cg3207-lec08a-directionality.png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/cg3207-lec08a-directionality.png" alt="" width="563"><figcaption></figcaption></figure>
 
 ### Addressing
 
@@ -336,7 +336,7 @@ Based on the **addressing mechanism** of the communication protocols, they can b
 2. **Out-of-band**: **separate address bus**, a decoder enables (activates) the device.
    1. Example is **SPI**.
 
-<figure><img src="../.gitbook/assets/cg3207-lec08a-addressing.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/cg3207-lec08a-addressing.png" alt=""><figcaption></figcaption></figure>
 
 ### Summary
 
