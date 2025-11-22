@@ -263,3 +263,76 @@ In summary, when a processor detects an **exception**, it:
 1. Jumps to the **exception handler** address held in `mtvec`.
 2. The **exception handler** saves registers on a small stack pointed to by `mscratch` and then uses `csrr` (read **CSR**) to look at the cause of the exception (encoded in `mcause`) and respond accordingly.
 3. When the handler is finished, it optionally increments `mepc` by 4, restores registers from memory and either aborts the program or returns to the user code using the `mret` instruction, which jumps to the address held in `mepc`.
+
+<details>
+
+<summary>Self-Diagnostic Quiz</summary>
+
+Write an exception handler for dealing with the following two exceptions: illegal instruction (`mcause` = 2) and load address misaligned (`mcause` = 4). If an illegal instruction occurs, the program should simply continue executing after the illegal instruction. Upon a load address misaligned exception, the program should abort. If any other exception occurs, the program should attempt to re-execute the instruction.
+
+***
+
+**Solution**. The **exception handler** begins by preserving program registers that will be overwritten. It then checks for each **exception cause** and
+
+1. continues executing just past the excepting instruction (i.e., at `mepc` + 4) upon an **illegal instruction exception**,
+2. **aborts** upon a **misaligned load address**, or
+3. attempts to **re-execute** the excepting instruction (i.e., returns to `mepc`) upon any other exception.
+
+Before returning to the program, the handler restores any registers that were overwritten. To abort the program, the handler jumps to exit code located at the `exit` label (not shown). For programs running on top of an **OS**, the `j exit` instruction may be replaced by an **environment call** (`ecall`) with the return code stored in a program register such as `a0`.
+
+{% code overflow="wrap" lineNumbers="true" %}
+```riscv
+# M-mode exception handler
+# Handles:
+#   - Illegal instruction (mcause = 2) -> skip the bad instruction (mepc += 4)
+#   - Load address misaligned (mcause = 4) -> abort program (jump to exit)
+#   - Any other exception -> re-execute the same instruction (return to original mepc)
+
+trap_handler:
+    # Save registers we will use (t0-t2) using the temporary area pointed to by mscratch
+    csrrw   t0, mscratch, t0     # swap t0 with mscratch (t0 now points to temp storage)
+    sw      t1, 0(t0)            # save t1
+    sw      t2, 4(t0)            # save t2
+
+    # Read the cause of the exception
+    csrr    t1, mcause           # t1 = exception cause
+
+    # Check for illegal instruction (mcause = 2)
+    li      t2, 2
+    beq     t1, t2, illegal_instruction
+
+    # Check for load address misaligned (mcause = 4)
+    li      t2, 4
+    beq     t1, t2, misaligned_load
+
+    # For any other exception: re-execute the faulting instruction (default behavior)
+    j       restore_and_return
+
+illegal_instruction:
+    # Skip over the illegal instruction
+    csrr    t2, mepc             # t2 = address of illegal instruction
+    addi    t2, t2, 4            # advance to next instruction
+    csrw    mepc, t2             # update return address
+    j       restore_and_return
+
+misaligned_load:
+    # Fatal error → abort program
+    j       exit                 # jump to exit routine (not shown)
+
+restore_and_return:
+    # Restore saved registers
+    lw      t1, 0(t0)
+    lw      t2, 4(t0)
+    csrrw   t0, mscratch, t0     # restore original t0 and put pointer back in mscratch
+
+    mret                         # return from exception (PC ← mepc)
+
+# ------------------------------------------------------------------
+# Program termination (can be replaced with ecall for OS environments)
+exit:
+    # Example: infinite loop or system shutdown
+    j       exit
+```
+{% endcode %}
+
+</details>
