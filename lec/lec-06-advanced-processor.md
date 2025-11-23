@@ -153,7 +153,36 @@ As we have seen the technique of pipelining in Lec 05, it can reduce the clock c
 
 However, the maximum number of pipeline stages is limited by the pipeline hazards, sequencing overhead, and cost.
 
-> TODO: For the explanation of sequence overheads, Prof Rajesh has a very good explanation in Week 10 Lec! Include that once got time!
+<details>
+
+<summary>More on the Sequence Overhead affect</summary>
+
+Ideally, the clock period is determined solely by the [longest combinational logic delay/critical path](https://wenbo-notes.gitbook.io/ddca-notes/lec/lec-02-digital-system-design-and-verilog?q=#critical-path) (e.g., 8ns in our example). However, in reality, hardware registers introduce fixed timing overheads that must be added to every stage.
+
+To ensure data is captured correctly, we must account for:
+
+* $$t_{CLK\to Q}$$: The time required for data to leave the source register after the clock edge.
+* $$t_{setup}$$: The time data must be stable at the destination register _before_ the next clock edge.
+
+Using the single cycle processor as an example, even with an 8ns logic delay, the actual critical path includes the overhead. Assuming $$t_{CLK\to Q} = 1\text{ns}$$ and $$t_{setup} = 1\text{ns}$$:
+
+<p align="center"><span class="math">T_{cycle} = t_{CLK\to Q} + t_{logic} + t_{setup} = 1 + 8 + 1 = 10\text{ns}</span></p>
+
+This is shown as the figure below
+
+<figure><picture><source srcset="../.gitbook/assets/cg3207-lec06-Sequence-overhead-8ns-dark.svg" media="(prefers-color-scheme: dark)"><img src="../.gitbook/assets/cg3207-lec06-Sequence-overhead-8ns-light.svg" alt=""></picture><figcaption></figcaption></figure>
+
+If we split the logic perfectly into two stages ($$8\text{ns} \div 2 = 4\text{ns}$$), the register overhead does not scale down; it applies to every new stage introduced.
+
+<p align="center"><span class="math">T_{stage} = t_{CLK\to Q} + \frac{t_{logic}}{2} + t_{setup} = 1 + 4 + 1 = 6\text{ns}</span></p>
+
+This is again shown as the figure below,
+
+<figure><picture><source srcset="../.gitbook/assets/cg3207-lec06-Sequence-overhead-4ns-dark.svg" media="(prefers-color-scheme: dark)"><img src="../.gitbook/assets/cg3207-lec06-Sequence-overhead-4ns-light.svg" alt=""></picture><figcaption></figcaption></figure>
+
+While ideal pipelining suggests a $$ $2\times$ $$ speedup (reducing 8ns to 4ns), the fixed overhead limits the actual cycle time to 6ns. Therefore, as pipeline depth increases, the accumulated overhead yields diminishing returns on speedup.
+
+</details>
 
 ## Micro-Operations
 
@@ -296,7 +325,61 @@ Besides discarding, we can also use register renaming to solve this hazard.
 {% endstep %}
 {% endstepper %}
 
-> TODO: Prof Rajesh's Out-of-order execution slides 23-24 (Chapter 06) are awesome! Go back understand that!
+#### Implementing the Out-of-Order Execution
+
+While the conceptual goal is to increase ILP, the hardware implementation requires a specific structure to ensure correctness. The diagram above illustrates a typical Out-of-Order pipeline. It is divided into three distinct phases to balance speed with stability.
+
+<figure><img src="../.gitbook/assets/cg3207-lec06-out-of-order-implementation.png" alt=""><figcaption></figcaption></figure>
+
+{% stepper %}
+{% step %}
+#### The Front End: In Order Issue
+
+The Instruction Fetch and Decode Unit retrieves instructions and issues them to the "Reservation Stations."
+
+* **Behavior**: This process happens **In-Order**.
+* **Reason**: We must issue in program order to correctly identify and track data dependencies (like the RAW hazards mentioned above) before the instructions are scattered to different units. At this stage, if operands are not ready, the instruction is not stalled; it is simply moved to a waiting area.
+{% endstep %}
+
+{% step %}
+#### The Execution Core: Out-of-Order Execute
+
+Once issued, instructions sit in **Reservation Stations (RS)**. These buffers hold the instruction and wait for pending operands.
+
+* **Behavior**: The **Functional Units (FUs)** (Integer, Floating point, Load/Store) initiate execution **Out-of-Order**. They start exactly when their data is ready, regardless of the original program sequence.
+* **The "Red Arrows"** **(Common Data Bus)**: As soon as a Functional Unit finishes, it broadcasts the result.
+  1. **To Waiting RS**: The result is forwarded immediately to any other Reservation Station waiting for this data (solving RAW hazards without stalling the fetch unit).
+  2. **To the Commit Unit**: The result is saved for the final update.
+{% endstep %}
+
+{% step %}
+#### The Back End: In-Order Commit
+
+The **Commit Unit** (often coupled with a **Reorder Buffer** or ROB) collects results from the execution units.
+
+* **Behavior**: It writes results to the architectural registers (the actual programmer-visible state) **In-Order** (program fetch order).
+* **Why?**: This is crucial for two reasons:
+  1. **Precise Exceptions**: If an instruction crashes (e.g., divide by zero), we ensure that only registers from _previous_ instructions are updated. We must not accidentally save the result of a "future" instruction that executed early.
+  2. **Branch Misprediction**: If the processor guessed a branch wrong (speculation), the instructions executed after the branch must be discarded. Since the Commit Unit hasn't written them to the permanent registers yet, we can simply "flush" the Reorder Buffer to correct the machine state.
+{% endstep %}
+{% endstepper %}
+
+<details>
+
+<summary>Hardware Solutions to False Dependencies (<a href="https://wenbo-notes.gitbook.io/ddca-notes/lec/lec-06-advanced-processor#write-after-read-war">WAR</a> &#x26; <a href="https://wenbo-notes.gitbook.io/ddca-notes/lec/lec-06-advanced-processor#write-after-write-waw">WAW</a>)</summary>
+
+The hardware solves these hazards by distinguishing between **Architectural Registers** (visible to software) and **Physical Storage** (internal buffers). This is implicit [**Register Renaming**](lec-06-advanced-processor.md#register-renaming).
+
+1. Solving [WAR (Write After Read)](https://wenbo-notes.gitbook.io/ddca-notes/lec/lec-06-advanced-processor#write-after-read-war)
+   1. **Mechanism: Reservation Stations (RS)**.
+   2. **How it works**: When an instruction is issued, it **copies** its source operands (or tags) into its specific Reservation Station.
+   3. **Result**: The instruction now possesses its own local copy of the data. Even if a later instruction overwrites the original architectural register, the pending instruction is unaffected because it no longer reads from the register file.
+2. Solving [WAW (Write After Write)](https://wenbo-notes.gitbook.io/ddca-notes/lec/lec-06-advanced-processor#write-after-write-waw)
+   1. **Mechanism: Commit Unit / Reorder Buffer (ROB)**.
+   2. **How it works**: Instructions write results to the ROB, not the main register file. The Commit Unit transfers these results to the Architectural Registers strictly in program order.
+   3. **Result:** Even if a later instruction finishes early, it waits in the ROB. The architectural register is only updated when the instruction officially "commits," ensuring the final value always comes from the logically last instruction.
+
+</details>
 
 ### Register Renaming
 
