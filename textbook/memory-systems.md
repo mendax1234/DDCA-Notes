@@ -4,7 +4,7 @@
 
 ## Introduction
 
-Computer system performance depends on **both** the memory system **and** the processor microarchitecture. But processor speed has increased at a **faster rate** than memory speeds. DRAM memories are currently **10 to 100 times slower** than processors. This is the bottleneck!
+Computer system performance depends on **both** the memory system **and** the processor microarchitecture. But processor speed has increased at a **faster rate** than memory speeds. DRAM memories are currently **10 to 100 times slower** than processors. This is a big bottleneck between the processor and the memory system!
 
 The processor communicates with the memory system over a **memory interface**. The figure below shows the **simple memory interface** used in our **multicycle RISC-V processor**. The processor sends an **address** over the **Address bus** to the memory system. For a **read**, `MemWrite` is 0 and the memory returns the **data** on the `ReadData` bus. For a **write**, `MemWrite` is 1 and the processor sends **data** to memory on the **WriteData bus**.
 
@@ -26,7 +26,7 @@ Within this memory hierarchy, there are three levels
 {% step %}
 #### Cache
 
-Computers store the **most commonly used instructions and data** in a **faster but smaller memory**, called a **cache**. This is also the **first level** of our memory hierarchy. The cache is usually built out of **SRAM** on the **same chip** as the processor. The **cache speed** is **comparable to the processor speed** because **SRAM is inherently faster than DRAM** and because the **on-chip memory** eliminates **lengthy delays** caused by traveling to and from a separate chip.
+Computers store the **most commonly used instructions and data** in a **faster but smaller memory**, called a **cache**. This is also the **first level** of our memory hierarchy. The cache is usually built out of **SRAM** on the **same chip** as the processor. The **cache speed** is **comparable to the processor speed** because **SRAM is inherently faster than DRAM** (the technology used to build our main memory) and because the **on-chip memory** eliminates **lengthy delays** caused by traveling to and from a separate chip.
 
 1. **Cache hit**: If the processor requests data that is **available in the cache**, it is returned **quickly**. This is called a **cache hit**.
 2. **Cache miss**: Otherwise, the processor retrieves the data from **main memory (DRAM)**. This is called a **cache miss**.
@@ -48,7 +48,7 @@ Remember that speed is characterized by both **latency** and **throughput**.
 * **Memory latency** is the time to access the **first byte** of information.
 * **Throughput** is the number of bytes per second that can be delivered.
 
-Main memories have good throughput but long latency.
+Main memories have **good throughput** but **long latency**.
 
 </details>
 {% endstep %}
@@ -109,7 +109,7 @@ where $$t_{\text{cache}}$$, $$t_{\text{MM}}$$, and $$t_{\text{VM}}$$ are the **a
 
 <details>
 
-<summary>Self Diagnostic Question</summary>
+<summary>Self-Diagnostic Question</summary>
 
 Calculate the Average Memory Access Time (AMAT) for a computer system with a two-level memory hierarchy, given the following specifications:
 
@@ -186,7 +186,7 @@ In our previous examples, the **two least significant bits** of the **32-bit add
 
 <details>
 
-<summary>Self Diagnostic Quiz</summary>
+<summary>Self-Diagnostic Quiz</summary>
 
 Find the number of set and tag bits for a direct-mapped cache with 1024 (2¹⁰) sets and a one-word block size. The address size is 32 bits.
 
@@ -246,6 +246,10 @@ The following figure shows the **SRAM array** of a **fully associative cache** w
 
 **Fully associative caches** tend to have the **fewest conflict misses** for a given cache capacity, but they require **more hardware** for additional **tag comparisons**. They are best suited to **relatively small caches** because of the **large number of comparators**.
 
+{% hint style="danger" %}
+In a fully associative cache, the worst-case number of comparisons to check if a word of interest is present in the cache **is equal to** the **number of blocks** ($$B = C/b$$).
+{% endhint %}
+
 #### Block Size
 
 In our previous examples, we only take advantage of the **temporal locality** because the block size was one word. To exploit **spatial locality**, a cache uses larger blocks to hold several consecutive words so that when a miss occurs and the word is fetched into the cache, the adjacent words in the block are also fetched. Therefore, subsequent accesses are more likely to hit because of spatial locality.
@@ -278,7 +282,7 @@ The principle of using larger block sizes to exploit spatial locality also appli
 
 * **capacity** $$C$$
 * **block size** $$b$$ (and **number of blocks**, $$B = C/b$$)
-* **number of blocks in a set /** degree of associativity ($$N$$)
+* **number of blocks in a set /** **degree of associativity** ($$N$$)
 
 The following table summarizes the various **cache organizations**. Each **address** in memory maps to **only one set** but can be stored in **any of the ways**.
 
@@ -295,7 +299,7 @@ In the cache, when a set is full, the block must be kicked out to be replaced wi
 * In a direct-mapped cache, each address maps to a unique block and set, so if a set is full when new data must be loaded, the block in that set is replaced with the new data.
 * In set-associative and fully associative caches, the cache must choose which block to evict when a cache set is full.
 
-There are three replacement algorithms, the first two are based on the history, which are also practical, while the third is optimal but as it needs to predict the future, this is not practical.
+There are three replacement algorithms, the first two are based on the history, which are also practical, while the third is optimal but as it needs to predict the future, it is not practical.
 
 #### FIFO
 
@@ -313,7 +317,7 @@ In a **two-way set-associative cache**, a **use bit (U)** indicates which way wi
 
 <details>
 
-<summary>Self Diagnostic Quiz</summary>
+<summary>Self-Diagnostic Quiz</summary>
 
 Show the contents of an eight-word two-way set-associative cache after executing the following code, assuming LRU replacement, a block size of one word, and an initially empty cache.
 
@@ -352,11 +356,15 @@ The **first-level (L1) cache** is designed to be small enough to achieve a **one
 
 The misses can be classified as **compulsory**, **capacity**, and **conflict**.
 
-* **Compulsory Miss**: This happens because the block must be retrieved from memory the first time it is accessed, regardless of the cache design
+* **Compulsory Miss**: This happens because the block must be retrieved from memory the first time it is accessed, regardless of the cache design.
 * **Capacity Miss**: This occurs when the cache is too small to hold all the data that the program is actively using at the same time.
 * **Conflict Miss**: This arises in **set-associative** or **direct-mapped** caches when multiple addresses map to the same **set**, causing needed blocks to be prematurely evicted even though space may be available in other sets.
 
 Changing cache parameters can affect one or more types of cache miss. For example, increasing **cache capacity** can reduce both **capacity misses** and **conflict misses**, but it has no effect on **compulsory misses**. In contrast, increasing **block size** can reduce **compulsory misses** by exploiting **spatial locality** (bringing in more adjacent data with each miss), yet it may increase **conflict misses** because a larger block size means fewer sets in the cache, causing more addresses to map to the same set and compete for space.
+
+{% hint style="danger" %}
+**Compulsory miss** happens constantly, not just at startup!
+{% endhint %}
 
 {% stepper %}
 {% step %}
@@ -384,6 +392,20 @@ Caches are classified as either **write-through** or **write-back**.
 * In a **write-back** cache, each cache block has a **dirty bit (D)** that is set to 1 when the block is modified and remains 0 otherwise; a dirty block is written back to main memory only when it is evicted from the cache.
 
 Although a write-through cache needs no dirty bit, it generally performs far more main-memory writes than a write-back cache. Because main-memory access time is very large, modern caches are almost always **write-back**.
+
+<details>
+
+<summary>Self-Diagnostic Quiz</summary>
+
+A write-back strategy will be more appropriate for a system executing programs where most of the data is stored in arrays. True or False?
+
+***
+
+**Solution**. **True**. Arrays exhibit high **spatial locality**, meaning the CPU will likely perform multiple write operations to the same cache block in a short period (e.g., `A[0]`, `A[1]`, `A[2]`).
+
+A **write-back** strategy is more appropriate because it **coalesces** (combines) these multiple updates into a single write transaction to main memory, occurring only when the block is eventually evicted. In contrast, a write-through strategy would inefficiently trigger a slow main memory access for every single array element update.
+
+</details>
 
 ## Vitural Memory
 
@@ -418,7 +440,7 @@ Programs can access data anywhere in **virtual memory**, so they must use **virt
 Think of physical memory as a **cache** (later you will see it's actually a [fully associative cache](memory-systems.md#fully-associative-cache)) for the virtual memory!&#x20;
 {% endhint %}
 
-Given that, we can find the similarities between the **virtual memory** and [**cache**](memory-systems.md#cache-1) we have discussed above. The following table summarizes the analogous terms.
+Given that, we can find the similarities between the **virtual memory** and the [**cache**](memory-systems.md#cache-1) we have discussed above. The following table summarizes the analogous terms.
 
 <figure><img src="../.gitbook/assets/virtual-memory-vs-cache.png" alt="" width="410"><figcaption><p>Analogous cache and virtual memory terms</p></figcaption></figure>
 
@@ -440,7 +462,7 @@ The **page table** is usually so large that it is located in **physical memory**
 
 <summary>Why doesn't the page table consume all available physical memory?</summary>
 
-The efficiency relies on mapping granularity. Page tables do not map individual bytes; they map fixed-size blocks called pages (typically 4 KiB). Because a single Page Table Entry accounts for an entire block of 4096 bytes, the size of the page table is orders of magnitude smaller than the memory it maps.
+The efficiency relies on mapping granularity. Page tables do not map individual bytes/words; they map fixed-size blocks called pages (typically 4 KiB). Because a single Page Table Entry accounts for an entire block of 4096 bytes/1024 words, the size of the page table is orders of magnitude smaller than the memory it maps.
 
 </details>
 
@@ -453,7 +475,7 @@ In a system with **virtual memory**, programs use **virtual addresses** so that 
 Recall that virtual memory and physical memory are divided into pages.
 
 * The most significant bits of the virtual or physical address specify the **virtual** or **physical page number**.
-* The least significant bits specify the word within the page and are called the **page offset**.
+* The least significant bits specify the **word within the page** and are called the **page offset**.
 
 #### How address translation works
 
@@ -509,9 +531,13 @@ The **12-bit page offset** requires no translation. The remaining **19 bits** of
 
 ### Translation Lookaside Buffer
 
-**Virtual memory** would have a severe performance impact if it required a **page table** read on every load or store, doubling the delay of loads and stores. To solve this, n general, the processor can keep the last several **page table entries** in a small cache called a **translation lookaside buffer (TLB)**. The processor “looks aside” to find the translation in the **TLB** before having to access the **page table** in **physical memory**.
+**Virtual memory** would have a severe performance impact if it required a **page table** read on every load or store, doubling the delay of loads and stores. To solve this, in general, the processor can keep the last several **page table entries** in a **small** **cache** called a **translation lookaside buffer (TLB)**. The processor “looks aside” to find the translation in the **TLB** before having to access the **page table** in **physical memory**.
 
 A **TLB** is organized as a **fully associative cache** and typically holds 16 to 512 **entries**. Each **TLB entry** holds a **virtual page number** and its corresponding **physical page number**. The **TLB** is accessed using the **virtual page number**. If the **TLB** **hits**, it returns the corresponding **physical page number**. Otherwise, the processor must read the **page table** in **physical memory**. The **TLB** is designed to be small enough that it can be accessed in less than one cycle.
+
+{% hint style="info" %}
+The reason for using a **fully associative cache** in TLB is that the size of TLB is relatively small, so we can afford to use it. It is **not** because a fully associative cache runs faster than other mapping technique. In fact, circuitry for the fully associate cache is the **slowest**.
+{% endhint %}
 
 <details>
 

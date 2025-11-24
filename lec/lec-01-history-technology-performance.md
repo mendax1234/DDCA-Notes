@@ -447,7 +447,7 @@ $$
 Even though disk I/O became **10× faster**, the overall program only got **22% faster**, because disk I/O was only a small part of the total time.
 
 {% hint style="success" %}
-From the Amdahl's law, we can deduce a very useful idea — "Make the **common case fast**". As the common case takes larger portion of time, improving it can improve the speed of the whole system significantly.
+From the Amdahl's law, we can deduce a very useful idea — "**Make the** **common case fast**". As the common case takes larger portion of time, improving it can improve the speed of the whole system significantly.
 {% endhint %}
 
 ### Eight Great Ideas
