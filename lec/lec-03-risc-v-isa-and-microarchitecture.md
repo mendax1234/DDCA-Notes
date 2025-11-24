@@ -51,11 +51,11 @@ In the lec, we have introduced some interesting features about RISC-V, and they 
   * No mixing of memory access with data processing or branching
 
 {% hint style="warning" %}
-Memory and register is **not the same**! Here, memory usually refers to the data memory, like RAM.
+Memory and register is **not the same**! Here, memory usually refers to the main memory.
 {% endhint %}
 
 * Interesting design choices to simplify hardware implementation
-  * Especially the encoding of immediates (We will see later)
+  * Especially the encoding of immediates (We will see later).
 
 {% hint style="warning" %}
 Instruction length and word length are not necessarily the same!
@@ -79,16 +79,16 @@ The **instruction length** is the number of bits to encode an instruction and it
 * If you add the **Compressed (C) extension**, some instructions are **16 bits long**.
 * There are also **48-bit and 64-bit instruction encodings** in the RISC-V spec (for special extensions).
 
-{% hint style="info" %}
-In a 32-bit (word length) system, the instruction length doesn't have to be 32-bit.
+{% hint style="warning" %}
+In a 32-bit (word length) system, the instruction length **doesn't** have to be 32-bit.
 {% endhint %}
 {% endstep %}
 
 {% step %}
-#### What if word length and instruction lengt doesn't match?
+#### What if word length and instruction length doesn't match?
 
 * **Instruction length ≠ word length**
-  * A 32-bit processor does not mean all instructions must be 32 bits long.
+  * A 32-bit processor does not mean all instructions must be 32 bits long. This is what we have seen from above.
   * Example: ARM Thumb and RISC-V compressed (`C`) extension use 16-bit instructions on a 32-bit processor.
   * The processor’s frontend (fetch/decode) handles variable instruction sizes, while the backend (execution units, registers, ALU) still works on 32-bit data.
 
@@ -177,7 +177,7 @@ So, in summary, below is the illustration of RISC-V register file,
 
 In RISC-V, flags are never stored for “future use.” Instead, comparisons and branches are **self-contained**. For example, `beq x1, x2, target;` will directly compare `x1` and `x2`, and branches to `target`.
 
-* If you _do_ need the comparison result as data, use an instruction like `slt` to store it in an **general-purpose register** `slt x3, x1, x2;` means `x3 1` if `x1<x2`, else `x3=0`.
+* If you _do_ need the comparison result as data, use an instruction like `slt` to store it in an **general-purpose register** `slt x3, x1, x2;` means `x3 = 1` if `x1<x2`, else `x3=0`.
 * Because branch instructions already use the ALU for comparison, RISC-V usually has a separate unit to compute branch target addresses (`PC + offset`).
 {% endstep %}
 {% endstepper %}
@@ -215,10 +215,10 @@ So all immediates become sign-extended words. RISC-V immediates are encoded in *
 * ALU sees this and just adds normally, giving a result 8 less.
 
 {% hint style="danger" %}
-Only all **immediates** are MSB-extended. Later we will see, value stored in registers sometimes are zero-extended.
+Only all **immediates** are MSB-extended. Later we will see, the value stored in registers sometimes are zero-extended.
 {% endhint %}
 
-However, this may become a bit wired with instruction `sltu`. But, let loop at the following example,
+However, this may become a bit wired with instruction `sltu`. But, let's look at the following example,
 
 ```riscv
 sltiu x3, x1, -8
@@ -228,6 +228,10 @@ Suppose the above is our "set if less than immediate unsigned" instruction, and 
 
 * `x1=-2`, `x1` will be interpreted as `0xFFFFFFFE`. As ALU just compares unsigned, `0xFFFFFFFE` is greater than `0xFFFFFFF8`, thus `false`, meaning under **unsigned comparison** `x1` is not smaller than `-8`!
 * `x1=5`, `x1` will be interpreted as `0x00000101`. Similarly, ALU just compares unsigned, `0x00000101` is smaller than `0xFFFFFFF8`, thus `true`, meaning under **unsigned comparison** `x1` is **smaller** than `-8` (unsigned)
+
+This will give us the range for the immediate in `slti` and `sltiu`: 0x800 - 0x7FF (-2048 to +2047). This range applies to all **I-type** and **S-type** instructions. The **B-type** instructionis a bit special, its range is (-4096 to +4094 <-> 0x1000 - 0xFFE). But as in B-type instructions, it is **impossible** to give the immediate manually, I think this won't appear in quizzes or finals 😂.
+
+So, instructions like `sltiu x3, x1, 0x00000FFF` is **illegal** as `0xFFF = 4095` exceeds to range for the immediate in I-type and S-type instructions!
 
 {% hint style="danger" %}
 Treat negative number in 2's complement as **unsigned** meaning it will become a **very large positive number**.
@@ -250,7 +254,9 @@ From the table above, we may think why the immediate's location is that wired! A
 From this table, we notice that
 
 * `subi` is unnecessary as the assembler can encode `A-B` as `A+(-B)`. This find as `B` is immediate, if `B` is a register, then `B` cannot be known at assembly time, and that's why `sub` is still needed.
-* And the following table is copied from [Harris & Harris](https://wenbo-notes.gitbook.io/ddca-notes/textbook/architecture/programming#shift-instructions), just for CG3207 midterm quiz purpose.
+* And the following table about the three types of shift operations is copied from [Harris & Harris](https://wenbo-notes.gitbook.io/ddca-notes/textbook/architecture/programming#shift-instructions), just for CG3207 midterm quiz purpose.
+
+<figure><img src="../.gitbook/assets/risc-v-shift-instrucitons-example.png" alt=""><figcaption></figcaption></figure>
 
 #### DP Pseudo-Instruction
 
@@ -291,7 +297,17 @@ The following is the base control instructions:
 {% endstep %}
 
 {% step %}
+#### The immediate in branch instructions
+
+In the branch instructions, the immediate is 12 bits, but it stores the `[12:1]` instead of `[11:0]`. This is because in RISC-V, every instruction must start at an address that is an even number (a multiple of 2). You can never jump to an odd address (like `0x1001`) because instructions never exist there.
+
+So, instead of storing bits `[11:0]` (which would include the useless last zero), the instruction stores bits `[12:1]`. The hardware assumes the last bit (bit 0) is always `0`.
+{% endstep %}
+
+{% step %}
 #### **Two types of jumps**
+
+> Look at the "Description (C)" of `jal` and `jalr` from the table above to understand this part better!
 
 1. `jal`: jump and link, is a J-type instruction. And it stores return address in `rd`.
    1. Used when you know the **target address at assembly time**.
@@ -299,12 +315,31 @@ The following is the base control instructions:
    3. `imm` is 20-bit.
 2. `jalr`: jump and link register, is an I-type instruction. And it stores return address in `rd` (usually `ra`)
    1. Use when the **target address is dynamic**, stored in a register.
-   2. Used in **function return** (Go back to where the function was called from)
-   3. `imm` is 12-bit, but it can jump anywhere in a 32-bit absolute address range. A LUI      \
-      instruction can first load rs1 with the upper 20 bits of a target address, then JALR      \
+   2. Used in **function return** (Go back to where the function was called from). This is because the function can be called from many different places. The return address isn't known until the program is actually running. Therefore, we jump to the address stored in the **register** `ra`.
+   3. `imm` is 12-bit, but it can jump anywhere in a 32-bit absolute address range. A `lui`      \
+      instruction can first load `rs1` with the upper 20 bits of a target address, then `jalr`      \
       can add in the lower bits.
-      1. Similarly, AUIPC then JALR can jump anywhere in a 32-bit         \
-         pc-relative address range
+      1. Similarly, `auipc` then `jalr` can jump anywhere in a 32-bit         &#x20;pc-relative address range.
+
+For example, in the following code, we can see how `jalr` can jump to anywhere with the help of `lui`.
+
+{% code lineNumbers="true" %}
+```riscv
+# We want to jump to 0x12345678
+# We split this address into two parts:
+# Upper 20 bits: 0x12345
+# Lower 12 bits: 0x678
+
+# 1. Load the upper 20 bits into a temporary register (t0)
+lui t0, 0x12345     
+# t0 now holds: 0x12345000
+
+# 2. Use JALR to add the lower 12 bits and jump
+# Target = (Value in t0) + 0x678
+# Target = 0x12345000    + 0x678 = 0x12345678
+jalr ra, t0, 0x678
+```
+{% endcode %}
 {% endstep %}
 {% endstepper %}
 
@@ -429,7 +464,7 @@ Datapath is the path through which data "flows". It includes the following eleme
 Like memories and registers. The storage elements can be further divided into the following parts
 
 1. **Architectural state elements**: manipulated by the programmer, like instruction memory (IROM), data memory (DMEM), register file (x0-x31), PC, and other control registers.
-2. **Microarchitectural state elements**: **not accessible** to the   &#x20;programmers, like pipeline registers, cache tags, and branch predictor state
+2. **Microarchitectural state elements**: **not accessible** to the   &#x20;programmers, like pipeline registers, cache tags, and branch predictor state.
 {% endstep %}
 
 {% step %}
@@ -490,7 +525,7 @@ This is basically what the information a bus can carry
 
 ***
 
-Usually, we use the location of the bus first, then say the purpose of the bus.
+Usually, we use the **location** of the bus first, then say the **purpose** of the bus.
 
 </details>
 
@@ -505,7 +540,7 @@ Control Unit **controls** the flow/processing/storage of data in&#x20;the datap
 
 ### Implement a single-cycle microarchitecture
 
-**I**n this lecture, we will implement a multi-cycle microarchitecture first. So basically, a single-cycle microarchitecture will fetch, decode, execute all in **one clock cycle**. And in this lecture, we have covered four single-cycle microarchitecture, each is built upon the previous one,
+**I**n this lecture, we will implement a single-cycle microarchitecture first. So basically, a single-cycle microarchitecture will fetch, decode, execute all in **one clock cycle**. And in this lecture, we have covered four single-cycle microarchitecture, each is built upon the previous one,
 
 {% stepper %}
 {% step %}

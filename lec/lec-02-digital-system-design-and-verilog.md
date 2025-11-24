@@ -305,7 +305,7 @@ It is mapping of logical connection between cells to physical interconnects, whi
 {% hint style="success" %}
 For more on routing, please take [NUS EE4218](https://nusmods.com/courses/EE4218/embedded-hardware-system-design)!
 
-<p align="right">— From Dr. Rajesh</p>
+<p align="right">— From Prof. Rajesh</p>
 {% endhint %}
 {% endstep %}
 {% endstepper %}
@@ -345,9 +345,13 @@ We have learned quite a lot about [FPGA in Harris & Harris](https://wenbo-notes.
 
 ## Verilog for Synthesis
 
-Note that the verilog and the rules we are talking here are for writing the RTL code, not for the testbench/simulation.
+{% hint style="danger" %}
+Note that the verilog and the rules we are talking here are for writing the **RTL code**, not for the **testbench/simulation**.
+{% endhint %}
 
 ### General Rules for Synthesizability
+
+> In this section, `reg` means the **variable** type is `reg` only. It doesn't mean that signal is a **register**. If a `reg` signal is inferred as a physical register, we will mention it explicitly.
 
 #### Do NOT use delays (`#delay`)
 
@@ -390,7 +394,7 @@ So, the key takeaway is
 
 <figure><img src="../.gitbook/assets/cg3207-lec02-glitch.png" alt=""><figcaption></figcaption></figure>
 
-{% hint style="info" %}
+{% hint style="warning" %}
 In the above image, the glitch happens because NOT gate has a propagation delay.
 {% endhint %}
 
@@ -433,7 +437,7 @@ assign Z = X | Y;
 
 But its' ok to have a `reg` at the LHS of multiple statements within the **same**&#x20;`always` block as long as the **same type of assignment** is used. e.g., the use of `if` statements.
 
-* Only blocking or only non-blocking, do not mix the two for a particular `reg`.
+* Only blocking (`=`) or only non-blocking (`<=`), **do not mix** the two for a particular `reg`.
 * Within an always block, if a signal is assigned more than once, whichever assignment executes last in the flow of control is what the `reg` ends up holding.
 
 #### Initializations of reg are ignored by synthesis
@@ -446,11 +450,13 @@ If you use either [`initial` block](https://wenbo-notes.gitbook.io/ddca-notes/la
 
 `wire`s cannot be meaningfully initialized as they don't store anything. (Go back review the [working principle of `wire`](https://wenbo-notes.gitbook.io/ddca-notes/lab/resources/verilog-lifesaver#wire) again if you forget)
 
-Initialization to 0 or 1 will connect the wire to a constant 0 or 1 respectively.&#x20;Further assignment using assign will lead to it having multiple drivers. This is **dangerous** and **not recommended!**
+Initialization to 0 or 1 will connect the wire to a **constant** 0 or 1 respectively.&#x20;Further assignment using `assign` will cause it to have multiple drivers. This is **dangerous** and **not recommended!**
 {% endstep %}
 
 {% step %}
 #### Not all regs can be initialized
+
+`reg`s that are synthesized as combinational circuits cannot be meaningfully initialized.
 
 {% code lineNumbers="true" %}
 ```verilog
@@ -462,12 +468,10 @@ end
 ```
 {% endcode %}
 
-`reg`s that get synthesized as combinational circuits **cannot be&#x20;meaningfully initialized**.
-
 Here, `z` is **not a flip-flop** — it’s just a combinational output of `a & b`. The `= 1'b1` initialization only affects **simulation**; in real hardware it’s ignored. So on power-up, `z` won’t magically start at `1`. It will simply depend on `a & b`.
 
 {% hint style="danger" %}
-Not all `reg`s infer physical registers.
+Not all `reg`s will be inferred as physical registers.
 {% endhint %}
 {% endstep %}
 
@@ -549,7 +553,9 @@ This usually involves a [resettable register](https://wenbo-notes.gitbook.io/ddc
 2. All other code (e.g., the synchronous portion) should be inside the `else` (begin   &#x20;and end of else). There should not be additional **outer** `if/else ifs`, but can have **inner** `if/else ifs`, but these `if`s need not have `else`, why?
    1. It’s because it’s synchronous. In clocked logic, missing `else` = “hold value,” which is fine. But in combinational logic, missing `else` = “need to remember,” which infers unintended latches. (**This is super important!**)
 
+{% hint style="danger" %}
 In short, Prof. Rajesh recommends to **never** use resettable registers in this course.
+{% endhint %}
 {% endstep %}
 {% endstepper %}
 
