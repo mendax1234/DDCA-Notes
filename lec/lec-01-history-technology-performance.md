@@ -15,7 +15,7 @@ Basically, here we categorize these abstractions into three categories
    1. Handling input/output
    2. Managing memory and storage
    3. Scheduling tasks & sharing      &#x20;resources
-3. **Hardware**: **Processor**, memory, I/O   &#x20;controllers
+3. **Hardware**: Processor, memory, I/O   &#x20;controllers
 
 ### Levels of Program Code
 
@@ -51,7 +51,7 @@ An **ABI (Application Binary Interface)** builds on the **ISA**, which already d
 {% step %}
 **What does ABI specify?**
 
-Usually, the ABI will specify under an ISA, what is the purpose of each register. (For example, the [RISC-V Register File](https://wenbo-notes.gitbook.io/ddca-notes/textbook/architecture/assembly-language#the-register-set) is defined by its ABI)
+Usually, the ABI will specify under an ISA, what is the **purpose of each register**. (For example, the [RISC-V Register File](https://wenbo-notes.gitbook.io/ddca-notes/textbook/architecture/assembly-language#the-register-set) is defined by its ABI)
 {% endstep %}
 
 {% step %}
@@ -89,7 +89,7 @@ In this course, we use RISC-V RV32I. So, the **calling convention in RISC-V RV32
 {% step %}
 **Which are the popular ISAs?**
 
-This is simple, nowadays, we mainly has the following ISAs
+This is simple. Nowadays, we mainly have the following ISAs
 
 1. x86
 2. ARM
@@ -184,9 +184,7 @@ This can **maximizes** [**yield**](#user-content-fn-6)[^6], so instead of throwi
 * Response time (execution time) – the time between the  &#x20;start and the completion of a task.
 * Throughput – the total amount of work done in a given  &#x20;time.
 
-Will need different performance metrics as well as a&#x20;different set of applications to benchmark personal\
-mobile devices, embedded and desktop computers, which are more focused on response time, versus\
-servers, which are more focused on throughput.
+Will need different performance metrics as well as a different set of applications to benchmark personal mobile devices, embedded and desktop computers, which are more focused on response time, versus servers, which are more focused on throughput.
 
 ### Relative Performance
 
@@ -217,8 +215,9 @@ Example: time taken to run a program
 
 Example
 
+* Computer A: 2GHz clock, 10s CPU time
 * Designing Computer B
-  * Aim for 6s CPU to,e
+  * Aim for 6s CPU time
   * Can do faster clock, but causes 1.2 x clock cycles
 * How fast must Computer B clock be?
 
@@ -254,7 +253,7 @@ $$
 #### Notes
 
 1. If different instructions have different CPI, then the average CPI is affected by instruction mix.
-2. CPI is **not** a fixed property bonding with the processor, it is a **statistics** which is defined by $$\text{Clock Cycles}\div\text{Instruction Count}$$.
+2. CPI is **not** a fixed property bonded with the processor, it is a **statistics** which is defined by $$\text{Clock Cycles}\div\text{Instruction Count}$$.
 {% endhint %}
 
 #### Example
@@ -274,7 +273,7 @@ $$
   * The _algorithm_ determines the sequence of operations.
   * Even if two implementations solve the same problem, one may require fewer high-level steps (e.g., binary search vs. linear search).
   * This directly changes the **instruction count (IC)** — and possibly the mix of instructions (e.g., more multiplications vs. more additions).
-  * Since different types of instructions can take different cycles (e.g., loads may stall on memory, multiplications may take multiple cycles), the _average CPI_ changes.
+  * Since different types of instructions can take different cycles (e.g., loads may stall on memory, multiplications may take multiple cycles), the _**average CPI**_ changes.
 * **Programming language**
   * A high-level algorithm written in C vs. Python (or even C vs. Java) will not translate to the same low-level instructions.
   * Some languages encourage more abstraction (e.g., object-oriented overhead, runtime checks), which can generate _more instructions_ when compiled or interpreted.

@@ -436,25 +436,45 @@ But its' ok to have a `reg` at the LHS of multiple statements within the **same*
 * Only blocking or only non-blocking, do not mix the two for a particular `reg`.
 * Within an always block, if a signal is assigned more than once, whichever assignment executes last in the flow of control is what the `reg` ends up holding.
 
-#### Initializations of reg (via initial block and reg declaration) are ignored by synthesis
+#### Initializations of reg are ignored by synthesis
 
 If you use either [`initial` block](https://wenbo-notes.gitbook.io/ddca-notes/lab/resources/verilog-lifesaver#initial-block) or `reg` declaration (e.g., `reg  = 1'b0`) to initialize a register, this initialization will be useful for registers and memories for FPGAs in **simulation**, but are **ignored** by the synthesis tools.
 
-* `wire`s cannot be meaningfully initialized as they don't store anything. (Go back review the [working principle of `wire`](https://wenbo-notes.gitbook.io/ddca-notes/lab/resources/verilog-lifesaver#wire) again if you forget)
-  * Initialization to 0 or 1 will connect the wire to a constant 0 or 1 respectively.    &#x20;Further assignment using assign will lead to it having multiple drivers. This is **dangerous** and **not recommended!**
-*   `reg`s that get synthesized as combinational circuits **cannot be    &#x20;meaningfully initialized**.
+{% stepper %}
+{% step %}
+#### Wires cannot be initialized
 
-    <pre class="language-verilog" data-line-numbers><code class="lang-verilog">reg z = 1'b1;   // initialization ignored in synthesis
+`wire`s cannot be meaningfully initialized as they don't store anything. (Go back review the [working principle of `wire`](https://wenbo-notes.gitbook.io/ddca-notes/lab/resources/verilog-lifesaver#wire) again if you forget)
 
-    always @(*) begin
-      z = a &#x26; b;    // purely combinational assignment
-    end
-    </code></pre>
+Initialization to 0 or 1 will connect the wire to a constant 0 or 1 respectively.&#x20;Further assignment using assign will lead to it having multiple drivers. This is **dangerous** and **not recommended!**
+{% endstep %}
 
-    Here, `z` is **not a flip-flop** — it’s just a combinational output of `a & b`. The `= 1'b1` initialization only affects **simulation**; in real hardware it’s ignored. So on power-up, `z` won’t magically start at `1`. It will simply depend on `a & b`.
+{% step %}
+#### Not all regs can be initialized
 
-    * Not all `reg`s infer physical registers.
-* **Do not** assume registers and memory have 0s as initial value
+{% code lineNumbers="true" %}
+```verilog
+reg z = 1'b1;   // initialization ignored in synthesis
+
+always @(*) begin
+  z = a & b;    // purely combinational assignment
+end
+```
+{% endcode %}
+
+`reg`s that get synthesized as combinational circuits **cannot be&#x20;meaningfully initialized**.
+
+Here, `z` is **not a flip-flop** — it’s just a combinational output of `a & b`. The `= 1'b1` initialization only affects **simulation**; in real hardware it’s ignored. So on power-up, `z` won’t magically start at `1`. It will simply depend on `a & b`.
+
+{% hint style="danger" %}
+Not all `reg`s infer physical registers.
+{% endhint %}
+{% endstep %}
+
+{% step %}
+#### **Do not** assume registers and memory have 0s as initial value
+{% endstep %}
+{% endstepper %}
 
 #### Every always should follow one of the three templates given below strictly
 
@@ -466,8 +486,8 @@ If you use either [`initial` block](https://wenbo-notes.gitbook.io/ddca-notes/la
 
 To write RTL for **more complex combinational circuit**, use
 
-1. blocking statements
-2. `always @(*)`
+1. use `always @(*)`
+2. blocking statements (`=`)
 
 These are the same as Harris & Harris, besides that, we also recommend that
 
@@ -499,14 +519,14 @@ In short, rule 1 and rule 2(a) are important! For the rule 2(b), just never use 
 {% step %}
 **Sychronous** (`always_ff`)
 
-Synchronous means that the output changes only on the rising or falling edge of a single clock. And in Harris & Harris, we have seen two rules of thumb
+Synchronous means that the output changes only on the rising or falling edge of a single clock. And in Harris & Harris, we have seen two rules of thumb:
 
 1. use `always @(posedge clk)`
-2. non-blocking assignments only
+2. non-blocking assignments (`<=`) only
 
 By keeping the above two rules, you should be able to avoid 99% of problems. But the remaining 1%, will probably be in the paper exam. 😂
 
-1. Use **non-blocking** assignments for the outputs of the always block (signals),   &#x20;as well as for any internal physical registers. **But** the updated values are **not available** for use at the **same clock edge**. (See Step 1, rule 2(b) example)
+1. Use **non-blocking** assignments for the outputs of the always block (signals),   &#x20;as well as for any internal physical registers. But the updated values are **not available** for use at the **same clock edge**. (See Step 1, rule 2(b) example)
 2.  If you insist on using blocking assignments for internal combinational parts (variables). In this case, the variable should appear on the LHS **before** RHS.
 
     <pre class="language-verilog" data-line-numbers><code class="lang-verilog">always @ (posedge CLK)
@@ -539,7 +559,10 @@ In Verilog, `reg` doesn't mean it is a physical registers. The following rules s
 
 1. non-blocking assignments of `reg`s in a synchronous `always` block
 2. In an `always @(posedge clk)`, if you use **blocking assignment** (`=`) to read a reg (RHS) before writing it (LHS), that `reg` is inferred as a **physical register**.
-   1. Inferring this way is **not recommended**!
+
+{% hint style="danger" %}
+Inferring using the **second** way is **not recommended**!
+{% endhint %}
 
 Basically, the registers will be **simplified** if they fall into the following two cases
 
@@ -576,5 +599,9 @@ To solve this kind of drawing schematic questions, we do it systematically
 The final schematic looks like below,
 
 <figure><img src="../.gitbook/assets/cg3207-lec02-schematic-drawing-example.png" alt="" width="375"><figcaption></figcaption></figure>
+
+#### Worth to Read
+
+* [verilog-lifesaver.md](../lab/resources/verilog-lifesaver.md "mention")
 
 [^1]: In FPGA/ASIC design, the RTL code is synthesized into **a netlist** using the **cells/microscopic building blocks** from the technology library (as you will see [later](https://wenbo-notes.gitbook.io/ddca-notes/lec/lec-03-risc-v-isa-and-microarchitecture#risc-v-microarchitecture)).
