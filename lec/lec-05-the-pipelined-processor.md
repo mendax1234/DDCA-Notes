@@ -384,40 +384,28 @@ StallF = StallD = FlushE = lwStall // pseudo-code here
 * Condition 1: `MemtoRegE` is to ensure the instruction at the execution stage is `lw`.
 * Condition 2: `(rs1D == rdE) | (rs2D == rdE)` ensures that the instruction followed actually uses the `lw`'s `rd`. This is the earliest time we can detect such load-use hazard.
 
-After 1 cycle, the forwarding circuitry (W -> E) will take care of delivering the correct data. However, how do we combine it with our Mem-to-Mem copy circuitry ? Below is some pseudo-code provided
+After 1 cycle, the forwarding circuitry (W -> E) will take care of delivering the correct data. However, how do we combine it with our Mem-to-Mem copy circuitry, and deal with the case when some instructions don't use `rs1` or `rs2`? Below is an example!
 
-{% code overflow="wrap" %}
+{% code overflow="wrap" lineNumbers="true" %}
 ```verilog
-// helper predicates (set these based on decode-stage opcode/funct fields)
-isJ_D    = InstrD.isJal()            // J-type (jal)
-isU_D    = InstrD.isLui() || InstrD.isAuipc()  // U-type
-isI_D    = InstrD.isIType()          // I-type (includes lw, ALU-imm, jalr, etc.)
-isR_D    = InstrD.isRType()          // R-type (ALU reg-reg)
-isBranch_D = InstrD.isBranch()       // beq, bne, ...
-isStore_D  = InstrD.isStore()        // sw
+wire rs1_active;
+wire rs2_active;
 
-// does the decode-stage instruction actually read rs1 or rs2?
-use_rs1D = not (isJ_D or isU_D)          // J and U do not use rs1
-// rs2 is used by R-type, branches and stores; I-type and J/U do not use rs2
-use_rs2D = (isR_D or isBranch_D or isStore_D)
+// Check if instruction actually USES rs1
+assign rs1_active = (OpcodeD != 7'b1101111) &&  // JAL
+    (OpcodeD != 7'b0110111) &&  // LUI
+    (OpcodeD != 7'b0010111);  // AUIPC
 
-// Exception: if D is a store and E is a load, mem-mem forwarding handles it,
-// so we do NOT need to stall because rs2 (store-data) can be forwarded.
-needs_stall_on_rs2 = use_rs2D and not (isStore_D and MemtoRegE)
+// Check if instruction REQUIRES rs2 for Hazard Stalling
+assign rs2_active = (OpcodeD != 7'b1101111) &&  // JAL
+    (OpcodeD != 7'b0110111) &&  // LUI
+    (OpcodeD != 7'b0010111) &&  // AUIPC
+    (OpcodeD != 7'b0000011) &&  // Load
+    (OpcodeD != 7'b0010011) &&  // DP Imm
+    (OpcodeD != 7'b1100111) &&  // JALR
+    (OpcodeD != 7'b0100011);  // Store
 
-// rdE == 0 should never cause a stall
-rdE_nonzero = (rdE != 0)
-
-// final lw stall condition
-lwStall = MemtoRegE and rdE_nonzero and (
-            (use_rs1D and rs1D == rdE) or
-            (needs_stall_on_rs2 and rs2D == rdE)
-          )
-
-// control signals asserted when lwStall is true
-StallF = lwStall
-StallD = lwStall
-FlushE = lwStall
+assign lwStall = MemtoRegE && (rdE != 0) && (((rs1D == rdE) && rs1_active) || ((rs2D == rdE) && rs2_active));
 ```
 {% endcode %}
 
