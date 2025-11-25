@@ -76,7 +76,7 @@ done:
 
 A **one-bit dynamic branch predictor** remembers whether the branch was taken the **last time** and predicts that it will do the same thing the next time.
 
-While the loop is repeating, it remembers that the **beq was not taken last time** and predicts that it should not be taken next time. This is a **correct prediction** until the last branch of the loop, when the branch does get taken. Unfortunately, if the loop is run again, the branch predictor **remembers that the last branch was taken**. Therefore, it **incorrectly predicts** that the branch should be taken when the loop is first run again.
+While the loop is repeating, it remembers that the `bge` **was not taken last time** and predicts that it should not be taken next time. This is a **correct prediction** until the last branch of the loop, when the branch does get taken. Unfortunately, if the loop is run again, the branch predictor **remembers that the last branch was taken**. Therefore, it **incorrectly predicts** that the branch should be taken when the loop is first run again.
 
 In summary, a **one-bit dynamic branch predictor** mispredicts the **first** and **last** branches of a loop. And its accuracy is 80% if the loop repeats 10 times. In a loop with N iterations, the accuracy is
 
@@ -90,7 +90,7 @@ The accuracy of 80% doesn't apply to all cases! It is the accuracy only when the
 
 #### Two-bit Dynamic Branch Predictor
 
-A **two-bit dynamic branch predictor** can decrease the number of misprediction by having four states: Strongly taken, weakly taken, weakly not taken, and strongly not taken.
+A **two-bit dynamic branch predictor** can decrease the number of misprediction by having four states: Strongly Taken, Weakly Taken, Weakly Not Taken, and Strongly Not Taken.
 
 <figure><img src="../.gitbook/assets/cg3207-lec06-2-bit-dynamic-branch-predictor.png" alt=""><figcaption></figcaption></figure>
 
@@ -104,7 +104,7 @@ $$
 
 #### Branch Delay Slot
 
-In computer architecture, a **delay slot** is an **instruction slot** being executed without the effects of a preceding branch. The instruction in the delay slot will execute even if the preceding branch is taken. The insertion of the **independent instruction** which is safe to execute irrespective of branch outcome into the branch delay slot is done by the **compiler**.
+In computer architecture, a **delay slot** is an **instruction slot** being executed without the effects of a preceding branch. The instruction in the delay slot will execute even if the preceding branch is taken. Usually, **independent instructions** are inserted into the delay slot. The insertion of the **independent instruction** which is safe to execute irrespective of branch outcome into the branch delay slot is done by the **compiler**.
 
 <details>
 
@@ -155,16 +155,14 @@ However, the maximum number of pipeline stages is limited by the pipeline hazard
 
 <details>
 
-<summary>More on the Sequence Overhead affect</summary>
+<summary>More on the Sequence Overhead effect</summary>
 
-Ideally, the clock period is determined solely by the [longest combinational logic delay/critical path](https://wenbo-notes.gitbook.io/ddca-notes/lec/lec-02-digital-system-design-and-verilog?q=#critical-path) (e.g., 8ns in our example). However, in reality, hardware registers introduce fixed timing overheads that must be added to every stage.
+Ideally, the clock period is determined solely by the [longest combinational logic delay/critical path](https://wenbo-notes.gitbook.io/ddca-notes/lec/lec-02-digital-system-design-and-verilog?q=#critical-path) (e.g., 8ns in our example). However, in reality, hardware registers introduce fixed timing overheads that must be added to every stage. So, to ensure that the data is captured correctly, we must account for:
 
-To ensure data is captured correctly, we must account for:
+* $$t_{CLK\to Q}$$: The time required for data to leave the source register **after** the clock edge.
+* $$t_{setup}$$: The time that the data must be stable at the destination register **before** the next clock edge.
 
-* $$t_{CLK\to Q}$$: The time required for data to leave the source register after the clock edge.
-* $$t_{setup}$$: The time data must be stable at the destination register _before_ the next clock edge.
-
-Using the single cycle processor as an example, even with an 8ns logic delay, the actual critical path includes the overhead. Assuming $$t_{CLK\to Q} = 1\text{ns}$$ and $$t_{setup} = 1\text{ns}$$:
+Using the single cycle processor as an example, even with a 8ns propagation delay, the actual critical path will include the overhead. Assuming $$t_{CLK\to Q} = 1\text{ns}$$ and $$t_{setup} = 1\text{ns}$$:
 
 <p align="center"><span class="math">T_{cycle} = t_{CLK\to Q} + t_{logic} + t_{setup} = 1 + 8 + 1 = 10\text{ns}</span></p>
 
@@ -180,7 +178,7 @@ This is again shown as the figure below,
 
 <figure><picture><source srcset="../.gitbook/assets/cg3207-lec06-Sequence-overhead-4ns-dark.svg" media="(prefers-color-scheme: dark)"><img src="../.gitbook/assets/cg3207-lec06-Sequence-overhead-4ns-light.svg" alt=""></picture><figcaption></figcaption></figure>
 
-While ideal pipelining suggests a $$ $2\times$ $$ speedup (reducing 8ns to 4ns), the fixed overhead limits the actual cycle time to 6ns. Therefore, as pipeline depth increases, the accumulated overhead yields diminishing returns on speedup.
+In conclusion, while ideal pipelining suggests a $$2\times$$ speedup (reducing 8ns to 4ns), the fixed overhead limits the actual cycle time to 6ns. Therefore, as pipeline depth increases, the accumulated overhead yields diminishing returns on speedup.
 
 </details>
 
@@ -188,7 +186,7 @@ While ideal pipelining suggests a $$ $2\times$ $$ speedup (reducing 8ns to 4ns),
 
 > This technique is largerly used in CISC (Complex Instruction Set Computer).
 
-It means the at run time, more **complex instructions** will be **decomposed** into a series of simple instructions called **micro-operations** (micro-ops or $$\mu$$-ops). These micro-operations can be executed on **simple datapaths**.
+It means that at run time, more **complex instructions** will be **decomposed** into a series of simple instructions called **micro-operations** (micro-ops or $$\mu$$-ops). These micro-operations can be executed on **simple datapaths**.
 
 {% code lineNumbers="true" %}
 ```
@@ -208,7 +206,7 @@ The decoding process is done by the **hardware** and the micro-operations need n
 
 <summary>Micro-operations vs. pseudo-instructions</summary>
 
-* **Pseudo-instructions**: The assembler splits pseudo-instructions (which are **not valid** instructions in the ISA) into **valid instructions** within the ISA. The instructions to which the pseudo-instruction is split into is visible to the programmer.
+* **Pseudo-instructions**: The assembler splits pseudo-instructions (which are **not valid** instructions in the ISA) into **valid instructions** within the ISA. The instructions to which the pseudo-instruction is split into is **visible** to the programmer.
 * **Micro-operations**: In case of micro-operations, the hardware splits the complex instructions (which are **valid instructions** in the ISA) into simple instructions/operations which are **not necessarily within the ISA**. Micro-operations are **invisible** to the programmer.
 
 </details>
@@ -258,9 +256,9 @@ Recall that parallelism comes in temporal and spatial forms.
 
 </details>
 
-### Out-of-order Processor
+### Out-of-Order Processor
 
-To cope with the problem of dependencies, an **out-of-order processor** looks ahead across many instructions to issue **independent instructions** as rapidly as possible. The instructions can issue in a **different order** than that written by the programmer as long as dependencies[^2] are honored so that the program produces the intended result. This will increase the **Instruction Level Parallelism (ILP)** and thus increasing the **IPC** also.
+To cope with the problem of dependencies, an **Out-of-Order (OoO) processor** looks ahead across many instructions to issue **independent instructions** as rapidly as possible. The instructions can issue in a **different order** than that written by the programmer as long as dependencies[^2] are honored so that the program produces the intended result. This will increase the **Instruction Level Parallelism (ILP)** and thus increasing the **IPC** also.
 
 Consider running the same program [above](lec-06-advanced-processor.md#real-case) on a two-way superscalar out-of-order processor. The processor can issue up to two instructions per cycle from anywhere in the program, as long as dependencies are observed. The following figure shows the data dependencies and the operation of the processor.
 
@@ -279,7 +277,7 @@ The constraints on issuing instructions are:
 * **Cycle 4**
   * The `and` instruction issues. `s8` is forwarded from `sub` to `and`.
 
-This out-of-order processor issues the six instructions in four cycles, for an IPC of $$6\div4=1.5$$, which is more than the normal superscalar processor we have introduced above. In the real-world out-of-order processor, we will see three data dependencies (we have seen twn in the example above):
+This out-of-order processor issues the six instructions in four cycles, for an IPC of $$6\div4=1.5$$, which is more than the normal superscalar processor we have introduced above. In the real-world out-of-order processor, we will see three data dependencies (we have seen two in the example above):
 
 {% stepper %}
 {% step %}
@@ -327,7 +325,7 @@ Besides discarding, we can also use register renaming to solve this hazard.
 
 #### Implementing the Out-of-Order Execution
 
-While the conceptual goal is to increase ILP, the hardware implementation requires a specific structure to ensure correctness. The diagram above illustrates a typical Out-of-Order pipeline. It is divided into three distinct phases to balance speed with stability.
+While the conceptual goal is to increase ILP, the hardware implementation requires a specific structure to ensure correctness. The diagram below illustrates a typical Out-of-Order processor implementation paradigm. It is divided into three distinct phases to balance speed with stability.
 
 <figure><img src="../.gitbook/assets/cg3207-lec06-out-of-order-implementation.png" alt=""><figcaption></figcaption></figure>
 
@@ -347,7 +345,7 @@ The Instruction Fetch and Decode Unit retrieves instructions and issues them to 
 Once issued, instructions sit in **Reservation Stations (RS)**. These buffers hold the instruction and wait for pending operands.
 
 * **Behavior**: The **Functional Units (FUs)** (Integer, Floating point, Load/Store) initiate execution **Out-of-Order**. They start exactly when their data is ready, regardless of the original program sequence.
-* **The "Red Arrows"** **(Common Data Bus)**: As soon as a Functional Unit finishes, it broadcasts the result.
+* **The "Red Arrows"** **(Common Data Bus)**: As soon as a Functional Unit finishes, it broadcasts the result:
   1. **To Waiting RS**: The result is forwarded immediately to any other Reservation Station waiting for this data (solving RAW hazards without stalling the fetch unit).
   2. **To the Commit Unit**: The result is saved for the final update.
 {% endstep %}
