@@ -87,7 +87,7 @@ The reason for this is because that in the pipelined processor, our clock cycle 
 
 </details>
 
-This lecture utilizes the classic five-stage pipeline as a foundational model. However, the fundamental instruction phases — Fetch, Decode, Execute, Memory Access, and Writeback — remain universal across deeper pipeline architectures. While stage granularity and nomenclature may vary, the underlying architectural principles persist.
+This lecture utilizes the classic five-stage pipeline as a foundational model. However, the fundamental instruction phases — Fetch, Decode, Execute, Memory Access, and Writeback — remain universal across deeper pipeline architectures.
 
 ## Implement a Pipelined Processor
 
@@ -254,24 +254,19 @@ Now, we can summarize the pros and cons of this technique
 * **Cons**:
   * Insert NOPs will **waste code memory**.
   * As NOPs will do nothing, we won't treat them as real instructions when calculating the CPI. Thus, with more clock cycles and the same number of useful instructions, the **CPI will increase** and thus increase our CPU Time.
-  * To know the number of NOPs or independant useful instructions to be inserted, the compiler needs to know the microarchitecture, like the number of stages are in your pipeline processor and have you used different clock edges to write to register file and pipeline state registers, etc. This will make the code not very **portable**.
+  * To know the number of NOPs or independant useful instructions to be inserted, the compiler needs to know the microarchitecture, like the number of stages in our pipeline processor and have we used different clock edges to write to register file and pipeline state registers, etc. This will make the code not very **portable**.
 
 #### Data Forwarding
 
-> This is the most challenging technique introduced in hanlding data hazards. In this part, we will see the forwarding circuitry for W -> E and M -> E.
+> This is the most challenging technique introduced in hanlding data hazards.
 
 The basic idea in data forwarding is that the data is available on some pipeline register before it is written back to the register file (RF). So, we can take that data from where it is present, and pass it to where it is needed.
-
-This kind of forwarding logic can be used in two stages/functional unit:
-
-* Execution Stage, or the two sources of ALU
-* Memory Stage, or the DMEM
-
-This also specifies the target of the forwarding, which is either E stage or M stage.
 
 {% stepper %}
 {% step %}
 #### Execution Stage
+
+> In this part, we will see the forwarding circuitry for W -> E and M -> E.
 
 In the execution stage, we can check if the register read ([rs1E and rs2E](#user-content-fn-3)[^3]) by the instruction which is currently in Execute stage [**matches**](#user-content-fn-4)[^4] the register written ([rdM or rdW](#user-content-fn-5)[^5]) by the instruction which is currently in Memory or Writeback Stage. If so, we forward the **ready result** (usually is the ALUResult at Memory or Writeback Stage) to the Execution stage so now the input to ALU will come from M or W stage rather than the E stage register.
 
@@ -366,7 +361,7 @@ Suppose we have a `lw` instruction whose `rd` is one of the `rs` of the followin
 
 <figure><img src="../.gitbook/assets/cg3207-load-use-hazard-example.png" alt=""><figcaption></figcaption></figure>
 
-To solve this hazard, we will stall the Decode stage and Fetch stage for the `and` and `or` instruction in the above example. A result of this is that during the 6-th clock cycle, nothing will complete.
+The problem is that in the 4th clock cycle, the `and` instruction needs `s7` but as `lw` is still in Mem stage, `s7` is still **not available**! To solve this problem, we will need to stall the Decode stage and Fetch stage for the `and` and `or` instruction in the above example. A result of this is that during the 6-th clock cycle, nothing will complete.
 
 <figure><img src="../.gitbook/assets/cg3207-lec05-load-use-hazard-stall.png" alt=""><figcaption></figcaption></figure>
 
@@ -434,9 +429,9 @@ These extra exceptions are just to improve performance. Not implementing them wo
 {% step %}
 #### W -> D Forwarding
 
-In the [#use-different-clock-edges](lec-05-the-pipelined-processor.md#use-different-clock-edges "mention"), we use the negedge of the clock to read from the register file. What if we want the use the same posedge of the clock in our processor?
+In the [#use-different-clock-edges](lec-05-the-pipelined-processor.md#use-different-clock-edges "mention"), we use the negedge of the clock to read from the register file. What if we want to use the same posedge of the clock in our processor?
 
-A problem will happen if we have the following instructions
+A problem will happen if we have the following instructions:
 
 {% code lineNumbers="true" %}
 ```riscv
@@ -472,7 +467,7 @@ Our updated circuitry will be as follows,
 
 ### Handle Control Hazards
 
-Unlike the data hazards, which can be handled effectively using the techniques like data forwarding. There is no perfect way to handle the control hazards. In this section, we will introducing **flushing** to handle the control hazards.
+Unlike the data hazards, which can be handled effectively using the techniques like data forwarding. There is no perfect way to handle the control hazards. In this section, we will introduce the **flushing** technique to handle the control hazards.
 
 The key idea of **flushing** is to flush the two fetched instructions if the branch is taken. In our microarchitecture, if `PCSrcE == 1`, it means the branch is taken. Thus, the condition can be written as follows,
 
@@ -499,7 +494,7 @@ Stalling means **hold still** (instructions waits, waiting) while flushing means
 PCSE <= PCSD;
 ```
 
-Stalling the decode pipeline register E will cause PCSE to keep its previous value (not updating). Flushing the decode pipeline register E will cause PCSE to be 0. And as this zero will be passed all the way till the end of the pipeline, we can think of flushing one pipeline statge as inserting one NOP.
+Stalling the decode pipeline register E will cause PCSE to keep its **previous value** (not updating). Flushing the decode pipeline register E will cause PCSE to be **0**. And as this zero will be passed all the way till the end of the pipeline, and that's why we can think of flushing one pipeline statge as inserting one NOP.
 
 {% hint style="success" %}
 In our real processor design, the big register is composed of many many small registers.
