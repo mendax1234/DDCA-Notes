@@ -905,15 +905,15 @@ When we want to do a long multiplication,
 
 ### Floating-Point Number Systems
 
-Floating-point numbers are analogous to scientific notation. They circumvent the limitation of having a constant number of integer and&#x20;fraction bits, allowing the representation of very large and very small&#x20;numbers. Like scientific notation, floating-point numbers have a _sign_, _mantissa_ (M), _base_ (B), and _exponent_ (E), as shown below
+Floating-point numbers are analogous to scientific notation. They circumvent the limitation of having a constant number of integer and fraction bits, allowing the representation of very large and very small numbers. Like scientific notation, floating-point numbers have a sign, mantissa (M), base (B), and exponent (E), as shown below:
 
 $$
 \pm M\times B^E
 $$
 
-For example, the number $$4.1\times10^3$$ is the decimal scientific notation for 4100. It has a mantissa of 4.1, a base of 10, and an exponent of 3. The&#x20;decimal point _floats_ to the position right after the most significant digit. Floating-point numbers are base 2 with a binary mantissa. 32 bits are&#x20;used to represent 1 sign bit, 8 exponent bits, and 23 mantissa bits.
+For example, the number $$4.1×10^3$$ is the decimal scientific notation for 4100. It has a mantissa of 4.1, a base of 10, and an exponent of 3. The decimal point floats to the position right after the most significant digit. Floating-point numbers are base 2 with a binary mantissa. 32 bits are used to represent 1 sign bit, 8 exponent bits, and 23 mantissa bits.
 
-The exponent needs to represent both positive and negative exponents. To do so, floating point uses a biased exponent, which is the original exponent plus a constant bias. In 32-bit floating-point representation, the bias is 127. For example, for the exponent 7, the biased exponent is 7 + 127 = 134 = 10000110₂. For the exponent -4, the biased exponent is -4 + 127 = 123 = 01111011₂.
+The exponent needs to represent both positive and negative exponents. To do so, floating-point uses a biased exponent, which is the original exponent plus a constant bias. In 32-bit floating-point representation, the bias is 127. For example, for the exponent 7, the biased exponent is 7 + 127 = 134 = 10000110₂. For the exponent -4, the biased exponent is -4 + 127 = 123 = 01111011₂.
 
 {% hint style="success" %}
 This notation conforms to the IEEE 754 floating-point standard. In this notation, the first bit of the fraction/mantissa is **always** 1.
