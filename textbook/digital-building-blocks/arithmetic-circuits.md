@@ -34,7 +34,7 @@ An $$N$$-bit adders sums two $$N$$-bit inputs, A and B, and a carry in $$C_{\tex
 
 #### Ripple-Carry Adder
 
-The simplest way to build an N-bit carry propagate adder is to chain together N full adders. The $$C_{\text{out}}$$ of one stage acts as the $$C_{\text{in}}$$ of the next stage, as shown in Figure 5.5 for 32-bit addition. This is called a _ripple-carry adder_.
+The simplest way to build an N-bit carry propagate adder is to chain together N full adders. The $$C_{\text{out}}$$ of one stage acts as the $$C_{\text{in}}$$ of the next stage, as shown in Figure 5.5 for 32-bit addition. This is called a **ripple-carry adder**.
 
 <figure><img src="../../.gitbook/assets/32-bit-ripple-carry-adder.png" alt=""><figcaption></figcaption></figure>
 
@@ -44,22 +44,22 @@ $$
 t_{\text{ripple}}=Nt_{\text{FA}}
 $$
 
-> In Ripple-Carry Adder, the main disadvantage is that the **carry** propagates very slow. Can we accelerate the process of knowing the carry of an adder quicker? Here comes the **carry-lookahead adder**.
+> In Ripple-Carry Adder, the main disadvantage is that the **carry** propagates very slow. Can we accelerate the process of knowing the carry of an adder? Here comes the **carry-lookahead adder**.
 
 #### Carry-Lookahead Adder
 
-A _carry-lookahead_ adder (CLA) is another type of carry propogate adder that solves the problem caused by ripple-carry adder by dividing the adder into _blocks_ and providing circuitry to quickly determine the **carry out** of a block[^1] as soon as the [**carry in**](#user-content-fn-2)[^2] is known. Thus it is said to _look ahead_ across the blocks rather than waiting to ripple through all the full adders inside a block.
+A **carry-lookahead adder** (CLA) is another type of carry propogate adder that solves the problem caused by ripple-carry adder by dividing the adder into **blocks** and providing circuitry to quickly determine the **carry out** of a [**block**](#user-content-fn-1)[^1] as soon as the [**carry in**](#user-content-fn-2)[^2] is known. Thus it is said to _look ahead_ across the blocks rather than waiting to ripple through all the full adders inside a block.
 
-CLAs use _generate_ (G) and _propogate_ (P) signals that describe how a column or block determines the carry out.
+CLAs use bit-level **generate** ($$g$$) and **propagate** ($$p$$) signals to determine carry behavior for individual bit positions, which are then combined into **block-level** signals ($$G$$ and $$P$$) to determine the carry out for larger multi-bit groups.
 
-* The $$i$$-th column of an adder is said to _generate_ a carry if it produces a carry out independent of the carry in. Hence, we have $$G_i=A_iB_i$$.
-* The $$i$$-th column of an adder is said to _propagate_ a carry it is produces a carry [whenever there is a carry in](#user-content-fn-3)[^3]. Thus, we have $$P_i=A_i+B_i$$.
+* The $$i$$-th column of an adder is said to _generate_ a carry if it produces a carry out independent of the carry in. Hence, we have $$g_i=A_iB_i$$.
+* The $$i$$-th column of an adder is said to _propagate_ a carry it is produces a carry [whenever there is a carry in](#user-content-fn-3)[^3]. Thus, we have $$p_i=A_i+B_i$$.
 
 {% hint style="success" %}
-One great advantage here is that both $$G_i$$ and $$P_i$$ depend only on the two inputs number $$A_i$$ and $$B_i$$, instead of the need of knowing the "carry-in" ($$C_{i-1}$$) of that block.
+One great advantage here is that both $$g_i$$ and $$p_i$$ depend only on the two inputs number $$A_i$$ and $$B_i$$, instead of the need of knowing the "carry-in" ($$C_{i-1}$$) of that block.
 {% endhint %}
 
-Using the $$G_i$$ and $$P_i$$, we can rewrite the carry out for each block of full adder ($$C_i$$)
+Using the $$g_i$$ and $$p_i$$, we can rewrite the carry out for each block of full adder ($$C_i$$)
 
 $$
 \begin{align*}
@@ -70,7 +70,7 @@ C_i&=p_iC_{i-1}+g_i
 \end{align*}
 $$
 
-Let's say we want to build a 32-bit carry-lookahead adder. Doing the above manipulation for 32 stages is cumbersome. However, we can do four stages first (a.k.a, implement a 4-bit carry-lookahead adder first as the fundamental block).
+Let's say we want to build a 32-bit carry-lookahead adder. Doing the above manipulation for 32 stages is cumbersome. However, we can divide them into four blocks first (a.k.a, implement a 4-bit carry-lookahead adder first as the fundamental block).
 
 <figure><img src="../../.gitbook/assets/cg3207-lec04-4-bit-carry-lookahead-adder.png" alt="" width="563"><figcaption></figcaption></figure>
 
@@ -86,7 +86,7 @@ C<sub>1</sub>, C<sub>2</sub>, C<sub>3</sub> and C<sub>4</sub> are the four carri
 #### Image Explanation
 
 1. The AND and OR gates needed to compute the single-bit generate and propagate signals, $$G_i$$ and $$P_i$$, from $$A_i$$ and $$B_i$$ are left out for brevity.
-2. The block propagate ($$P_i$$) and generate ($$G_i$$) signals for 4-bit blocks ($$i$$ refers to the block number here),
+2. The block propagate ($$p_i$$) and generate ($$g_i$$) signals for 4-bit blocks ($$i$$ refers to the block number here),
    1. $$P_0=p_3p_2p_1p_0$$, $$P_0$$ is the same as $$P_{[3:0]}$$ shown in the figure above
    2. $$G_0=g_3+p_3(g2+p2(g1+p1g_0))$$, $$G_0$$ is the same as $$G_{[3:0]}$$ shown in the figure above.
 3. The ripple effect is avoided within a block, but the ripple carry effect will be present between blocks. Nevertheless, the delays are significantly lower than the orginal ripple carry adder.
@@ -128,13 +128,13 @@ endmodule
 
 ## Subtraction
 
-Recall from [previous part](https://wenbo-notes.gitbook.io/ddca-notes/textbook/from-zero-to-one/number-systems#signed-binary-number-representation) that adders can add positive and negative numbers using [two's complement number representation](https://wenbo-notes.gitbook.io/ddca-notes/textbook/from-zero-to-one/number-systems#id-2s-complement). Substraction is almost as easy:
+Recall from [previous part](https://wenbo-notes.gitbook.io/ddca-notes/textbook/from-zero-to-one/number-systems#signed-binary-number-representation) that adders can add positive and negative numbers using [two's complement number representation](https://wenbo-notes.gitbook.io/ddca-notes/textbook/from-zero-to-one/number-systems#id-2s-complement). Substraction is almost as easy as:
 
 1. flip the sign of the second number
 2. then add it
 
-{% hint style="info" %}
-Flipping the sign of a two's complement number is done by inverting the bits and adding 1.
+{% hint style="warning" %}
+Flipping the sign of a two's complement number is done by inverting the bits then adding 1.
 {% endhint %}
 
 Thus, subtraction is performed with a single CPA by adding $$A+\bar B$$ with $$C_{\text{in}}=1$$. Figure 5.9 shows the symbol for a subtractor and the underlying hardware for performing $$Y=A-B$$.&#x20;
@@ -175,7 +175,7 @@ endmodule
 
 ### Signed Addition/Subtraction
 
-In the signed addition/subtraction, we have four flages, N(egative), Z(ero), C(array), V(Overflow), to indicate the status of our result. The following part will explain when certain flag is set,
+In the signed addition/subtraction, we have four flags, **N**(egative), **Z**(ero), **C**(array), **V**(Overflow), to indicate the status of our result. The following part will explain when each certain flag is set,
 
 {% hint style="warning" %}
 Before that, let's make some clarifications or conventions first.
@@ -190,15 +190,15 @@ Before that, let's make some clarifications or conventions first.
 
 By observing the addition examples above, we may find out that
 
-1. For _unsigned addition_, carry=1 indicates that the result is wrong.
+1. For _unsigned addition_, `carry = 1` indicates that the result is **wrong**.
 2. For _signed addition_,
    1. Overflow occurs when (+ve) + (+ve) = (-ve) or (-ve) + (-ve) = (+ve), a.k.a, two negative number addition gives out a positive number or two positive number addition gives a negative number
       1. To determine the overflow flag, we always treat the two operands as **signed**! So, this process is just to see that if the sign bits (MSB) of the **operands** are the same, and is different from that of the **result** (the (N-1)-th bit), there is an overflow.
       2. Overflow can never occur when you add two numbers of different signs
       3. Carry and overflow are **unrelated** (However, carry is sometime called "unsigned overflow")
    2. Carry flag is set when the value in the <mark style="color:blue;">blue rectangle</mark> is one.
-   3. Negative flag is determined by only looking at the MSB of the result. (the (N-1)-th bit actually)
-   4. Zero flag is determined by only looking at the N-bit result.
+   3. Negative flag is determined by only looking at the MSB of the result (the (N-1)-th bit actually).
+   4. Zero flag is determined by only looking at the N bits result.
 
 {% hint style="success" %}
 #### Notes
@@ -224,7 +224,7 @@ By observing the subtraction examples above, we can find out that
    1. Overflow occurs at when (+ve) - (-ve) = (-ve) or (-ve) - (+ve) = (+ve).
       1. And similar to the signed addition, we always treat the two operands as **signed**. So, if the sign bits (MSB) of the **operands** are different, and the **result** has a sign same as that of the second operand, there is an overflow.
       2. Overflow can never occur in subtraction when operands are of the **same sign**.
-   2. Carry flag is set when you are looking at the hardware version. Or the flip the borrow in pen\&paper version.
+   2. In hardware, the Carry flag simply reflects the ALU's carry-out signal. Conceptually, during subtraction, this signal acts as the **inverse of the borrow** used in pen-n-paper arithmetic.
 
 {% hint style="success" %}
 #### Notes
@@ -303,17 +303,17 @@ So, in summary, we have
 
 | Operation   | Condition for carry/borrow | Equivalent test            | RISC-V instruction |
 | ----------- | -------------------------- | -------------------------- | ------------------ |
-| Addition    | carry                      | `(sum < A)` or `(sum < B)` | `sltu t6, sum, t0` |
+| Addition    | carry                      | `(sum < A)` or `(sum < B)` | `sltu t6, t4, t0`  |
 | Subtraction | borrow                     | `(A < B)`                  | `sltu t6, t0, t2`  |
 
 </details>
 
 ## Comparators
 
-A _comparator_ determines whether two binary numbers are equal or if one is greater or less than the other. A comparator receives two N-bit binary numbers A and B. There are two common types of comparators.
+A **comparator** determines whether two binary numbers are equal or if one is greater or less than the other. A comparator receives two N-bit binary numbers A and B. There are two common types of comparators.
 
-* A _equality comparator_ produces a single output indicating whether A is equal to B (`A==B`).
-* A _magnitude comparator_ produces one or more outpus indicating the relative values of A and B.
+* An _equality comparator_ produces a single output indicating whether A is equal to B (`A==B`).
+* A _magnitude comparator_ produces one or more outputs indicating the relative values of A and B.
 
 {% stepper %}
 {% step %}
@@ -379,9 +379,9 @@ endmodule
 
 ## ALU
 
-An _Arithmetic/Logical Unit_ (ALU) combines a variety of mathematical and logical operations into a single unit. For example, a typical ALU might perform addition, subtraction, magnitude comparison, AND, and OR operations. The ALU forms the heart of most computer systems.
+An **Arithmetic/Logical Unit** (ALU) combines a variety of mathematical and logical operations into a single unit. For example, a typical ALU might perform addition, subtraction, magnitude comparison, AND, and OR operations. The ALU forms the heart of most computer systems.
 
-Figure 5.14 shows the symbol for an $$N$$-bit ALU with N-bit inputs and outputs.
+Figure 5.14 shows the symbol for an N-bit ALU with N-bit inputs and outputs.
 
 <figure><img src="../../.gitbook/assets/alu-symbol.png" alt=""><figcaption></figcaption></figure>
 
@@ -441,7 +441,7 @@ endmodule
 
 ## Shifters and Rotators
 
-_Shifters_ and _rotators_ move bits and multiply or divide by powers of 2. There are several kinds of commonly used shifters:
+**Shifters** and **rotators** move bits and multiply or divide by powers of 2. There are several kinds of commonly used shifters:
 
 {% stepper %}
 {% step %}
@@ -457,7 +457,7 @@ It shifts the number to the left (LSL) or right (LSR) and fills empty spots with
 {% step %}
 #### **Arithmetic shifter**
 
-It is the same as logical shifter, but on right shifts fills the most significant bits with a copy of the old most significant bit (msb). This is useful for multiplying and dividing signed numbers. Arithmetic shift left (ASL) is the same as logical shift left (LSL) because we will fill the empty spots at **righ**t with 0, this doesn't matter much. For example,
+It is the same as logical shifter, but on right shifts fills the most significant bits with a **copy of the old most significant bit** (msb). This is useful for multiplying and dividing signed numbers. Arithmetic shift left (ASL) is the same as logical shift left (LSL) because we will fill the empty spots at **right** with 0, this doesn't matter much. For example,
 
 ```
 11001 ASR 2 = 11110; 11001 ASL 2 = 00100;
@@ -475,7 +475,7 @@ It rotates number in **circle** such that empty spots are filled with bits shift
 {% endstep %}
 {% endstepper %}
 
-A N-bit shifter can be built from $$N$$ $$N$$:1 multiplexers. This input is shifted by 0 to $$N-1$$ bits, depending on the value of the $$\log_2N$$-bit select lines (`shamt`). Figure 5.16 shows the symbol and hardware of 4-bit shifters. The operators `<<`, `>>`, and `>>>` typically indicate shift left, logical shift right, and arithmetic shift right, respectively.
+A N-bit shifter can be built from N N:1 multiplexers. The input is shifted by 0 to $$N-1$$ bits, depending on the value of the $$\log_2N$$-bit select lines (`shamt`). Figure 5.16 shows the symbol and hardware of 4-bit shifters. The operators `<<`, `>>`, and `>>>` typically indicate shift left, logical shift right, and arithmetic shift right, respectively.
 
 <figure><img src="../../.gitbook/assets/4-bit-shifters.png" alt=""><figcaption></figcaption></figure>
 
@@ -491,11 +491,11 @@ A N-bit shifter can be built from $$N$$ $$N$$:1 multiplexers. This input is shif
 3. Shift by a **fixed amount** (e.g., 1 bit, 2 bits, etc) onlys needs **rewiring**! It doesn't need any multiplexer.
 {% endhint %}
 
-If we want to use this idea to build a [32-bit shifter](#user-content-fn-4)[^4], we need 32 x 32-to-1 multiplexer, which has a very high hardware usage. To solve this problem, let's introduce the [hardware-efficient shifter](arithmetic-circuits.md#hardware-efficient-shifter).
+If we want to use this idea to build a [32-bit shifter](#user-content-fn-4)[^4], we need 32 32:1 multiplexer, which has a very high hardware usage. To solve this problem, let's introduce the [hardware-efficient shifter](arithmetic-circuits.md#hardware-efficient-shifter).
 
 ### Hardware-efficient Shifter
 
-This hardware-efficient shifter only needs 5 x 32 x 2-to-1 multiplexer. And below is the implementation for the 32-bit `srl` shifter.
+This hardware-efficient shifter only needs 5 x 32 2:1 multiplexer. And below is the implementation for the 32-bit `srl` shifter.
 
 <figure><img src="../../.gitbook/assets/cg3207-lec04-hardware-efficient-shifter.png" alt=""><figcaption></figcaption></figure>
 
@@ -540,7 +540,7 @@ However, more efficient ways to combine the shifts exist though. For example, wh
 * {16{ShIn<sub>31</sub>}. ShIn<sub>31:16</sub>} for `sra`
 
 {% hint style="info" %}
-**Hint:** To implement this, we only need **1** 1-bit 2:1 multiplexer to select whether the MSB should be 0 or ShIn<sub>31</sub>!
+**Hint:** To implement this, we only need **1** 1-bit 2:1 multiplexer to select whether the MSB should be 0 or ShIn<sub>31</sub> and then duplicate it 16 times, we can get the result we want.
 {% endhint %}
 
 ```verilog
@@ -549,9 +549,9 @@ However, more efficient ways to combine the shifts exist though. For example, wh
 
 ## Multiplication
 
-In the [previous part](https://wenbo-notes.gitbook.io/ddca-notes/textbook/from-zero-to-one/number-systems#multiplication), we have seen that multiplication is nothing but shift then add, by shift, we form the _partial products_.
+In the [previous part](https://wenbo-notes.gitbook.io/ddca-notes/textbook/from-zero-to-one/number-systems#multiplication), we have seen that multiplication is nothing but shift then add. By shifting, we form the _partial products_.
 
-In general, a $$N$$x$$N$$ multiplier multiplies two $$N$$-bit numbers and produces a 2$$N$$-bit result. Multiplication of 1-bit binary numbers is equivalent to the AND operation, so AND gates are used to form the partial products.
+In general, a NxN multiplier multiplies two N-bit numbers and produces a 2N-bit result. Multiplication of 1-bit binary numbers is equivalent to the AND operation, so AND gates are used to form the partial products.
 
 ### Array Multiplier
 
@@ -622,6 +622,10 @@ Again, stepping through an example will make it easier to understand. Let `S = 0
 
 {% hint style="warning" %}
 But there is a problem with the improved sequential multiplier, what if the 32-bit ALU generates a carry out? Where should the carry out go?
+
+***
+
+**Ans**: The carry-out effectively becomes the new MSB (Bit 63) of the 64-bit Product after the shift occurs.
 {% endhint %}
 
 <details>
@@ -631,7 +635,12 @@ But there is a problem with the improved sequential multiplier, what if the 32-b
 1. **Clock speed**: As we have seen from above, the array multiplier uses only **one cycle** but likely the cycle will take longer time, thus slowering the clock speed while the sequential multiplier uses **more cycles** but likely each cycle takes a shorter time and thus the clock speed is faster.
 2. **Hardware cost**: The array multiplier usually uses **more hardware** than the sequential multiplier.
 
-As a hardware designer, we need to always think about this kind of **trade-off** to achieve what we want.
+As a hardware designer, we need to always think about this kind of **trade-off** to achieve what we want. The following table summarizes the cost and latency analysis of a n-bit multiplier built using the carry propagate adder.
+
+| Multiplier Type       | Cost (Hardware Area)   | Latency (Speed)        |
+| --------------------- | ---------------------- | ---------------------- |
+| Sequential Multiplier | $$O(n)$$ (Linear)      | $$O(n^2)$$ (Quadratic) |
+| Array Multiplier      | $$O(n^2)$$ (Quadratic) | $$O(n)$$ (Linear)      |
 
 </details>
 
@@ -668,7 +677,7 @@ endmodule
 ## Division
 
 {% hint style="success" %}
-Before continue this section, let's make some convention. Given $$A\div B = Q+R$$, we say
+Before we continue this section, let's make some conventions first. Given $$A\div B = Q+R$$, we say that
 
 * $$A$$ is the dividend
 * $$B$$ is the divisor
@@ -701,11 +710,11 @@ R = R'
 $$N$$-bit operands yield $$N$$-bit quotient and remainder. Here, we want to show that the divisor and quotient and remainder shares the same bit-width, but actually the dividend can have $$2N$$ bits.
 {% endhint %}
 
-Below a more straight-forward example,
+Below is a more straight-forward example,
 
 <figure><img src="../../.gitbook/assets/cg3207-lec04-division-example.png" alt="" width="365"><figcaption></figcaption></figure>
 
-This approach is called **long division approach**, which is basically similar to what we have seen above. But it is in a more straight-forward way
+This approach is called **long division approach**, which is basically similar to what we have seen above, but in a more straight-forward way
 
 1. If divisor $$\leq$$ dividend bits
    1. 1 bit in quotient, subtract
@@ -713,7 +722,7 @@ This approach is called **long division approach**, which is basically similar t
    1. 0 bit in quotient, bring down next dividend bit
 
 {% hint style="warning" %}
-This illustration is more straight-forward, but less complete. Thus it is good for doing the hand-by-hand calculation. But for the systematic approach to implement in the hardware, please go review the first pseudocode.
+This illustration is more straight-forward, but less complete. Thus it is good for doing the hand-by-hand calculation. But for the systematic approach to implement in the hardware, please go reviewing the pseudocode above.
 {% endhint %}
 
 ### Array Divider
@@ -731,7 +740,7 @@ The delay of an $$N$$-bit array divider increases proportionally to $$N^2$$ beca
 
 ### Sequential Divider
 
-> The sequential divider here just follows the pseudocode mentioned [above](arithmetic-circuits.md#division), which is about **unsigned division**. To convert it to **signed**, only minor changes are needed. (For more information on this, can got to [Lab 03](../../lab/lab-03-multiply-and-divide.md#implementation-details))
+> The sequential divider here just follows the pseudocode mentioned [above](arithmetic-circuits.md#division), which is about **unsigned division**. To convert it to **signed**, only minor changes are needed. (For more information on this, can go to [Lab 03](../../lab/lab-03-multiply-and-divide.md#implementation-details))
 
 Similar to the [#sequential-multiplier](arithmetic-circuits.md#sequential-multiplier "mention"), we can also do the divider sequentially,
 
@@ -749,7 +758,7 @@ To understand it better, again, let's step through an example. For example, 0000
 
 When you multiply two **n-bit numbers**,
 
-* the **lowest n bits** (the _least significant half_) of the product are **identical** whether the numbers are interpreted as signed or unsigned.
+* the **lowest n bits** (the _least significant half_) of the product are **identical** no matter the numbers are interpreted as signed or unsigned.
 * Only the **upper n bits** differ (because sign extension affects those).
 
 That’s why:
@@ -819,7 +828,7 @@ Computers operate on both integers and fractions. So far, we have only considere
 * [Floating-point numbers](arithmetic-circuits.md#floating-point-number-systems) are analogous to scientific notation, with a mantissa and an exponent.
 
 {% hint style="warning" %}
-If we have $$N$$ bits, we can only 2<sup>N</sup> patterns. Using different number systems won't change the number of patterns, but can change the distribution of the numbers it represents.
+If we have $$N$$ bits, we can only represent 2<sup>N</sup> patterns. Using different number systems won't change the number of patterns, but can change the distribution of the numbers it represents.
 {% endhint %}
 
 ### Fixed-Point Number Systems
@@ -832,7 +841,7 @@ _Fixed-point notation_ has an implied _binary point_ between the integer and fra
 #### Notes
 
 1. This notation is not so standard.
-2. The position of the binary point affects the _arnge_ (difference between the largest and smallest representable numbers) and _precision_ (smallest possible difference between any two numbers)
+2. The position of the binary point affects the _range_ (difference between the largest and smallest representable numbers) and _precision_ (smallest possible difference between any two numbers)
 {% endhint %}
 
 #### Signed Fixed-Point
@@ -841,7 +850,9 @@ Signed fixed-point numbers can use either two's complement or sign/magnitude not
 
 <figure><img src="../../.gitbook/assets/signed-fixed-point-example.png" alt=""><figcaption></figcaption></figure>
 
+{% hint style="success" %}
 The implicit binary point is shown in <mark style="color:blue;">blue</mark> for clarity.
+{% endhint %}
 
 * In **sign/magnitude form**, the most significant bit is used to indicate the sign.
 * The **two's complement representation** is formed by inverting the bits of the **absolute value** and adding 1 to the least significant (righmost) bit. In this case, the least significant bit position is in the $$2^{-4}$$ column.
@@ -872,7 +883,7 @@ For example, we want to calculate $$0.625$$,
 
 > Fixed-point **addition** and **subtraction** is simple because the position of the binary point won't change. But **multiplication** and **division** are a bit tedious. So, here we will only talk about the fixed-point number **multiplication** and **division**.
 
-Actually, from the small [trick](arithmetic-circuits.md#a-trick-to-quickly-find-the-binary-representation-of-a-fraction-using-fixed-point-notation) we mentioned above, we see that fixed-point notation has an implicit **scale factor**, which is $$2^{\text{number of fraction bits}}$$.
+Actually, from the small [trick](arithmetic-circuits.md#a-trick-to-quickly-find-the-binary-representation-of-a-fraction-using-fixed-point-notation) we mentioned above, we've seen that fixed-point notation has an implicit **scale factor**, which is $$2^{\text{number of fraction bits}}$$.
 
 For example, If we have **2 fractional bits**, the scale factor is $$2^2=4$$. That means every stored integer actually represents $$\text{stored/4}$$. So, `00000110₂ = 6` actually means $$6/4=1.5$$.
 
@@ -914,17 +925,17 @@ To put it all together, let's examine two examples:
 {% step %}
 #### Represent unsigned number in IEEE 754
 
-Suppose we want to represent 228<sub>2</sub> = 11100100<sub>2</sub> = 1.11001<sub>2</sub> x 2<sup>7</sup> using floating point system, it will be as follows,
+Suppose we want to represent 228<sub>10</sub> = 11100100<sub>2</sub> = 1.11001<sub>2</sub> x 2<sup>7</sup> using floating point system, it will be as follows,
+
+<figure><img src="../../.gitbook/assets/floating-point-system-example.png" alt=""><figcaption></figcaption></figure>
 {% endstep %}
 
 {% step %}
-<figure><img src="../../.gitbook/assets/floating-point-system-example.png" alt="" width="544"><figcaption></figcaption></figure>
-
 #### Represent signed number in IEEE 754
 
-Suppose we want to write -58.25<sub>2</sub> in floating point (IEEE 754)
+Suppose we want to write -58.25<sub>10</sub> in floating point (IEEE 754)
 
-1. Convert decimal to binary: 58.25<sub>2</sub> = 11101001<sub>2</sub>
+1. Convert decimal to binary: 58.25<sub>10</sub> = 11101001<sub>2</sub>
 2. Write in binary scientific notation: 1.1101001 x 2<sup>5</sup>
 3. Fill in fields: Sign bit = 1, Biased Expoenent = 5 + 127 = 10000100<sub>2</sub>, 23 fraction bits = 110 1001 0000 0000 0000 0000.
 
@@ -953,7 +964,7 @@ Arithmetic results that fall outside of the available precision must round&#x20
 3. [round toward zero](#user-content-fn-6)[^6], and
 4. round to nearest.
 
-The default rounding mode is round to nearest. In the round-to-nearest mode, if two numbers are equally near, the one with a 0 in the least significant position of the fraction is chosen.
+The default rounding mode is **round to nearest**. In the round-to-nearest mode, if two numbers are equally near, the one with a 0 in the least significant position of the fraction is chosen.
 
 For example, we want to round 1.100101 (1.578125) to only 3 fraction bits
 
@@ -991,6 +1002,8 @@ The steps for adding floating-point numbers with the same sign are as follows:
 For example,
 
 <figure><img src="../../.gitbook/assets/floating-point-addition-example.png" alt="" width="563"><figcaption></figcaption></figure>
+
+For **subtraction**, just change step 5 to -> Subtract the mantissas.
 {% endstep %}
 
 {% step %}
@@ -1013,7 +1026,7 @@ For example,
 {% endstep %}
 {% endstepper %}
 
-[^1]: Here, one block is a one-bit full adder.
+[^1]: A "Block" acts as a "super-adder." For example, a 4-bit block looks at inputs $$A_{0-3}$$ and $$B_{0-3}$$ simultaneously.
 
 [^2]: Here, the “carry-in” refers to the **initial** carry input of the adder. Each adder has only one carry-in signal; for multi-bit adders, this single carry-in propagates through the stages of the adder to produce carries for subsequent bits.
 
@@ -1023,4 +1036,4 @@ For example,
 
 [^5]: the actual implementation is to use AND gates.
 
-[^6]: It's just simply _chop off_ (truncate) the extra fraction bits. No rounding up at all, no matter whether it’s positive or negative.
+[^6]: It's just simply _chop off_ (truncate) the extra fraction bits starting from the last bit in interest (See the example below). No rounding up at all, no matter whether it’s positive or negative.

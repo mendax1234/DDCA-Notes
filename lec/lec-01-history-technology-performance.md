@@ -375,7 +375,7 @@ $$
 where the Execution time ratio<sub>i</sub> (or SPECratio) is
 
 $$
-\text{Execution time on the actual processor} \div \text{Execution time on the reference machine}
+\text{Execution time on the reference machine} \div \text{Execution time on the actual processor}
 $$
 
 An example that you will find is as follows,
