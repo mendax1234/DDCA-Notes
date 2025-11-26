@@ -446,6 +446,10 @@ Using this method, our initial map is **x3: a, x4: a**.
 
 Thus we can get our final answer!
 
+{% hint style="warning" %}
+Instruction like `add x6, x5, x6` has **no hazard** at all!
+{% endhint %}
+
 </details>
 
 ### VLIW Processor
@@ -456,7 +460,7 @@ In the VLIW processor, the **compiler** packs groups of independent instructions
 
 Since determining the **order of execution** of operations (including which operations can execute **simultaneously**) is handled by the compiler, the processor does not need the scheduling hardware that the three methods described above require. Thus, VLIW CPUs offer more computing with **less hardware complexity** (but **greater compiler complexity**) than do most superscalar CPUs.
 
-#### VLIV Application
+#### VLIW Processor Application
 
 VLIW processors excel in specialized domains like
 
@@ -470,7 +474,13 @@ because these applications rely heavily on repetitive, predictable loops and lin
 Remember the key distinction is **Determinism**. VLIW thrives on static, compile-time predictability (low entropy), whereas Superscalar processors are necessary for high-entropy tasks (like Operating Systems) that require dynamic, runtime adaptability.
 {% endhint %}
 
-> TODO: Add Loop Unrolling technique here.
+#### Loop Unrolling
+
+**Loop Unrolling** is a compiler optimization that replicates the loop body multiple times to reduce control overhead (fewer branches and counter updates) and expose larger blocks of independent instructions. For **VLIW processors**, this is critical because it creates a large pool of instructions that can be scheduled in parallel. By unrolling, the compiler can find operations that do not depend on each other (such as the four independent `lw` pairs in the example) and pack them into a single Wide Instruction Word, effectively hiding latency and maximizing the utilization of parallel functional units.
+
+{% hint style="success" %}
+You can see the unrolling if you use different compiler flags, like `-O1`, `-O2`, and `-O3`.
+{% endhint %}
 
 ## Multithreading
 
