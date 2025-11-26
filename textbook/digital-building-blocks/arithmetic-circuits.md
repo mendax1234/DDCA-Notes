@@ -750,6 +750,10 @@ To understand it better, again, let's step through an example. For example, 0000
 
 <figure><img src="../../.gitbook/assets/cg3207-lec04-sequential-divider-example.png" alt=""><figcaption></figcaption></figure>
 
+In the Hennessy & Patterson's textbook, they mention an improved version of the division algorithm above, it is shown as follows,
+
+<figure><img src="../../.gitbook/assets/improved-sequential-divider-1.png" alt="" width="563"><figcaption></figcaption></figure>
+
 ### Signed Multiplication/Division
 
 {% stepper %}
