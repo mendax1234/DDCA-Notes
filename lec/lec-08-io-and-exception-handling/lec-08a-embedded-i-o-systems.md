@@ -20,7 +20,7 @@ To communicate with the outside world, the processor utilizes I/O Controllers (s
 
 #### Single-tiered Bus Architecture
 
-The generic computer sysmte we see from above is a very good example for the **single-tiered bus architecture**. Single-Bus Architecture This architecture connects every component — from the high-speed **Processor** and **RAM** to slower I/O devices — onto a single shared **System Bus**. While this design simplifies hardware connections, it creates a significant performance bottleneck because high-speed components must compete for the same bandwidth as slower peripherals, often forcing the CPU to wait.
+The generic computer sysmte we see from above is a very good example for the **single-tiered bus architecture**. This architecture connects every component — from the high-speed **Processor** and **RAM** to slower I/O devices — onto a single shared **System Bus**. While this design simplifies hardware connections, it creates a significant performance bottleneck because high-speed components must compete for the same bandwidth as slower peripherals, often forcing the CPU to wait.
 
 #### Multi-tiered Bus Architecture
 
