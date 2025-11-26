@@ -408,7 +408,9 @@ In the above sections, we try to increase the parallelism from the hardware pers
 
 In the VLIW processor, the **compiler** packs groups of independent instructions into the bundle, and the bundle can be thought of as one very long instruction. Hence the name.
 
-Since determining the order of execution of operations (including which operations can execute simultaneously) is handled by the compiler, the processor does not need the scheduling hardware that the three methods described above require. Thus, VLIW CPUs offer more computing with **less hardware complexity** (but **greater compiler complexity**) than do most superscalar CPUs.
+Since determining the **order of execution** of operations (including which operations can execute **simultaneously**) is handled by the compiler, the processor does not need the scheduling hardware that the three methods described above require. Thus, VLIW CPUs offer more computing with **less hardware complexity** (but **greater compiler complexity**) than do most superscalar CPUs.
+
+> TODO: Add Loop Unrolling technique here.
 
 ## Multithreading
 
@@ -438,9 +440,9 @@ Also, if you click the icon to run a program on your PC. After clicking, the pro
 {% step %}
 #### Thread
 
-Each **process** consists of one or more **threads** that also run simultaneously. For example, a word processor may have one thread handling the user typing, a second thread spell-checking the document while the user works, and a third thread printing the document. In this way, the user does not have to wait, for example, for a document to finish printing before being able to type again.
+Each **process** consists of one or more **threads** that also run "simultaneously". For example, a word processor may have one thread handling the user typing, a second thread spell-checking the document while the user works, and a third thread printing the document. In this way, the user does not have to wait, for example, for a document to finish printing before being able to type again.
 
-The degree to which a process can be split into multiple threads that can run simultaneously defines its level of **thread-level parallelism (TLP)**.
+The degree to which a process can be split into multiple threads that can run "simultaneously" defines its level of **thread-level parallelism (TLP)**.
 
 <details>
 
@@ -550,7 +552,7 @@ As its name suggests, it's multiple instructions operating on one data stream.
 
 <figure><img src="../.gitbook/assets/cg3207-lec06-MISD.png" alt="" width="312"><figcaption></figcaption></figure>
 
-This is an uncommon architecture and the examples are **autopilot** system of teh aeroplane, and the **systolic arrays** which are the heart of Google TPUs.
+This is an uncommon architecture and the examples are **autopilot** system of the aeroplane, and the **systolic arrays** which are the heart of Google TPUs.
 
 #### Multiple Instruction streams Multiple Data streams (MIMD)
 
@@ -710,7 +712,7 @@ In standard processors, every instruction incurs significant overhead because fe
 
 ### Packed SIMD
 
-This first option places the control explicitly in the hands of the software. The programmer must intentionally use special vector instructions (e.g., `VEC8_mul`) to define how data is packed and processed. While this course treats them similarly, there is a nuance in terminology:
+This first option places the control explicitly in the hands of the software. The programmer must intentionally use special vector instructions (e.g., `VEC8_mul`) to define how data is packed and processed. While this course treats the following two terms similarly, there is a nuance in terminology:
 
 * **Packed SIMD**: Refers to fixed-width registers (e.g., "Process exactly 4 items at once"). This is common in standard CPUs like Intel AVX or ARM NEON.
 * **Vector Processing**: Often implies variable-length processing (e.g., "Process a list of _n_ items"). This is common in supercomputers or RISC-V Vector extensions.
@@ -736,7 +738,7 @@ In standard processors (like the [SIMD](lec-06-advanced-processor.md#simd-vector
 
 Its main mechanism is called **Rhythmic Data Flow**. A systolic array consists of a grid of Processing Elements (PEs). Data flows through the array in a wave-like fashion. When a PE finishes a calculation, it passes the data directly to its neighbor rather than writing it back to memory.
 
-<figure><img src="../.gitbook/assets/cg3207-lec06-systolic-array.png" alt="" width="375"><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/cg3207-lec06-systolic-array.png" alt="" width="563"><figcaption></figcaption></figure>
 
 * The **Trade-off**: This design sacrifices flexibility (it is hard to do general-purpose logic like "If/Else") and limits available registers.
 * The **Reward**: In exchange, it achieves immense efficiency for specific tasks like Matrix Multiplication. Since operand data and partial results are stored _within_ the passing wave, the system drastically reduces the need to access external buses or caches, saving power and increasing operation density.
@@ -750,7 +752,7 @@ The heart of the TPU is the Matrix Multiply Unit, a massive $$256 \times 256$$ s
 * **Data Flow**: It reads in weights and data (activations) into local buffers (Weight FIFO and Unified Buffer). These values flow through the Matrix Unit, performing 8-bit multiply-accumulate operations at a rate of up to 92 Tera-operations per second.
 * **Pipeline**: The results flow out to an Activation Unit (which applies hardwired functions like ReLU) and can be fed back into the Unified Buffer for the next layer of calculation. This design creates a pipeline optimized entirely for the math required by deep neural networks.
 
-<figure><img src="../.gitbook/assets/cg3207-lec06-google-tpu.png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/cg3207-lec06-google-tpu.png" alt=""><figcaption></figcaption></figure>
 
 [^1]: this is mainly to reduce the propagation delay within the logic gates, so the same logic gate that built with the advanced manufacturing technology will have a **smaller** propagation delay.
 
