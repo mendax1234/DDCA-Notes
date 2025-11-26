@@ -167,7 +167,11 @@ Handling interrupts becomes complicated when a processor has many different sour
 
 ## Execution Modes and Privilege Levels
 
-A **RISC-V** processor can operate in one of several **execution modes** with different **privilege levels**. **Privilege levels** dictate what instructions can be executed and what memory can be accessed. There are three main RISC-V privilege levels and one experimental privilege level. The privilege for each mode is M-mode > H-mode > S-mode > U-mode.
+A **RISC-V** processor can operate in one of several **execution modes** with different **privilege levels**. **Privilege levels** dictate what instructions can be executed and what memory can be accessed. There are three main RISC-V execution modes and one experimental execution mode. The privilege for each mode is M-mode > H-mode > S-mode > U-mode.
+
+{% hint style="danger" %}
+**M-mode** and **S-mode** are called privileged mode, while **U-mode** is **not** a privileged mode! It's just a normal mode!
+{% endhint %}
 
 {% stepper %}
 {% step %}
@@ -237,6 +241,10 @@ The hierarchy prevents crashes in one program from killing the whole system.
 * The OS sees the illegal attempt and kills _only_ that specific user process, leaving the rest of the system running smoothly.
 {% endstep %}
 {% endstepper %}
+
+{% hint style="danger" %}
+A switch from **U-mode** to a privileged mode (**M-mode** and **S-mode**) can only be done through an **exception** or somtimes called **interrputs**. (In this course, we have distinguished between them at the very [start](lec-08b-exceptions.md#two-types-of-exceptions))
+{% endhint %}
 
 ## Exception-Related Instructions
 

@@ -935,7 +935,7 @@ Suppose we want to represent 228<sub>10</sub> = 11100100<sub>2</sub> = 1.11001<s
 
 Suppose we want to write -58.25<sub>10</sub> in floating point (IEEE 754)
 
-1. Convert decimal to binary: 58.25<sub>10</sub> = 11101001<sub>2</sub>
+1. Convert decimal to binary: 58.25<sub>10</sub> = 111010.01<sub>2</sub>
 2. Write in binary scientific notation: 1.1101001 x 2<sup>5</sup>
 3. Fill in fields: Sign bit = 1, Biased Expoenent = 5 + 127 = 10000100<sub>2</sub>, 23 fraction bits = 110 1001 0000 0000 0000 0000.
 
@@ -996,33 +996,49 @@ The steps for adding floating-point numbers with the same sign are as follows:
 4. Shift smaller mantissa if necessary.
 5. Add mantissas.
 6. Normalize mantissa and adjust exponent if necessary.
-7. Round result.
+7. Check whether have overflow or underflow then round result.
 8. Assemble exponent and fraction back into floating-point number.
 
 For example,
 
 <figure><img src="../../.gitbook/assets/floating-point-addition-example.png" alt="" width="563"><figcaption></figcaption></figure>
 
-For **subtraction**, just change step 5 to -> Subtract the mantissas.
+{% hint style="success" %}
+#### Notes
+
+1. For **subtraction**, just change step 5 to -> Subtract the mantissas.
+   1. If two mantissa A - B, and A is smaller, just do B - A and add a **negative sign** to the final result and then normalize the mantissa.
+2. If Step 3 the **shift amount** is **negative**, shift the upper mantissa to the **right**.
+3. Step 7 to check overflow and underflow is **important**! The idea is to check whether the final result's exponent is between \[-126, 127] for single-precision floating point number. If < -126, **underflow** and if > 127, **overflow**.
+{% endhint %}
 {% endstep %}
 
 {% step %}
 #### Multiplication
 
-1. Unpack the numbers
-   1. Assume A=0\_0111\_110 and B= 0\_1001\_010, we want to calculate A x B.
-2. Sign of result = xor of signs of the numbers
-   1. 0 xor 0 = 0.
-3. **Add** the two exponents using integer math. Subtract the   &#x20;bias **once** from the result.
-   1. E = 0111 + 1001 - 0111 = 1001
-4. **Multiply** significands (mantissas) via integer math
-   1. S = 1.110 x 1.010 = 10.001100
-5. Normalize the significand and adjust exponent if necessary
-   1. S = 1.00011, E = 1001 + 1 = 1010
-6. Round the significand (mantissa)
-   1. S = 1.000 (assuming rounding mode is round toward zero)
-7. Pack it back
-   1. Result = 0\_1010\_000
+Floating point multiplication follows the steps shown as follows:
+
+<figure><img src="../../.gitbook/assets/floating-point-multiplication.png" alt="" width="369"><figcaption></figcaption></figure>
+
+For example, using the above steps to multiply the numbers 0.5<sub>10</sub> and -0.4375<sub>10</sub>.
+
+1. **In binary**, the task is multiplying 1.000<sub>2</sub> x 2<sup>-1</sup> by -1.110<sub>2</sub>  x 2<sup>-2</sup>.
+2. **Adding the exponents without bias:**
+   1. -1 + -2 = -3. The exponenet will be -3 + 127 = 124
+3. **Multiplying the significands:**
+   1. 1.000 x -1.110 = 1.110 x 2<sup>-3</sup>
+4. **Checking Overflow and underflow:**
+   1. As -3 is within \[-127, 126], no overflow and underflow
+5. **Rounding the product:**
+   1. No need in this case
+6. **Adding the sign to the final product:**
+   1. Since the signs of the original operands differ, make the sign of the product negative. Hence the product is, -1.110 x 2<sup>-3</sup>.
+
+{% hint style="success" %}
+#### Notes
+
+1. For the **division**, change step 1 to **add bias to the difference of the two exponents**. Step 2 is to use **long division** to **divide the two significands**.
+{% endhint %}
 {% endstep %}
 {% endstepper %}
 
