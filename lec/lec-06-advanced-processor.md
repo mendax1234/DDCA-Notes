@@ -402,6 +402,52 @@ The constraints on issuing instructions are:
 
 Now the out-of-order processor with register renaming issues the six instructions in three cycles, for an IPC of 2, which achieves the [ideal case](lec-06-advanced-processor.md#ideal-case)!
 
+<details>
+
+<summary>Self-Diagnostic Quiz</summary>
+
+Perform register renaming to eliminate storage conflicts for the instructions below. Use `a, b, c, ...` to fill in the blanks below, using higher alphabets/names only when necessary. For example, `x1b` should be used only if `x1a` is not sufficient to eliminate the storage conflict.
+
+{% code lineNumbers="true" %}
+```riscv
+lw x4a, 8(x3a)
+sw x3_, (x4_)
+add x3_, x3_, x4_
+add x4_, x4_, x3_
+```
+{% endcode %}
+
+***
+
+**Ans**: It is shown as follows
+
+{% code lineNumbers="true" %}
+```riscv
+lw x4a, 8(x3a)
+sw x3a, (x4a)
+add x3b, x3a, x4a
+add x4b, x4a, x3b
+```
+{% endcode %}
+
+To solve this kind of question, we use a systematic method called the "**Current Mapping Table**" (or Rename Table) approach, where we simply track the "current" version of every register appeared. And the golden rules to construct this map after each instruction are:
+
+* **Inputs (Reads)**: When an instruction **reads** a register, look at your table and use the **current** letter. Do not **update** the table.
+* **Outputs (Writes)**: When an instruction **writes** to a register, give it the **next** letter (increment) and **update** your table immediately.
+  * _Note:_ The output register takes the new name, but the input registers in the _same_ instruction use the _old_ names.
+
+Using this method, our initial map is **x3: a, x4: a**.
+
+1. sw: As `sw` only reads `x3` and `x4`, both use the a postfix (`x3a`, `x4a`).
+2. add (1st): We read the two sources first; both are still a (`x3a`, `x4a`). Then, as `x3` is the destination, we increment it to b (`x3b`).
+   * _Current Map:_ **x3: b, x4: a**
+3. add (2nd): We read the sources using the current map: `x4` is still a (`x4a`), but `x3` is now b (`x3b`). Finally, as `x4` is the destination, we increment it from a to b (`x4b`)
+   * _Current Map:_ **x3: b, x4: b**
+
+Thus we can get our final answer!
+
+</details>
+
 ### VLIW Processor
 
 In the above sections, we try to increase the parallelism from the hardware perspective. However, there is a technique that shifts the burden of identifying parallelism from hardware to the compiler. This technique is called **VLIW**.
