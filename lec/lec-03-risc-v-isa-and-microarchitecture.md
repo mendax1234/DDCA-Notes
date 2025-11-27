@@ -30,10 +30,10 @@ As we have already seen in [Harris & Harris](https://wenbo-notes.gitbook.io/ddca
 This is the programmer's view of computer. And it has the following features:
 
 * Defined by instructions & operand locations
-* Assembly language: human-readable format of  &#x20;instructions
-* Machine language: computer-readable format  &#x20;(1’s and 0’s)
-* Assembly language -> Machine language  &#x20;conversion is done by the assembler
-  * one to one correspondence    &#x20;(except for pseudo-instructions)
+* **Assembly language**: human-readable format of instructions
+* **Machine language**: computer-readable format (1’s and 0’s)
+* Assembly language -> Machine language conversion is done by the assembler
+  * one to one correspondence (except for pseudo-instructions)
 {% endstep %}
 
 {% step %}
