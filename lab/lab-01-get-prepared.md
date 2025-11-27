@@ -22,7 +22,7 @@ This sample RISC-V assembly program contains 3 parts,
 
 The code here is not data at all — it never goes into instruction memory (IROM) or data memory (DMEM). Instead, it's purely an **assembler directive**: a **symbolic substitution** (like `#define` in C).
 
-```armasm
+```riscv
 .eqv NAME VALUE
 ```
 
@@ -166,7 +166,7 @@ The word is stored using [**little endianess**](https://wenbo-notes.gitbook.io/c
 
 <summary>What's actually going on in Line 47? (<code>auipc</code>)</summary>
 
-In Line 47, the instruction is actually implemented by two RISC-V instructions.&#x20;
+In Line 47, the instruction `lw s3, delay_val` is actually implemented by two RISC-V instructions.&#x20;
 
 {% code lineNumbers="true" %}
 ```riscv

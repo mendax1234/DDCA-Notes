@@ -260,7 +260,47 @@ From this table, we notice that
 
 #### DP Pseudo-Instruction
 
-All the pseudo-instruction in RISC-V is introduced [here](../lab/resources/risc-v-resources.md#risc-v-pseudo-instruction)! Among them, knowing the working principle of `auipc` from [Lab 1](https://wenbo-notes.gitbook.io/ddca-notes/lab/lab-01-get-prepared#whats-actually-going-on-in-line-47-auipc) is also necessary! This means that the working principle should also be included in this page manually for CG3207 midterm quiz purpose.
+All the pseudo-instruction in RISC-V is introduced [here](../lab/resources/risc-v-resources.md#risc-v-pseudo-instruction)! Among them, knowing the working principle of `auipc` from [Lab 1](https://wenbo-notes.gitbook.io/ddca-notes/lab/lab-01-get-prepared#whats-actually-going-on-in-line-47-auipc) is also necessary!
+
+<details>
+
+<summary><code>auipc</code> explanation</summary>
+
+In Lab1, the instruction `lw s3, delay_val` at Line 47 is actually implemented by two RISC-V instructions.&#x20;
+
+{% code lineNumbers="true" %}
+```riscv
+auipc x19, 0x0000fc10
+lw    x19, 0xffffffec(x19)
+```
+{% endcode %}
+
+This is as shown as follows, (`x19` is the `s3` register)
+
+<figure><img src="../.gitbook/assets/cg3207-lab01-auipc.png" alt=""><figcaption></figcaption></figure>
+
+The reason for this two-step sequence is that **`lw`** is an I-type instruction, and I-type immediates are limited to a signed **12-bit offset** relative to a base register. This means `lw` can only directly access data within ±2048 bytes of the base address. When the data we want to load is located _far away_, we need an additional instruction to construct a base address that is “close enough.”
+
+This is where `auipc` (Add Upper Immediate to PC) comes in. `auipc` takes the current PC value, adds a 20-bit immediate shifted left by 12 bits, and stores the result into the destination register. In other words, it lets us build a base address relative to the PC, suitable for accessing distant memory.
+
+1. The symbol **`delay_val`** is at address `0x10010000`. The instruction `lw s3, delay_val` itself is at `0x00400014`.
+   1. These two addresses differ by much more than 12 bits, so a plain `lw` cannot reach `delay_val` directly.
+2. To bridge the gap, the assembler splits the target address into a **high part** and a **low part**.
+   1. The **upper 20 bits** difference is: `0x10010 - 0x00400 = 0xFC10`. This becomes the immediate for `auipc`.
+3. After executing `auipc x19, 0x0000fc10`, register `x19` holds: `x19 = PC + (0xFC10 << 12)`, which is a value “close” to the address of `delay_val`.
+4. Now only a **small offset** is left to cover.
+   1. The **lower 12 bits** difference is: `0x000 - 0x014 = 0xFFFFFFEC`. This fits within the signed 12-bit immediate range of `lw`.
+5. Finally, the instruction `lw x19, 0xffffffec(x19)` uses `x19` as the base plus the small offset to reach the exact address of `delay_val` and load its value into `s3`.
+
+***
+
+The key idea is that `auipc` provides a way to **construct PC-relative addresses for far-away data or code**. By combining `auipc` (for the high 20 bits of the address) with an I-type instruction like `lw` (for the low 12 bits), RISC-V can access any 32-bit address in memory, despite the immediate size limitations of a single instruction.
+
+{% hint style="success" %}
+The use of `la` to load address which is far away from the current PC address works in exactly similar ways. Instead storing the content, `la` store the address of that content.
+{% endhint %}
+
+</details>
 
 #### Multiply and Divide
 
