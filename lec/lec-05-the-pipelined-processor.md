@@ -512,6 +512,10 @@ The following is the complete hazard handling circuitry we have introduced in th
 
 <figure><img src="../.gitbook/assets/cg3207-lec05-complete-hazard-circuitry.png" alt=""><figcaption></figcaption></figure>
 
+{% hint style="warning" %}
+For the finals, be prepared to see some challenging questions that use a pipeline design that is not 5-stage, it can use 7-stage or 17 stages. Be aware of how to anaylze the execution time under these circumstances.
+{% endhint %}
+
 [^1]: including the Control Unit and Datapaths
 
 [^2]: Write to pipeline registers can be thought of as **updating** the pipelined registers' values.
