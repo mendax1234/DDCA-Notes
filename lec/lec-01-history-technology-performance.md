@@ -110,6 +110,10 @@ This is simple. Nowadays, we mainly have the following ISAs
 
 Application processors = Processors used in smartphones / tablets (ARMv8A / 9A instruction set)
 
+{% hint style="success" %}
+In AY25/26 Sem 1, the questions appeared in the final indicate that nowadays, the **fastest processor** (AMD EPYC) can execute around 1000 billions of instructions per second. And the cutting-edge GPUs have around 10000 cuda cores (in the order of 10000).
+{% endhint %}
+
 ### Moore's Law
 
 In 1965, Intel’s Gordon Moore predicted that **the&#x20;number of transistors** that can be integrated on **single chip** would **double** about **every two years**.

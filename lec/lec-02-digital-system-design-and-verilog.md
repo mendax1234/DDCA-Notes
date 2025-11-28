@@ -105,7 +105,7 @@ The following images shows the difference between behavioural modelling and arch
 <figure><img src="../.gitbook/assets/cg3207-lec02-behavioural-vs-architectural.png" alt="" width="563"><figcaption></figcaption></figure>
 
 {% hint style="success" %}
-**Binding directly determines how many actual FUs are instantiated** in the final design, which in turn determines the **area cost**.
+**Binding directly determines how many actual FUs are instantiated** in the final design, which in turn determines the **area cost**. Thus, **architectural synthesis** has the largest impact of the cost of building a chip.
 {% endhint %}
 
 For now, we should be able to use the hardware thinking to write RTL Code, let's recap on the necessary steps by looking through a very simple step!

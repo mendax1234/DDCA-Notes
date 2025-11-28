@@ -578,6 +578,10 @@ Control Unit **controls** the flow/processing/storage of data in&#x20;the datap
 * **Functional unit activation**: is the ALU active? Is the memory doing a read or a write?
 * **Operation selection**: what exact operation should ALU perform (add, sub, AND, OR…)?
 
+{% hint style="success" %}
+The Control Unit in the CISC processor uses **state machine** while the one in the strictly single cycle processor uses **combinational logic**.
+{% endhint %}
+
 ### Implement a single-cycle microarchitecture
 
 **I**n this lecture, we will implement a single-cycle microarchitecture first. So basically, a single-cycle microarchitecture will fetch, decode, execute all in **one clock cycle**. And in this lecture, we have covered four single-cycle microarchitecture, each is built upon the previous one,

@@ -194,7 +194,21 @@ For example, in the branch instruction, the BTA (Branch Target Address) can only
 
 <figure><img src="../.gitbook/assets/cg3207-lec05-control-hazards.png" alt=""><figcaption></figcaption></figure>
 
-> But why jump instructions can also cause control hazards?
+<details>
+
+<summary>Self-Diagnostic Quiz</summary>
+
+Use inline code (put the callee function into the caller function) can **always** reduce the control hazard in a pipelined processor?
+
+***
+
+**Ans**: No, it should be **sometimes**. This is because of the following three reasons:
+
+1. **I-Cache Misses** (The Main Hazard): Inlining replicates code, significantly increasing the binary size ("code bloat"). If the expanded code exceeds the size of the Instruction Cache, it causes cache misses. A fetch from main memory (hundreds of cycles) is far more costly than the few cycles lost to a control hazard.
+2. **Register Pressure**: Inlining forces the compiler to manage more variables simultaneously. If the processor runs out of registers, it causes "spilling" (saving data to stack memory), creating memory access delays that negate the speedup from removing the function call.
+3. **Internal Branches Remain**: Inlining only removes the `CALL` and `RETURN` jumps. Any conditional branches (loops, if-else) _inside_ the inlined function still exist and still cause control hazards.
+
+</details>
 
 ## Handle Pipeline Hazards
 

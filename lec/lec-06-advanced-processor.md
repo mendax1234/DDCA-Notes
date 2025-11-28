@@ -456,6 +456,10 @@ Instruction like `add x6, x5, x6` has **no hazard** at all!
 
 In the above sections, we try to increase the parallelism from the hardware perspective. However, there is a technique that shifts the burden of identifying parallelism from hardware to the compiler. This technique is called **VLIW**.
 
+{% hint style="success" %}
+VLIW can be called as **compile-time multiple issue** also.
+{% endhint %}
+
 In the VLIW processor, the **compiler** packs groups of independent instructions into the bundle, and the bundle can be thought of as one very long instruction. Hence the name.
 
 Since determining the **order of execution** of operations (including which operations can execute **simultaneously**) is handled by the compiler, the processor does not need the scheduling hardware that the three methods described above require. Thus, VLIW CPUs offer more computing with **less hardware complexity** (but **greater compiler complexity**) than do most superscalar CPUs.
@@ -467,6 +471,10 @@ VLIW processors excel in specialized domains like
 1. **Digital Signal Processing (DSP)**,
 2. **Graphics Processing**, and
 3. **Machine Learning**
+
+{% hint style="success" %}
+Based on the above three applications, we can know that **VLIW / Compile Time Multiple Issue** is **rarely used** in PC processors or microcontrollers.
+{% endhint %}
 
 because these applications rely heavily on repetitive, predictable loops and linear data access patterns. Unlike general-purpose software, these tasks involve very little uncertainty regarding control flow or memory addresses, which minimizes runtime hazards like complex branches or cache misses. This high level of determinism allows the compiler to aggressively optimize and schedule instructions statically, enabling VLIW architectures to achieve high performance without the power-hungry, complex hardware logic needed to handle the unpredictability of mainstream CPUs.
 
