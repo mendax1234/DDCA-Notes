@@ -52,13 +52,24 @@ The SR Latch is awkward because it behaves strangely when both S and R are simul
 
 <figure><img src="../../.gitbook/assets/D-latch.png" alt=""><figcaption></figcaption></figure>
 
-By analyzing this circuit, we see that the clock controls when data flows through the latch. When CLK = 1, the latch is _transparent_. The data at D flows through to Q as if the latch were just a **buffer** (from the point of comparing output $$Q$$ and input D). When CLK = 0, the latch is _opaque_. It blocks the new data from flowing through to Q, and Q retains the old value. Hence, the D latch is sometimes called a _transparent latch_ or _level-sensitive_ latch. The D latch symbol is given in Figure 3.7 (c).
+By analyzing this circuit, we see that the clock controls when data flows through the latch. When CLK = 1, the latch is _transparent_. The data at D flows through to Q as if the latch were just a **buffer** (from the point of comparing output Q and input D). When CLK = 0, the latch is _opaque_. It blocks the new data from flowing through to Q, and Q retains the old value. Hence, the D latch is sometimes called a _transparent latch_ or _level-sensitive_ latch. The D latch symbol is given in Figure 3.7 (c).
 
 In the D latch, from the truth table, we can clearly see that its state variable is still $$Q$$. And the D latch is actually built upon the SR latch!
 
 {% hint style="info" %}
 We may notice that the D latch updates its state **continuously** while CLK = 1. We shall see later in this chapter that it is useful to update the state only at a specific instant in time.
 {% endhint %}
+
+#### Types of Latches
+
+The latches can be classified into two types:
+
+1. **Transparent High**:
+   1. When CLK is HIGH (`1`): The latch is Transparent. The output Q follows the input D immediately (changes in D are seen at Q).
+   2. When CLK is LOW (`0`): The latch is Opaque (Latched). The output Q freezes and holds the last value it had right before the clock went low.
+2. **Transparent Low**:
+   1. When CLK is LOW (`0`): The latch is Transparent. The output Q follows the input D immediately.
+   2. When CLK is HIGH (`1`): The latch is Opaque (Latched). The output freezes.
 
 ## D Flip-Flop
 
