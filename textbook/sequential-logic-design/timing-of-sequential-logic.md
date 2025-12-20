@@ -106,7 +106,7 @@ The hold time constraints are **critically important**. If they are violated, th
 
 <summary>Why is t<sub>hold</sub> related to the previous combinational logic?</summary>
 
-Iin short, t<sub>hold</sub> is to prevent the new data from affecting the old data. The **new** data from R1 starts racing through the combinational logic toward R2 immediately after the clock edge. If the logic is "too fast" ($$ $t_{cd}$ $$t<sub>cd</sub> is too small), this new data could reach R2's input (D2$$ $D2$ $$) before R2 has finished "holding" and locking in the **old** data.
+Iin short, t<sub>hold</sub> is to prevent the new data from affecting the old data. The **new** data from R1 starts racing through the combinational logic toward R2 immediately after the clock edge. If the logic is "too fast" (t<sub>cd</sub> is too small), this new data could reach R2's input (D2) before R2 has finished "holding" and locking in the **old** data.
 
 </details>
 
@@ -157,3 +157,60 @@ In this circuit, the short paths are slowed by the contamination delay of the bu
 From this figure, we can see that the critical path from A to Y is unaffected because it does not pass through any buffers. Therefore, the maximum clock frequency is still 4GHz.
 
 </details>
+
+## Clock Skew
+
+In the previous analysis, we assumed that the **clock** reaches all **registers** at exactly the same time. In reality, there is some variation in this time. This variation in **clock** edges is called **clock skew**. For example, the wires from the **clock source** to different **registers** may be of different lengths, resulting in slightly different delays, as shown in the following figure.
+
+<figure><img src="../../.gitbook/assets/clock-skew-example.png" alt="" width="563"><figcaption><p>Clock skew caused by wire delay</p></figcaption></figure>
+
+In the figure above, **CLK2** is early with respect to **CLK1**, because the clock wire between the two registers follows a scenic route. If the clock had been routed differently, CLK1 might have been early instead. When doing **timing analysis**, we consider the **worst-case scenario** so that we can guarantee that the circuit will work under all circumstances.
+
+The following figure adds **skew** to the timing diagram from the figure we have discussed above.
+
+* The heavy **clock** line indicates the latest time at which the **clock signal** might reach any **register**;
+* the hashed lines show that the **clock** might arrive up to **t**<sub>**skew**</sub> earlier.
+
+<figure><img src="../../.gitbook/assets/timing-diagram-with-clock-skew.png" alt=""><figcaption><p>Timing diagram with clock skew</p></figcaption></figure>
+
+### Setup Time Constraint
+
+First, consider the **setup time constraint** shown in the following figure. In the worst case, **R1** receives the latest skewed clock and **R2** receives the earliest skewed clock, leaving as little time as possible for data to propagate between the **registers**.
+
+<figure><img src="../../.gitbook/assets/setup-time-constraint-with-clock-skew.png" alt="" width="563"><figcaption><p>Setup time constraint with clock skew</p></figcaption></figure>
+
+The data propagates through the register and combinational logic and must set up before R2 samples it. Hence, we conclude that,
+
+$$
+T_c\geq t_{\text{pcq}}+t_{\text{pd}}+t_{\text{setup}}+t_{\text{skew}}
+$$
+
+Rearranging it, we will get,
+
+$$
+t_{\text{pd}}\leq T_c - (t_{\text{pcq}}+t_{\text{setup}}+t_{\text{skew}})
+$$
+
+### Hold Time Constraint
+
+Next, consider the **hold time constraint** shown in the following figure. In the worst case, **R1** receives an early skewed clock, **CLK1**, and **R2** receives a late skewed clock, **CLK2**. The data zips through the **register** and **combinational logic**, but must not arrive until a **hold time** after the late clock.
+
+<figure><img src="../../.gitbook/assets/hold-time-constraint-with-clock-skew.png" alt="" width="559"><figcaption><p>Hold time constraint with clock skew</p></figcaption></figure>
+
+Thus, we find that
+
+$$
+t_{\text{ccq}}+t_{\text{cd}}\geq t_{\text{hold}} + t_{\text{skew}}
+$$
+
+Rearranging it, we will have,
+
+$$
+t_{\text{cd}} \geq  t_{\text{hold}} + t_{\text{skew}}- t_{\text{ccq}}
+$$
+
+#### Putting It All Together
+
+In summary, **clock skew** effectively increases both the **setup time** and the **hold time**. It adds to the **sequencing overhead**, reducing the time available for useful work in the **combinational logic**. It also increases the required **minimum delay** through the **combinational logic**.
+
+Even if **t**<sub>**hold**</sub>**&#x20;= 0**, a pair of back-to-back **flip-flops** will violate the equation above if **t**<sub>**skew**</sub>**&#x20;> t**<sub>**ccq**</sub>. To prevent serious **hold time** failures, designers must not permit too much **clock skew**. Sometimes, **flip-flops** are intentionally designed to be particularly slow (e.g., large **t**<sub>**ccq**</sub>), to prevent **hold time** problems even when the **clock skew** is substantial.
