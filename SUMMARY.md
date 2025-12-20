@@ -49,6 +49,7 @@
   * [Latches and Flip-Flops](textbook/sequential-logic-design/latches-and-flip-flops.md)
   * [Synchronous Logic Design](textbook/sequential-logic-design/synchronous-logic-design.md)
   * [Finite State Machines](textbook/sequential-logic-design/finite-state-machines.md)
+  * [Timing of Sequential Logic](textbook/sequential-logic-design/timing-of-sequential-logic.md)
   * [Parallelism](textbook/sequential-logic-design/parallelism.md)
 * [Hardware Description Languages](textbook/hardware-description-languages/README.md)
   * [Combinational Logic](textbook/hardware-description-languages/combinational-logic.md)
